@@ -146,39 +146,35 @@
     <aside id="sidebar" class="sidebar">
     <ul class="sidebar-nav" id="sidebar-nav">
 
-        <!-- Dashboard -->
+       <!-- Dashboard -->
         <li class="nav-item">
-        <a class="nav-link" href="/admin/dashboard">
+          <a class="nav-link" href="/Admin">
             <i class="bi bi-grid"></i>
             <span>Dashboard</span>
-        </a>
+          </a>
         </li>
 
-        <!-- Family Management -->
-        <li class="nav-item">
-        <a class="nav-link collapsed" data-bs-target="#family-nav" data-bs-toggle="collapse" href="#">
-            <i class="bi bi-diagram-3"></i>
-            <span>Family Management</span>
-            <i class="bi bi-chevron-down ms-auto"></i>
-        </a>
-        <ul id="family-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
-            <li>
-            <a href="/admin/families/register">
-                <i class="bi bi-circle"></i><span>Register Family</span>
-            </a>
-            </li>
-            <li>
-            <a href="/admin/families">
-                <i class="bi bi-circle"></i><span>All Families</span>
-            </a>
-            </li>
-            <li>
-            <a href="/admin/families/tree">
-                <i class="bi bi-circle"></i><span>Family Trees</span>
-            </a>
-            </li>
-        </ul>
+
+    <!-- Family Management -->
+    <li class="nav-item">
+      <a class="nav-link collapsed" data-bs-target="#family-nav" data-bs-toggle="collapse" href="#">
+        <i class="bi bi-diagram-3"></i>
+        <span>Family Accounts</span>
+        <i class="bi bi-chevron-down ms-auto"></i>
+      </a>
+      <ul id="family-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
+        <li>
+          <a href="/register">
+            <i class="bi bi-circle"></i><span>Register Family</span>
+          </a>
         </li>
+        <li>
+          <a href="/lists_family">
+            <i class="bi bi-circle"></i><span>All Families</span>
+          </a>
+        </li>
+      </ul>
+    </li>
 
         <!-- Payments & Subscriptions -->
         <li class="nav-item">
@@ -201,11 +197,6 @@
             <li>
             <a href="/admin/payments/unpaid">
                 <i class="bi bi-circle"></i><span>Unpaid Families</span>
-            </a>
-            </li>
-            <li>
-            <a href="/admin/subscriptions">
-                <i class="bi bi-circle"></i><span>Subscription Plans</span>
             </a>
             </li>
         </ul>
@@ -262,46 +253,11 @@
             </li>
         </ul>
         </li>
-
-        <!-- Communication -->
-        <li class="nav-item">
-        <a class="nav-link collapsed" data-bs-target="#communication-nav" data-bs-toggle="collapse" href="#">
-            <i class="bi bi-chat-dots"></i>
-            <span>Communication</span>
-            <i class="bi bi-chevron-down ms-auto"></i>
-        </a>
-        <ul id="communication-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
-            <li>
-            <a href="/admin/messages">
-                <i class="bi bi-circle"></i><span>Messages</span>
-            </a>
-            </li>
-            <li>
-            <a href="/admin/live-meetings">
-                <i class="bi bi-circle"></i><span>Live Meetings</span>
-            </a>
-            </li>
-            <li>
-            <a href="/admin/announcements">
-                <i class="bi bi-circle"></i><span>Announcements</span>
-            </a>
-            </li>
-        </ul>
-        </li>
-
         <!-- Reports -->
         <li class="nav-item">
         <a class="nav-link collapsed" href="/admin/reports">
             <i class="bi bi-bar-chart-line"></i>
             <span>Reports</span>
-        </a>
-        </li>
-
-        <!-- System Settings -->
-        <li class="nav-item">
-        <a class="nav-link collapsed" href="/admin/settings">
-            <i class="bi bi-gear"></i>
-            <span>System Settings</span>
         </a>
         </li>
 
