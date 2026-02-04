@@ -255,11 +255,99 @@
     </ul>
     </aside>
 
-<main id="main" class="main">
+    <main id="main" class="main">
+    <div class="container-fluid">
 
-</main>
+        <!-- Page Title -->
+        <div class="pagetitle mb-4">
+        <h1>Payments</h1>
+        <p class="text-muted">All payments made by families</p>
+        </div>
 
+        <!-- Payments Card -->
+        <div class="card shadow-sm">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Payments List</h5>
+            <span class="badge bg-primary">All Transactions</span>
+        </div>
 
+        <div class="card-body">
+            <div class="table-responsive">
+            <table id="paymentsTable" class="table table-striped table-hover nowrap" style="width:100%">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Family</th>
+                    <th>Payer</th>
+                    <th>Phone</th>
+                    <th>Amount (TZS)</th>
+                    <th>Method</th>
+                    <th>Reference</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                <tr>
+                    <td>1</td>
+                    <td>Mwalimu Family</td>
+                    <td>Maulid Mwalimu</td>
+                    <td>0742 700 833</td>
+                    <td>30,000</td>
+                    <td><span class="badge bg-info">M-Pesa</span></td>
+                    <td>MPZ23901K</td>
+                    <td>2026-02-02</td>
+                    <td><span class="badge bg-success">Paid</span></td>
+                    <td>
+                    <button class="btn btn-sm btn-outline-primary" title="View">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>2</td>
+                    <td>Nkya Family</td>
+                    <td>John Nkya</td>
+                    <td>0756 123 456</td>
+                    <td>30,000</td>
+                    <td><span class="badge bg-warning text-dark">TigoPesa</span></td>
+                    <td>TGP77291X</td>
+                    <td>2026-02-01</td>
+                    <td><span class="badge bg-warning text-dark">Pending</span></td>
+                    <td>
+                    <button class="btn btn-sm btn-outline-primary" title="View">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>3</td>
+                    <td>Kweka Family</td>
+                    <td>Peter Kweka</td>
+                    <td>0789 456 112</td>
+                    <td>30,000</td>
+                    <td><span class="badge bg-secondary">Airtel Money</span></td>
+                    <td>AMN88231</td>
+                    <td>2026-01-29</td>
+                    <td><span class="badge bg-danger">Failed</span></td>
+                    <td>
+                    <button class="btn btn-sm btn-outline-primary" title="View">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+            </div>
+        </div>
+        </div>
+
+    </div>
+    </main>
 
     <!-- ======= Footer ======= -->
     <footer id="footer" class="footer">
@@ -274,15 +362,44 @@
 
   <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
 
-  <!-- Vendor JS Files -->
-  <script src="/assets/vendor/apexcharts/apexcharts.min.js"></script>
-  <script src="/assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-  <script src="/assets/vendor/chart.js/chart.umd.js"></script>
-  <script src="/assets/vendor/echarts/echarts.min.js"></script>
-  <script src="/assets/vendor/quill/quill.js"></script>
-  <script src="/assets/vendor/simple-datatables/simple-datatables.js"></script>
-  <script src="/assets/vendor/tinymce/tinymce.min.js"></script>
-  <script src="/assets/vendor/php-email-form/validate.js"></script>
+    <!-- jQuery (MUST be first) -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- DataTables core -->
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
+
+<!-- DataTables Responsive -->
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
+
+<!-- Optional vendor scripts (charts, editors etc) -->
+<script src="/assets/vendor/apexcharts/apexcharts.min.js"></script>
+<script src="/assets/vendor/chart.js/chart.umd.js"></script>
+<script src="/assets/vendor/echarts/echarts.min.js"></script>
+<script src="/assets/vendor/quill/quill.js"></script>
+<script src="/assets/vendor/tinymce/tinymce.min.js"></script>
+<script src="/assets/vendor/php-email-form/validate.js"></script>
+
+  <script>
+    $(document).ready(function () {
+        $('#paymentsTable').DataTable({
+        responsive: true,
+        pageLength: 10,
+        ordering: true,
+        searching: true,
+        lengthChange: true,
+        language: {
+            search: "Search payment:",
+            lengthMenu: "Show _MENU_ payments"
+        }
+        });
+    });
+  </script>
+
 
   <!-- Main JS File -->
   <script src="/assets/js/main.js"></script>

@@ -256,10 +256,130 @@
     </ul>
     </aside>
 
-<main id="main" class="main">
+    <main id="main" class="main">
+    <div class="container-fluid">
 
-</main>
+        <!-- Page Title -->
+        <div class="pagetitle mb-4">
+        <h1>Grant Family Access</h1>
+        <p class="text-muted">
+            Manage dashboard access for families with completed payments
+        </p>
+        </div>
 
+        <div class="row g-4">
+
+        <!-- ================= PAID FAMILIES LIST ================= -->
+        <div class="col-lg-7 col-md-12">
+            <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0">Paid Families</h5>
+            </div>
+
+            <div class="card-body">
+                <div class="table-responsive">
+                <table id="grantAccessTable" class="table table-hover table-striped nowrap" style="width:100%">
+                    <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Family</th>
+                        <th>Family Admin</th>
+                        <th>Phone</th>
+                        <th>Access</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>Mwalimu Family</td>
+                        <td>Maulid Mwalimu</td>
+                        <td>0742 700 833</td>
+                        <td>
+                        <button class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-shield-check"></i> Grant Access
+                        </button>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>2</td>
+                        <td>Nkya Family</td>
+                        <td>John Nkya</td>
+                        <td>0756 123 456</td>
+                        <td>
+                        <button class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-shield-check"></i> Grant Access
+                        </button>
+                        </td>
+                    </tr>
+
+                    </tbody>
+                </table>
+                </div>
+            </div>
+            </div>
+        </div>
+
+        <!-- ================= ACCESS CONTROL PANEL ================= -->
+        <div class="col-lg-5 col-md-12">
+            <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0">Family Dashboard Access</h5>
+            </div>
+
+            <div class="card-body">
+                <p class="text-muted small mb-3">
+                Select features to enable on the family dashboard
+                </p>
+
+                <!-- Dashboard -->
+                <h6 class="text-primary">Dashboard</h6>
+                <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" checked>
+                <label class="form-check-label">View Dashboard</label>
+                </div>
+
+                <!-- Family -->
+                <h6 class="text-primary mt-3">Family</h6>
+                <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox">
+                <label class="form-check-label">Add Family Members</label>
+                </div>
+
+                <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox">
+                <label class="form-check-label">Edit Family Information</label>
+                </div>
+
+                <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox">
+                <label class="form-check-label">Upload Documents</label>
+                </div>
+
+                <!-- Advanced -->
+                <h6 class="text-primary mt-3">Advanced</h6>
+                <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox">
+                <label class="form-check-label">View Family Tree</label>
+                </div>
+
+                <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox">
+                <label class="form-check-label">Reports & Analytics</label>
+                </div>
+
+                <button class="btn btn-success w-100">
+                <i class="bi bi-save"></i> Save Access
+                </button>
+
+            </div>
+            </div>
+        </div>
+
+        </div>
+    </div>
+    </main>
 
 
     <!-- ======= Footer ======= -->
@@ -275,15 +395,40 @@
 
   <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
 
-  <!-- Vendor JS Files -->
-  <script src="/assets/vendor/apexcharts/apexcharts.min.js"></script>
-  <script src="/assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-  <script src="/assets/vendor/chart.js/chart.umd.js"></script>
-  <script src="/assets/vendor/echarts/echarts.min.js"></script>
-  <script src="/assets/vendor/quill/quill.js"></script>
-  <script src="/assets/vendor/simple-datatables/simple-datatables.js"></script>
-  <script src="/assets/vendor/tinymce/tinymce.min.js"></script>
-  <script src="/assets/vendor/php-email-form/validate.js"></script>
+    <!-- jQuery (MUST be first) -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- DataTables core -->
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
+
+<!-- DataTables Responsive -->
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
+
+<!-- Optional vendor scripts (charts, editors etc) -->
+<script src="/assets/vendor/apexcharts/apexcharts.min.js"></script>
+<script src="/assets/vendor/chart.js/chart.umd.js"></script>
+<script src="/assets/vendor/echarts/echarts.min.js"></script>
+<script src="/assets/vendor/quill/quill.js"></script>
+<script src="/assets/vendor/tinymce/tinymce.min.js"></script>
+<script src="/assets/vendor/php-email-form/validate.js"></script>
+
+  <script>
+  $(document).ready(function () {
+    $('#grantAccessTable').DataTable({
+      responsive: true,
+      pageLength: 5,
+      searching: true,
+      ordering: true,
+      lengthChange: false
+    });
+  });
+ </script>
+
 
   <!-- Main JS File -->
   <script src="/assets/js/main.js"></script>

@@ -255,9 +255,84 @@
     </ul>
     </aside>
 
-<main id="main" class="main">
+    <main id="main" class="main">
+    <div class="container-fluid">
 
-</main>
+        <!-- Page Title -->
+        <div class="pagetitle mb-4">
+        <h1>Unpaid Families</h1>
+        <p class="text-muted">Families without completed payments</p>
+        </div>
+
+        <!-- Unpaid Families Card -->
+        <div class="card shadow-sm">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Unpaid Family List</h5>
+            <span class="badge bg-danger">Payment Pending</span>
+        </div>
+
+        <div class="card-body">
+            <div class="table-responsive">
+            <table id="unpaidFamiliesTable" class="table table-striped table-hover nowrap" style="width:100%">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Family</th>
+                    <th>Family Admin</th>
+                    <th>Phone</th>
+                    <th>Expected Amount (TZS)</th>
+                    <th>Last Payment</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                <tr>
+                    <td>1</td>
+                    <td>Kweka Family</td>
+                    <td>Joseph Kweka</td>
+                    <td>0789 456 321</td>
+                    <td>30,000</td>
+                    <td>—</td>
+                    <td><span class="badge bg-danger">Unpaid</span></td>
+                    <td>
+                    <button class="btn btn-sm btn-outline-primary" title="View Family">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-warning" title="Send Reminder">
+                        <i class="bi bi-bell"></i>
+                    </button>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>2</td>
+                    <td>Msangi Family</td>
+                    <td>Anna Msangi</td>
+                    <td>0712 888 999</td>
+                    <td>30,000</td>
+                    <td>2025-12-15</td>
+                    <td><span class="badge bg-warning text-dark">Pending</span></td>
+                    <td>
+                    <button class="btn btn-sm btn-outline-primary" title="View Family">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-warning" title="Send Reminder">
+                        <i class="bi bi-bell"></i>
+                    </button>
+                    </td>
+                </tr>
+
+                </tbody>
+            </table>
+            </div>
+        </div>
+        </div>
+
+    </div>
+    </main>
+
 
 
 
@@ -274,15 +349,44 @@
 
   <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
 
-  <!-- Vendor JS Files -->
-  <script src="/assets/vendor/apexcharts/apexcharts.min.js"></script>
-  <script src="/assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-  <script src="/assets/vendor/chart.js/chart.umd.js"></script>
-  <script src="/assets/vendor/echarts/echarts.min.js"></script>
-  <script src="/assets/vendor/quill/quill.js"></script>
-  <script src="/assets/vendor/simple-datatables/simple-datatables.js"></script>
-  <script src="/assets/vendor/tinymce/tinymce.min.js"></script>
-  <script src="/assets/vendor/php-email-form/validate.js"></script>
+    <!-- jQuery (MUST be first) -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- DataTables core -->
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
+
+<!-- DataTables Responsive -->
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
+
+<!-- Optional vendor scripts (charts, editors etc) -->
+<script src="/assets/vendor/apexcharts/apexcharts.min.js"></script>
+<script src="/assets/vendor/chart.js/chart.umd.js"></script>
+<script src="/assets/vendor/echarts/echarts.min.js"></script>
+<script src="/assets/vendor/quill/quill.js"></script>
+<script src="/assets/vendor/tinymce/tinymce.min.js"></script>
+<script src="/assets/vendor/php-email-form/validate.js"></script>
+
+  <script>
+    $(document).ready(function () {
+        $('#unpaidFamiliesTable').DataTable({
+        responsive: true,
+        pageLength: 10,
+        searching: true,
+        ordering: true,
+        lengthChange: true,
+        language: {
+            search: "Search family:",
+            lengthMenu: "Show _MENU_ families"
+        }
+        });
+    });
+  </script>
+
 
   <!-- Main JS File -->
   <script src="/assets/js/main.js"></script>

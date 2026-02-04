@@ -1232,3 +1232,21 @@ h6 {
   color: #012970;
 }
 
+@media print {
+  .d-print-none {
+    display: none !important;
+  }
+
+  body {
+    background: #fff !important;
+  }
+
+  .card {
+    border: 1px solid #000;
+    box-shadow: none !important;
+  }
+
+  table {
+    font-size: 12px;
+  }
+}

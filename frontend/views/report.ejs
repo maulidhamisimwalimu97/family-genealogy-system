@@ -257,7 +257,175 @@
     </aside>
 
 <main id="main" class="main">
+  <div class="container-fluid">
 
+    <!-- Page Title -->
+    <div class="pagetitle mb-4 d-print-none">
+      <h1>System Reports</h1>
+      <p class="text-muted">Overview of family registrations, payments, and activities</p>
+    </div>
+
+    <!-- Actions -->
+    <div class="d-flex justify-content-end mb-3 d-print-none">
+      <button onclick="window.print()" class="btn btn-primary">
+        <i class="bi bi-printer"></i> Print Report
+      </button>
+    </div>
+
+    <!-- ================= SUMMARY CARDS ================= -->
+    <div class="row mb-4">
+
+      <div class="col-md-3 col-6">
+        <div class="card text-center shadow-sm">
+          <div class="card-body">
+            <h6 class="text-muted">Families Today</h6>
+            <h3 class="fw-bold">12</h3>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3 col-6">
+        <div class="card text-center shadow-sm">
+          <div class="card-body">
+            <h6 class="text-muted">This Month</h6>
+            <h3 class="fw-bold">145</h3>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3 col-6 mt-3 mt-md-0">
+        <div class="card text-center shadow-sm">
+          <div class="card-body">
+            <h6 class="text-muted">This Year</h6>
+            <h3 class="fw-bold">1,284</h3>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3 col-6 mt-3 mt-md-0">
+        <div class="card text-center shadow-sm">
+          <div class="card-body">
+            <h6 class="text-muted">Total Families</h6>
+            <h3 class="fw-bold">2,310</h3>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ================= FAMILY REGISTRATION REPORT ================= -->
+    <div class="card shadow-sm mb-4">
+      <div class="card-header">
+        <h5 class="mb-0">Family Registration Report</h5>
+      </div>
+
+      <div class="card-body">
+        <table class="table table-bordered">
+          <thead class="table-light">
+            <tr>
+              <th>Period</th>
+              <th>Registered Families</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Today</td>
+              <td>12</td>
+            </tr>
+            <tr>
+              <td>This Month</td>
+              <td>145</td>
+            </tr>
+            <tr>
+              <td>This Year</td>
+              <td>1,284</td>
+            </tr>
+            <tr>
+              <td>All Time</td>
+              <td>2,310</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ================= PAYMENT REPORT ================= -->
+    <div class="card shadow-sm mb-4">
+      <div class="card-header">
+        <h5 class="mb-0">Payments Summary</h5>
+      </div>
+
+      <div class="card-body">
+        <table class="table table-bordered">
+          <thead class="table-light">
+            <tr>
+              <th>Status</th>
+              <th>Number of Families</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Paid</td>
+              <td>1,620</td>
+            </tr>
+            <tr>
+              <td>Unpaid</td>
+              <td>690</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ================= SYSTEM ACTIVITY REPORT ================= -->
+    <div class="card shadow-sm mb-4">
+      <div class="card-header">
+        <h5 class="mb-0">System Activities</h5>
+      </div>
+
+      <div class="card-body">
+        <table class="table table-bordered">
+          <thead class="table-light">
+            <tr>
+              <th>Activity</th>
+              <th>Count</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Families Registered</td>
+              <td>2,310</td>
+            </tr>
+            <tr>
+              <td>Payments Made</td>
+              <td>1,620</td>
+            </tr>
+            <tr>
+              <td>Access Granted</td>
+              <td>1,580</td>
+            </tr>
+            <tr>
+              <td>Access Revoked</td>
+              <td>120</td>
+            </tr>
+            <tr>
+              <td>System Users</td>
+              <td>14</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ================= FOOTER FOR PRINT ================= -->
+    <div class="text-center mt-4">
+      <p class="small text-muted">
+        Report generated on <strong>2026-01-27</strong><br>
+        Family Genealogy Management System
+      </p>
+    </div>
+
+  </div>
 </main>
 
 
