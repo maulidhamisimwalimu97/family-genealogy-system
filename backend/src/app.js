@@ -76,4 +76,14 @@ app.get('/report', (req, res) => {
   res.render('report'); // Admin
 });
 
+// header.ejs
+app.get('/header', (req, res) => {
+  res.render('header'); // Admin
+});
+
+// reports for admin
+app.get('/family_admin', (req, res) => {
+  res.render('family_admin'); // Admin
+});
+
 module.exports = app;

@@ -1,0 +1,77 @@
+<!-- Footer -->
+<footer id="footer" class="footer">
+  <div class="copyright">
+    &copy; Copyright <strong><span>Family Genealogy System</span></strong>. All Rights Reserved
+  </div>
+  <div class="credits">
+    Developed by <strong>Maulid Mwalimu</strong>
+  </div>
+</footer>
+
+<!-- Back to top button -->
+<a href="#" class="back-to-top d-flex align-items-center justify-content-center">
+  <i class="bi bi-arrow-up-short"></i>
+</a>
+
+<!-- Vendor JS Files (Bootstrap only once!) -->
+<script src="/assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="/assets/vendor/apexcharts/apexcharts.min.js"></script>
+<script src="/assets/vendor/chart.js/chart.umd.js"></script>
+<script src="/assets/vendor/echarts/echarts.min.js"></script>
+<script src="/assets/vendor/quill/quill.js"></script>
+<script src="/assets/vendor/simple-datatables/simple-datatables.js"></script>
+<script src="/assets/vendor/tinymce/tinymce.min.js"></script>
+<script src="/assets/vendor/php-email-form/validate.js"></script>
+
+<!-- Custom JS -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+  // Sidebar toggle
+  const sidebarToggleBtn = document.querySelector('.toggle-sidebar-btn');
+  if (sidebarToggleBtn) {
+    sidebarToggleBtn.addEventListener('click', () => {
+      document.body.classList.toggle('toggle-sidebar');
+    });
+  }
+
+  // Back-to-top button
+  const backToTop = document.querySelector('.back-to-top');
+  if (backToTop) {
+    const toggleBackToTop = () => backToTop.classList.toggle('active', window.scrollY > 100);
+    window.addEventListener('scroll', toggleBackToTop);
+    toggleBackToTop();
+  }
+
+  // Sidebar collapse arrow rotation
+  const sidebarCollapses = document.querySelectorAll('#sidebar .nav-link.collapsed');
+  sidebarCollapses.forEach(link => {
+    link.addEventListener('click', () => {
+      const target = document.querySelector(link.getAttribute('data-bs-target'));
+      const icon = link.querySelector('.bi-chevron-down');
+      if (!target || !icon) return;
+
+      // Wait for Bootstrap to toggle 'show' class
+      setTimeout(() => {
+        if (target.classList.contains('show')) {
+          icon.classList.add('rotate');
+        } else {
+          icon.classList.remove('rotate');
+        }
+      }, 300);
+    });
+  });
+
+});
+</script>
+
+<!-- Main JS File -->
+<script src="/assets/js/main.js"></script>
+
+<style>
+/* Rotate chevron when sidebar collapse is open */
+.bi-chevron-down.rotate {
+  transform: rotate(180deg);
+  transition: transform 0.3s ease;
+}
+</style>
