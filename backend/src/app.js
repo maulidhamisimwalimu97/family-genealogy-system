@@ -81,9 +81,20 @@ app.get('/header', (req, res) => {
   res.render('header'); // Admin
 });
 
-// reports for admin
+
+// Head of family Dashboard
 app.get('/family_admin', (req, res) => {
   res.render('family_admin'); // Admin
+});
+
+// Register family member
+app.get('/register_family', (req, res) => {
+  res.render('register_family'); // HOF
+});
+
+// lists of family member
+app.get('/family_lists', (req, res) => {
+  res.render('family_lists'); // HOF
 });
 
 module.exports = app;

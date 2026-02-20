@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+
+  <title>Register Family Members</title>
+  <meta content="Family Admin Panel for managing family genealogy records" name="description">
+  <meta content="family, genealogy, admin, lineage" name="keywords">
+
+  <!-- Favicons -->
+
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.gstatic.com" rel="preconnect">
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Nunito:300,300i,400,400i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
+
+  <!-- Vendor CSS Files -->
+  <link href="/assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+  <link href="/assets/vendor/boxicons/css/boxicons.min.css" rel="stylesheet">
+  <link href="/assets/vendor/quill/quill.snow.css" rel="stylesheet">
+  <link href="/assets/vendor/quill/quill.bubble.css" rel="stylesheet">
+  <link href="/assets/vendor/remixicon/remixicon.css" rel="stylesheet">
+  <link href="/assets/vendor/simple-datatables/style.css" rel="stylesheet">
+
+  <!-- Main CSS File -->
+  <link href="assets/css/style.css" rel="stylesheet">
+  <link href="/assets/css/dark.css" rel="stylesheet">
+</head>
+
+<body>
+
+  <!-- ======= Header ======= -->
+  <header id="header" class="header fixed-top d-flex align-items-center">
+
+    <div class="d-flex align-items-center justify-content-between">
+      <a href="/" class="logo d-flex align-items-center">
+        <img src="" alt="">
+        <span class="d-none d-lg-block">Family Genealogy</span>
+      </a>
+      <i class="bi bi-list toggle-sidebar-btn"></i>
+    </div><!-- End Logo -->
+
+    <nav class="header-nav ms-auto">
+      <ul class="d-flex align-items-center">
+
+        <!-- Notifications -->
+        <li class="nav-item dropdown">
+          <a class="nav-link nav-icon" href="#" data-bs-toggle="dropdown">
+            <i class="bi bi-bell"></i>
+            <span class="badge bg-primary badge-number">0</span>
+          </a><!-- End Notification Icon -->
+
+          <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow notifications">
+            <li class="dropdown-header">
+              You have 0 new notifications
+              <a href="#">
+                <span class="badge rounded-pill bg-primary p-2 ms-2">View all</span>
+              </a>
+            </li>
+
+            <li><hr class="dropdown-divider"></li>
+
+            <li class="notification-item text-center">
+              <div>No notifications available</div>
+            </li>
+
+            <li><hr class="dropdown-divider"></li>
+
+            <li class="dropdown-footer">
+              <a href="#">Show all notifications</a>
+            </li>
+          </ul>
+        </li><!-- End Notifications -->
+
+        <!-- Profile -->
+        <li class="nav-item dropdown pe-3">
+          <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
+            <img src="assets/img/3.png" alt="Profile" class="rounded-circle">
+            <span class="d-none d-md-block dropdown-toggle ps-2">Family Admin</span>
+          </a><!-- End Profile Image Icon -->
+
+          <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
+            <li class="dropdown-header">
+              <h6>Family Admin</h6>
+              <span><b>Family Account</b></span>
+            </li>
+
+            <li><hr class="dropdown-divider"></li>
+
+            <li>
+              <a class="dropdown-item d-flex align-items-center" href="/family_admin/profile">
+                <i class="bi bi-person"></i>
+                <span>My Profile</span>
+              </a>
+            </li>
+
+            <li><hr class="dropdown-divider"></li>
+
+            <li>
+              <a class="dropdown-item d-flex align-items-center" href="/logout">
+                <i class="bi bi-box-arrow-right"></i>
+                <span>Sign Out</span>
+              </a>
+            </li>
+          </ul><!-- End Profile Dropdown Items -->
+        </li><!-- End Profile Nav -->
+
+      </ul>
+    </nav><!-- End Icons Navigation -->
+
+  </header><!-- End Header -->
+
+<!-- ======= Sidebar ======= -->
+<aside id="sidebar" class="sidebar">
+  <ul class="sidebar-nav" id="sidebar-nav">
+
+    <!-- Dashboard -->
+    <li class="nav-item">
+      <a class="nav-link" href="/family_admin">
+        <i class="bi bi-grid"></i>
+        <span>Dashboard</span>
+      </a>
+    </li>
+
+    <!-- My Family Dropdown -->
+    <li class="nav-item">
+      <a class="nav-link collapsed" data-bs-target="#myfamily-nav" data-bs-toggle="collapse" href="#">
+        <i class="bi bi-people"></i>
+        <span>My Family</span>
+        <i class="bi bi-chevron-down ms-auto"></i>
+      </a>
+      <ul id="myfamily-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
+        <li>
+          <a href="/register_family">
+            <i class="bi bi-circle"></i><span>Register Family</span>
+          </a>
+        </li>
+        <li>
+          <a href="/family_lists">
+            <i class="bi bi-circle"></i><span>Family List</span>
+          </a>
+        </li>
+        <li>
+          <a href="/tree">
+            <i class="bi bi-circle"></i><span>Family Tree</span>
+          </a>
+        </li>
+      </ul>
+    </li>
+
+    <!-- Meetings & Reminders -->
+    <li class="nav-item">
+      <a class="nav-link collapsed" data-bs-target="#meetings-nav" data-bs-toggle="collapse" href="#">
+        <i class="bi bi-calendar-event"></i>
+        <span>Meetings</span>
+        <i class="bi bi-chevron-down ms-auto"></i>
+      </a>
+      <ul id="meetings-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
+        <li>
+          <a href="/schedule">
+            <i class="bi bi-circle"></i><span>Schedule Meeting</span>
+          </a>
+        </li>
+        <li>
+          <a href="/reminders">
+            <i class="bi bi-circle"></i><span>Reminders</span>
+          </a>
+        </li>
+      </ul>
+    </li>
+
+    <!-- Payments Dropdown -->
+    <li class="nav-item">
+      <a class="nav-link collapsed" data-bs-target="#payments-nav" data-bs-toggle="collapse" href="#">
+        <i class="bi bi-credit-card"></i>
+        <span>Payments</span>
+        <i class="bi bi-chevron-down ms-auto"></i>
+      </a>
+      <ul id="payments-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
+        <li>
+          <a href="/package">
+            <i class="bi bi-circle"></i><span>Package</span>
+          </a>
+        </li>
+        <li>
+          <a href="/history">
+            <i class="bi bi-circle"></i><span>Payment History</span>
+          </a>
+        </li>
+      </ul>
+    </li>
+
+    <!-- Reports -->
+    <li class="nav-item">
+      <a class="nav-link" href="/reports">
+        <i class="bi bi-bar-chart-line"></i>
+        <span>Generate Reports</span>
+      </a>
+    </li>
+
+  </ul>
+</aside>
+
+<!-- the main content start -->
+<main id="main" class="main">
+
+    <div class="pagetitle">
+  <h1>Register Family Member</h1>
+</div>
+
+<section class="section">
+  <div class="row">
+    <div class="col-lg-12">
+
+      <div class="card">
+        <div class="card-body">
+
+          <h5 class="card-title">Add New Family Member</h5>
+
+            <form class="row g-3">
+
+            <!-- Required Notice -->
+            <div class="col-12">
+                <p class="text-muted">
+                Fields marked with <span class="required">*</span> are compulsory.
+                </p>
+            </div>
+
+            <!-- Personal Information -->
+            <div class="col-12">
+                <h6 class="fw-bold text-primary">Personal Information</h6>
+                <hr>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label">
+                First Name <span class="required">*</span>
+                </label>
+                <input type="text" class="form-control" required>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label">
+                Middle Name
+                </label>
+                <input type="text" class="form-control">
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label">
+                Last Name <span class="required">*</span>
+                </label>
+                <input type="text" class="form-control" required>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label">
+                Gender <span class="required">*</span>
+                </label>
+                <select class="form-select" required>
+                <option value="">Select Gender</option>
+                <option>Male</option>
+                <option>Female</option>
+                </select>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label">
+                Date of Birth <span class="required">*</span>
+                </label>
+                <input type="date" class="form-control" required>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label">
+                Marital Status
+                </label>
+                <select class="form-select">
+                <option value="">Select Status</option>
+                <option>Single</option>
+                <option>Married</option>
+                <option>Widowed</option>
+                <option>Divorced</option>
+                </select>
+            </div>
+
+            <!-- Relationship -->
+            <div class="col-12 mt-4">
+                <h6 class="fw-bold text-primary">Family Relationship</h6>
+                <hr>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label">
+                Relationship to Head of Family <span class="required">*</span>
+                </label>
+                <select class="form-select" required>
+                <option value="">Select Relationship</option>
+                <option>Spouse</option>
+                <option>Child</option>
+                <option>Grandchild</option>
+                <option>Brother / Sister</option>
+                <option>Uncle / Aunt</option>
+                <option>Cousin</option>
+                <option>Other Relative</option>
+                </select>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label">
+                Branch Type <span class="required">*</span>
+                </label>
+                <select class="form-select" required>
+                <option value="">Select Branch Type</option>
+                <option value="origin">Original Family</option>
+                <option value="new_branch">New Family Branch</option>
+                </select>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label">
+                Role in Family <span class="required">*</span>
+                </label>
+                <select class="form-select" required>
+                <option value="">Select Role</option>
+                <option>Family Member</option>
+                <option>Future Head of Family</option>
+                <option>Dependent</option>
+                </select>
+            </div>
+
+            <!-- Contact Information -->
+            <div class="col-12 mt-4">
+                <h6 class="fw-bold text-primary">Contact Information</h6>
+                <hr>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label">
+                Phone Number <span class="required">*</span>
+                </label>
+                <input type="text" class="form-control" required>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label">
+                Email Address
+                </label>
+                <input type="email" class="form-control">
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label">
+                Residential Address <span class="required">*</span>
+                </label>
+                <input type="text" class="form-control" required>
+            </div>
+
+            <!-- System Logic Notice -->
+            <div class="col-12 mt-4">
+                <div class="alert alert-info">
+                <strong>System Logic:</strong><br>
+                • Members under 18 years are registered as Dependents (No billing).<br>
+                • Members 18+ years are counted as Adult Members (Included in billing).<br>
+                • If a member starts a new branch, they will become a new Head of Family.
+                </div>
+            </div>
+
+            <!-- Submit -->
+            <div class="col-12 text-end mt-3">
+                <button type="reset" class="btn btn-secondary">Cancel</button>
+                <button type="submit" class="btn btn-primary">Register Member</button>
+            </div>
+
+            </form>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+</main>
+  <!-- ======= Footer ======= -->
+    <footer id="footer" class="footer">
+    <div class="copyright">
+        &copy; Copyright <strong><span>Family Genealogy System</span></strong>. All Rights Reserved
+    </div>
+    <div class="credits">
+        Developed by <strong>Maulid Mwalimu</strong>
+    </div>
+    </footer>
+    <!-- End Footer -->
+
+  <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+
+  <!-- Vendor JS Files -->
+  <script src="/assets/vendor/apexcharts/apexcharts.min.js"></script>
+  <script src="/assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="/assets/vendor/chart.js/chart.umd.js"></script>
+  <script src="/assets/vendor/echarts/echarts.min.js"></script>
+  <script src="/assets/vendor/quill/quill.js"></script>
+  <script src="/assets/vendor/simple-datatables/simple-datatables.js"></script>
+  <script src="/assets/vendor/tinymce/tinymce.min.js"></script>
+  <script src="/assets/vendor/php-email-form/validate.js"></script>
+
+  <!-- Main JS File -->
+  <script src="/assets/js/main.js"></script>
+
+</body>
+
+</html>

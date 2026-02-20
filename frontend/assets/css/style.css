@@ -1250,3 +1250,9 @@ h6 {
     font-size: 12px;
   }
 }
+
+.required {
+    color: red;
+    font-weight: bold;
+    margin-left: 3px;
+  }
