@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
-  <title>Register Family Members</title>
+  <title>Meeting Lists</title>
   <meta content="Family Admin Panel for managing family genealogy records" name="description">
   <meta content="family, genealogy, admin, lineage" name="keywords">
 
@@ -24,6 +24,8 @@
   <link href="/assets/vendor/quill/quill.bubble.css" rel="stylesheet">
   <link href="/assets/vendor/remixicon/remixicon.css" rel="stylesheet">
   <link href="/assets/vendor/simple-datatables/style.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
 
   <!-- Main CSS File -->
   <link href="assets/css/style.css" rel="stylesheet">
@@ -196,7 +198,7 @@
           </a>
         </li>
         <li>
-          <a href="/payment_history">
+          <a href="/history">
             <i class="bi bi-circle"></i><span>Payment History</span>
           </a>
         </li>
@@ -216,179 +218,81 @@
 
 <!-- the main content start -->
 <main id="main" class="main">
-
     <div class="pagetitle">
-  <h1>Register Family Member</h1>
+  <h1>Meeting List</h1>
 </div>
 
 <section class="section">
-  <div class="row">
-    <div class="col-lg-12">
+  <div class="card">
+    <div class="card-body">
 
-      <div class="card">
-        <div class="card-body">
+      <h5 class="card-title">Scheduled Meetings</h5>
 
-          <h5 class="card-title">Add New Family Member</h5>
+      <table id="meetingTable" class="table datatable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Title</th>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Type</th>
+            <th>Participants</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
 
-            <form class="row g-3">
+          <!-- Example Data -->
+          <tr>
+            <td>1</td>
+            <td>Annual Family Meeting</td>
+            <td>2026-03-15</td>
+            <td>10:00 AM - 12:00 PM</td>
+            <td>Online</td>
+            <td>15</td>
+            <td>
+              <span class="badge bg-warning">Upcoming</span>
+            </td>
+            <td>
+              <button class="btn btn-sm btn-info">View</button>
+              <button class="btn btn-sm btn-success">Join</button>
+              <button class="btn btn-sm btn-danger">Cancel</button>
+            </td>
+          </tr>
 
-            <!-- Required Notice -->
-            <div class="col-12">
-                <p class="text-muted">
-                Fields marked with <span class="required">*</span> are compulsory.
-                </p>
-            </div>
+          <tr>
+            <td>2</td>
+            <td>Branch B Planning</td>
+            <td>2026-02-01</td>
+            <td>2:00 PM - 3:00 PM</td>
+            <td>Physical</td>
+            <td>8</td>
+            <td>
+              <span class="badge bg-secondary">Completed</span>
+            </td>
+            <td>
+              <button class="btn btn-sm btn-info">View</button>
+            </td>
+          </tr>
 
-            <!-- Personal Information -->
-            <div class="col-12">
-                <h6 class="fw-bold text-primary">Personal Information</h6>
-                <hr>
-            </div>
+          <tr>
+            <td>3</td>
+            <td>Emergency Discussion</td>
+            <td>2026-02-20</td>
+            <td>6:00 PM - 7:00 PM</td>
+            <td>Online</td>
+            <td>5</td>
+            <td>
+              <span class="badge bg-danger">Cancelled</span>
+            </td>
+            <td>
+              <button class="btn btn-sm btn-info">View</button>
+            </td>
+          </tr>
 
-            <div class="col-md-4">
-                <label class="form-label">
-                First Name <span class="required">*</span>
-                </label>
-                <input type="text" class="form-control" required>
-            </div>
-
-            <div class="col-md-4">
-                <label class="form-label">
-                Middle Name
-                </label>
-                <input type="text" class="form-control">
-            </div>
-
-            <div class="col-md-4">
-                <label class="form-label">
-                Last Name <span class="required">*</span>
-                </label>
-                <input type="text" class="form-control" required>
-            </div>
-
-            <div class="col-md-4">
-                <label class="form-label">
-                Gender <span class="required">*</span>
-                </label>
-                <select class="form-select" required>
-                <option value="">Select Gender</option>
-                <option>Male</option>
-                <option>Female</option>
-                </select>
-            </div>
-
-            <div class="col-md-4">
-                <label class="form-label">
-                Date of Birth <span class="required">*</span>
-                </label>
-                <input type="date" class="form-control" required>
-            </div>
-
-            <div class="col-md-4">
-                <label class="form-label">
-                Marital Status
-                </label>
-                <select class="form-select">
-                <option value="">Select Status</option>
-                <option>Single</option>
-                <option>Married</option>
-                <option>Widowed</option>
-                <option>Divorced</option>
-                </select>
-            </div>
-
-            <!-- Relationship -->
-            <div class="col-12 mt-4">
-                <h6 class="fw-bold text-primary">Family Relationship</h6>
-                <hr>
-            </div>
-
-            <div class="col-md-4">
-                <label class="form-label">
-                Relationship to Head of Family <span class="required">*</span>
-                </label>
-                <select class="form-select" required>
-                <option value="">Select Relationship</option>
-                <option>Spouse</option>
-                <option>Child</option>
-                <option>Grandchild</option>
-                <option>Brother / Sister</option>
-                <option>Uncle / Aunt</option>
-                <option>Cousin</option>
-                <option>Other Relative</option>
-                </select>
-            </div>
-
-            <div class="col-md-4">
-                <label class="form-label">
-                Branch Type <span class="required">*</span>
-                </label>
-                <select class="form-select" required>
-                <option value="">Select Branch Type</option>
-                <option value="origin">Original Family</option>
-                <option value="new_branch">New Family Branch</option>
-                </select>
-            </div>
-
-            <div class="col-md-4">
-                <label class="form-label">
-                Role in Family <span class="required">*</span>
-                </label>
-                <select class="form-select" required>
-                <option value="">Select Role</option>
-                <option>Family Member</option>
-                <option>Future Head of Family</option>
-                <option>Dependent</option>
-                </select>
-            </div>
-
-            <!-- Contact Information -->
-            <div class="col-12 mt-4">
-                <h6 class="fw-bold text-primary">Contact Information</h6>
-                <hr>
-            </div>
-
-            <div class="col-md-4">
-                <label class="form-label">
-                Phone Number <span class="required">*</span>
-                </label>
-                <input type="text" class="form-control" required>
-            </div>
-
-            <div class="col-md-4">
-                <label class="form-label">
-                Email Address
-                </label>
-                <input type="email" class="form-control">
-            </div>
-
-            <div class="col-md-4">
-                <label class="form-label">
-                Residential Address <span class="required">*</span>
-                </label>
-                <input type="text" class="form-control" required>
-            </div>
-
-            <!-- System Logic Notice -->
-            <div class="col-12 mt-4">
-                <div class="alert alert-info">
-                <strong>System Logic:</strong><br>
-                • Members under 18 years are registered as Dependents (No billing).<br>
-                • Members 18+ years are counted as Adult Members (Included in billing).<br>
-                • If a member starts a new branch, they will become a new Head of Family.
-                </div>
-            </div>
-
-            <!-- Submit -->
-            <div class="col-12 text-end mt-3">
-                <button type="reset" class="btn btn-secondary">Cancel</button>
-                <button type="submit" class="btn btn-primary">Register Member</button>
-            </div>
-
-            </form>
-
-        </div>
-      </div>
+        </tbody>
+      </table>
 
     </div>
   </div>
@@ -408,18 +312,43 @@
   <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
 
   <!-- Vendor JS Files -->
-  <script src="/assets/vendor/apexcharts/apexcharts.min.js"></script>
-  <script src="/assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-  <script src="/assets/vendor/chart.js/chart.umd.js"></script>
-  <script src="/assets/vendor/echarts/echarts.min.js"></script>
-  <script src="/assets/vendor/quill/quill.js"></script>
-  <script src="/assets/vendor/simple-datatables/simple-datatables.js"></script>
-  <script src="/assets/vendor/tinymce/tinymce.min.js"></script>
-  <script src="/assets/vendor/php-email-form/validate.js"></script>
+<script src="/assets/vendor/apexcharts/apexcharts.min.js"></script>
+<script src="/assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="/assets/vendor/chart.js/chart.umd.js"></script>
+<script src="/assets/vendor/echarts/echarts.min.js"></script>
+<script src="/assets/vendor/quill/quill.js"></script>
+<script src="/assets/vendor/simple-datatables/simple-datatables.js"></script>
+<script src="/assets/vendor/tinymce/tinymce.min.js"></script>
+<script src="/assets/vendor/php-email-form/validate.js"></script>
 
-  <!-- Main JS File -->
-  <script src="/assets/js/main.js"></script>
+<!-- Initialize DataTable -->
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const familyTable = document.querySelector("#familyTable");
+    if (familyTable) {
+      new simpleDatatables.DataTable(familyTable, {
+        searchable: true,
+        fixedHeight: false,
+        perPage: 5,
+        perPageSelect: [5, 10, 25, 50]
+      });
+    }
+  });
+</script>
 
+<!-- Main JS File -->
+<script src="/assets/js/main.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const meetingTable = document.querySelector("#meetingTable");
+    if (meetingTable) {
+      new simpleDatatables.DataTable(meetingTable, {
+        perPage: 5,
+        searchable: true
+      });
+    }
+  });
+</script>
 </body>
 
 </html>

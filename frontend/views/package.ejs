@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
-  <title>Register Family Members</title>
+  <title>Package</title>
   <meta content="Family Admin Panel for managing family genealogy records" name="description">
   <meta content="family, genealogy, admin, lineage" name="keywords">
 
@@ -216,182 +216,129 @@
 
 <!-- the main content start -->
 <main id="main" class="main">
-
-    <div class="pagetitle">
-  <h1>Register Family Member</h1>
+<div class="pagetitle">
+  <h1>Family Package</h1>
 </div>
 
 <section class="section">
-  <div class="row">
-    <div class="col-lg-12">
 
-      <div class="card">
-        <div class="card-body">
+  <!-- Current Package -->
+  <div class="card border-primary">
+    <div class="card-body">
 
-          <h5 class="card-title">Add New Family Member</h5>
+      <h5 class="card-title text-primary">Current Active Package</h5>
 
-            <form class="row g-3">
+      <div class="row align-items-center">
 
-            <!-- Required Notice -->
-            <div class="col-12">
-                <p class="text-muted">
-                Fields marked with <span class="required">*</span> are compulsory.
-                </p>
-            </div>
+        <div class="col-md-8">
+          <h4>Standard Family Plan</h4>
+          <p class="text-muted">
+            Suitable for medium-sized families.
+          </p>
 
-            <!-- Personal Information -->
-            <div class="col-12">
-                <h6 class="fw-bold text-primary">Personal Information</h6>
-                <hr>
-            </div>
+          <ul>
+            <li>✔ Up to 50 Members</li>
+            <li>✔ Family Tree Management</li>
+            <li>✔ Meeting Scheduling</li>
+            <li>✔ SMS & Email Reminders</li>
+            <li>✔ Basic Reports</li>
+          </ul>
 
-            <div class="col-md-4">
-                <label class="form-label">
-                First Name <span class="required">*</span>
-                </label>
-                <input type="text" class="form-control" required>
-            </div>
-
-            <div class="col-md-4">
-                <label class="form-label">
-                Middle Name
-                </label>
-                <input type="text" class="form-control">
-            </div>
-
-            <div class="col-md-4">
-                <label class="form-label">
-                Last Name <span class="required">*</span>
-                </label>
-                <input type="text" class="form-control" required>
-            </div>
-
-            <div class="col-md-4">
-                <label class="form-label">
-                Gender <span class="required">*</span>
-                </label>
-                <select class="form-select" required>
-                <option value="">Select Gender</option>
-                <option>Male</option>
-                <option>Female</option>
-                </select>
-            </div>
-
-            <div class="col-md-4">
-                <label class="form-label">
-                Date of Birth <span class="required">*</span>
-                </label>
-                <input type="date" class="form-control" required>
-            </div>
-
-            <div class="col-md-4">
-                <label class="form-label">
-                Marital Status
-                </label>
-                <select class="form-select">
-                <option value="">Select Status</option>
-                <option>Single</option>
-                <option>Married</option>
-                <option>Widowed</option>
-                <option>Divorced</option>
-                </select>
-            </div>
-
-            <!-- Relationship -->
-            <div class="col-12 mt-4">
-                <h6 class="fw-bold text-primary">Family Relationship</h6>
-                <hr>
-            </div>
-
-            <div class="col-md-4">
-                <label class="form-label">
-                Relationship to Head of Family <span class="required">*</span>
-                </label>
-                <select class="form-select" required>
-                <option value="">Select Relationship</option>
-                <option>Spouse</option>
-                <option>Child</option>
-                <option>Grandchild</option>
-                <option>Brother / Sister</option>
-                <option>Uncle / Aunt</option>
-                <option>Cousin</option>
-                <option>Other Relative</option>
-                </select>
-            </div>
-
-            <div class="col-md-4">
-                <label class="form-label">
-                Branch Type <span class="required">*</span>
-                </label>
-                <select class="form-select" required>
-                <option value="">Select Branch Type</option>
-                <option value="origin">Original Family</option>
-                <option value="new_branch">New Family Branch</option>
-                </select>
-            </div>
-
-            <div class="col-md-4">
-                <label class="form-label">
-                Role in Family <span class="required">*</span>
-                </label>
-                <select class="form-select" required>
-                <option value="">Select Role</option>
-                <option>Family Member</option>
-                <option>Future Head of Family</option>
-                <option>Dependent</option>
-                </select>
-            </div>
-
-            <!-- Contact Information -->
-            <div class="col-12 mt-4">
-                <h6 class="fw-bold text-primary">Contact Information</h6>
-                <hr>
-            </div>
-
-            <div class="col-md-4">
-                <label class="form-label">
-                Phone Number <span class="required">*</span>
-                </label>
-                <input type="text" class="form-control" required>
-            </div>
-
-            <div class="col-md-4">
-                <label class="form-label">
-                Email Address
-                </label>
-                <input type="email" class="form-control">
-            </div>
-
-            <div class="col-md-4">
-                <label class="form-label">
-                Residential Address <span class="required">*</span>
-                </label>
-                <input type="text" class="form-control" required>
-            </div>
-
-            <!-- System Logic Notice -->
-            <div class="col-12 mt-4">
-                <div class="alert alert-info">
-                <strong>System Logic:</strong><br>
-                • Members under 18 years are registered as Dependents (No billing).<br>
-                • Members 18+ years are counted as Adult Members (Included in billing).<br>
-                • If a member starts a new branch, they will become a new Head of Family.
-                </div>
-            </div>
-
-            <!-- Submit -->
-            <div class="col-12 text-end mt-3">
-                <button type="reset" class="btn btn-secondary">Cancel</button>
-                <button type="submit" class="btn btn-primary">Register Member</button>
-            </div>
-
-            </form>
-
+          <p>
+            <strong>Billing Cycle:</strong> Monthly <br>
+            <strong>Next Renewal:</strong> 15 March 2026
+          </p>
         </div>
+
+        <div class="col-md-4 text-center">
+          <h2 class="text-primary">$29</h2>
+          <p class="text-muted">/ month</p>
+          <span class="badge bg-success">Active</span>
+        </div>
+
       </div>
 
     </div>
   </div>
+
+  <!-- Other Packages -->
+  <div class="row mt-4">
+
+    <!-- Basic Plan -->
+    <div class="col-lg-4">
+      <div class="card h-100">
+        <div class="card-body text-center">
+
+          <h5 class="card-title">Basic Plan</h5>
+          <h3>$10</h3>
+          <p class="text-muted">/ month</p>
+
+          <ul class="list-unstyled mt-3 mb-4">
+            <li>Up to 20 Members</li>
+            <li>Family Tree</li>
+            <li>Meeting Scheduling</li>
+            <li>No SMS Reminder</li>
+          </ul>
+
+          <button class="btn btn-outline-primary">
+            Downgrade
+          </button>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Premium Plan -->
+    <div class="col-lg-4">
+      <div class="card h-100 border-warning">
+        <div class="card-body text-center">
+
+          <h5 class="card-title text-warning">Premium Plan</h5>
+          <h3>$59</h3>
+          <p class="text-muted">/ month</p>
+
+          <ul class="list-unstyled mt-3 mb-4">
+            <li>Unlimited Members</li>
+            <li>Advanced Family Tree</li>
+            <li>Meetings + Video</li>
+            <li>Unlimited SMS & Email</li>
+            <li>Analytics Dashboard</li>
+          </ul>
+
+          <button class="btn btn-warning">
+            Upgrade
+          </button>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Enterprise Plan -->
+    <div class="col-lg-4">
+      <div class="card h-100">
+        <div class="card-body text-center">
+
+          <h5 class="card-title">Enterprise Plan</h5>
+          <h3>$120</h3>
+          <p class="text-muted">/ month</p>
+
+          <ul class="list-unstyled mt-3 mb-4">
+            <li>Everything in Premium</li>
+            <li>Dedicated Support</li>
+            <li>Custom Reports</li>
+            <li>API Access</li>
+          </ul>
+
+          <button class="btn btn-dark">
+            Contact Admin
+          </button>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+
 </section>
 </main>
   <!-- ======= Footer ======= -->

@@ -97,4 +97,43 @@ app.get('/family_lists', (req, res) => {
   res.render('family_lists'); // HOF
 });
 
+// family tree
+app.get('/family_tree', (req, res) => {
+  res.render('family_tree'); // HOF
+});
+
+// shedule
+app.get('/schedule', (req, res) => {
+  res.render('schedule'); // HOF
+});
+
+// Meeting List
+app.get('/meeting_list', (req, res) => {
+  res.render('meeting_list'); // HOF
+});
+
+// attend meeting
+app.get('/attend_meeting', (req, res) => {
+  res.render('attend_meeting'); // HOF
+});
+
+// reminder
+app.get('/reminder', (req, res) => {
+  res.render('reminder'); // HOF
+});
+
+// package
+app.get('/package', (req, res) => {
+  res.render('package'); // HOF
+});
+
+// payment history
+app.get('/payment_history', (req, res) => {
+  res.render('payment_history'); // HOF
+});
+
+// family report
+app.get('/family_report', (req, res) => {
+  res.render('family_report'); // HOF
+});
 module.exports = app;
