@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+
+  <title>Dashboard - Head of Family</title>
+  <meta content="Family Admin Panel for managing family genealogy records" name="description">
+  <meta content="family, genealogy, admin, lineage" name="keywords">
+
+  <!-- Favicons -->
+
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.gstatic.com" rel="preconnect">
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Nunito:300,300i,400,400i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
+
+  <!-- Vendor CSS Files -->
+  <link href="/assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+  <link href="/assets/vendor/boxicons/css/boxicons.min.css" rel="stylesheet">
+  <link href="/assets/vendor/quill/quill.snow.css" rel="stylesheet">
+  <link href="/assets/vendor/quill/quill.bubble.css" rel="stylesheet">
+  <link href="/assets/vendor/remixicon/remixicon.css" rel="stylesheet">
+  <link href="/assets/vendor/simple-datatables/style.css" rel="stylesheet">
+
+  <!-- Main CSS File -->
+  <link href="assets/css/style.css" rel="stylesheet">
+  <link href="/assets/css/dark.css" rel="stylesheet">
+</head>
+
+<body>
+
+  <!-- ======= Header ======= -->
+  <header id="header" class="header fixed-top d-flex align-items-center">
+
+    <div class="d-flex align-items-center justify-content-between">
+      <a href="/" class="logo d-flex align-items-center">
+        <img src="" alt="">
+        <span class="d-none d-lg-block">Family Genealogy</span>
+      </a>
+      <i class="bi bi-list toggle-sidebar-btn"></i>
+    </div><!-- End Logo -->
+
+    <nav class="header-nav ms-auto">
+      <ul class="d-flex align-items-center">
+
+        <!-- Notifications -->
+        <li class="nav-item dropdown">
+          <a class="nav-link nav-icon" href="#" data-bs-toggle="dropdown">
+            <i class="bi bi-bell"></i>
+            <span class="badge bg-primary badge-number">0</span>
+          </a><!-- End Notification Icon -->
+
+          <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow notifications">
+            <li class="dropdown-header">
+              You have 0 new notifications
+              <a href="#">
+                <span class="badge rounded-pill bg-primary p-2 ms-2">View all</span>
+              </a>
+            </li>
+
+            <li><hr class="dropdown-divider"></li>
+
+            <li class="notification-item text-center">
+              <div>No notifications available</div>
+            </li>
+
+            <li><hr class="dropdown-divider"></li>
+
+            <li class="dropdown-footer">
+              <a href="#">Show all notifications</a>
+            </li>
+          </ul>
+        </li><!-- End Notifications -->
+
+        <!-- Profile -->
+        <li class="nav-item dropdown pe-3">
+          <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
+            <img src="assets/img/3.png" alt="Profile" class="rounded-circle">
+            <span class="d-none d-md-block dropdown-toggle ps-2">Future Admin</span>
+          </a><!-- End Profile Image Icon -->
+
+          <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
+            <li class="dropdown-header">
+              <h6>Family Admin</h6>
+              <span><b>Family Account</b></span>
+            </li>
+
+            <li><hr class="dropdown-divider"></li>
+
+            <li>
+              <a class="dropdown-item d-flex align-items-center" href="/family_admin/profile">
+                <i class="bi bi-person"></i>
+                <span>My Profile</span>
+              </a>
+            </li>
+
+            <li><hr class="dropdown-divider"></li>
+
+            <li>
+              <a class="dropdown-item d-flex align-items-center" href="/logout">
+                <i class="bi bi-box-arrow-right"></i>
+                <span>Sign Out</span>
+              </a>
+            </li>
+          </ul><!-- End Profile Dropdown Items -->
+        </li><!-- End Profile Nav -->
+
+      </ul>
+    </nav><!-- End Icons Navigation -->
+
+  </header><!-- End Header -->
+
+<!-- ======= Sidebar (Future Head) ======= -->
+<aside id="sidebar" class="sidebar">
+  <ul class="sidebar-nav" id="sidebar-nav">
+
+    <!-- Dashboard -->
+    <li class="nav-item">
+      <a class="nav-link" href="/future_head_dashboard">
+        <i class="bi bi-grid"></i>
+        <span>Dashboard</span>
+      </a>
+    </li>
+
+    <!-- Family Overview -->
+    <li class="nav-item">
+      <a class="nav-link collapsed" data-bs-target="#family-nav" data-bs-toggle="collapse" href="#">
+        <i class="bi bi-people"></i>
+        <span>Family Overview</span>
+        <i class="bi bi-chevron-down ms-auto"></i>
+      </a>
+      <ul id="family-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
+        <li>
+          <a href="/view">
+            <i class="bi bi-circle"></i>
+            <span>View Members</span>
+          </a>
+        </li>
+        <li>
+          <a href="/family_tree">
+            <i class="bi bi-circle"></i>
+            <span>Family Tree</span>
+          </a>
+        </li>
+      </ul>
+    </li>
+
+    <!-- Meetings (View Only) -->
+    <li class="nav-item">
+      <a class="nav-link collapsed" data-bs-target="#meeting-nav" data-bs-toggle="collapse" href="#">
+        <i class="bi bi-calendar-event"></i>
+        <span>Meetings</span>
+        <i class="bi bi-chevron-down ms-auto"></i>
+      </a>
+      <ul id="meeting-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
+        <li>
+          <a href="/meeting_list">
+            <i class="bi bi-circle"></i>
+            <span>Meeting List</span>
+          </a>
+        </li>
+        <li>
+          <a href="/Attend_meeting">
+            <i class="bi bi-circle"></i>
+            <span>Attend Meeting</span>
+          </a>
+        </li>
+      </ul>
+    </li>
+
+    <!-- Financial Transparency -->
+    <li class="nav-item">
+      <a class="nav-link collapsed" data-bs-target="#finance-nav" data-bs-toggle="collapse" href="#">
+        <i class="bi bi-cash-stack"></i>
+        <span>Family Finances</span>
+        <i class="bi bi-chevron-down ms-auto"></i>
+      </a>
+      <ul id="finance-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
+        <li>
+          <a href="/package">
+            <i class="bi bi-circle"></i>
+            <span>View Package</span>
+          </a>
+        </li>
+        <li>
+          <a href="/payment_history">
+            <i class="bi bi-circle"></i>
+            <span>Payment History</span>
+          </a>
+        </li>
+      </ul>
+    </li>
+
+    <!-- Leadership Preparation -->
+    <li class="nav-item">
+      <a class="nav-link" href="/leadership_notes">
+        <i class="bi bi-journal-text"></i>
+        <span>Leadership Notes</span>
+      </a>
+    </li>
+
+    <!-- Reports (View Only) -->
+    <li class="nav-item">
+      <a class="nav-link" href="/family_report">
+        <i class="bi bi-bar-chart-line"></i>
+        <span>View Reports</span>
+      </a>
+    </li>
+
+  </ul>
+</aside>
+
+<!-- ======= Main Content (Future Head Dashboard) ======= -->
+<main id="main" class="main">
+
+  <div class="pagetitle">
+    <h1>Future Head Dashboard</h1>
+    <nav>
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/future_head_dashboard">Home</a></li>
+        <li class="breadcrumb-item active">Dashboard</li>
+      </ol>
+    </nav>
+  </div>
+
+  <section class="section dashboard">
+    <div class="row">
+
+      <!-- Left side columns -->
+      <div class="col-lg-8">
+        <div class="row">
+
+          <!-- Family Members Overview -->
+          <div class="col-xxl-4 col-md-6">
+            <a href="/family_lists" class="text-decoration-none">
+              <div class="card info-card members-card">
+                <div class="card-body">
+                  <h5 class="card-title">Family Members</h5>
+                  <div class="d-flex align-items-center">
+                    <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                      <i class="bi bi-people"></i>
+                    </div>
+                    <div class="ps-3">
+                      <h6>25</h6>
+                      <span class="text-muted small">Total Registered Members</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </a>
+          </div>
+
+          <!-- Financial Summary (View Only) -->
+          <div class="col-xxl-4 col-md-6">
+            <a href="/payment_history" class="text-decoration-none">
+              <div class="card info-card billing-card">
+                <div class="card-body">
+                  <h5 class="card-title">Financial Summary</h5>
+                  <div class="d-flex align-items-center">
+                    <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                      <i class="bi bi-cash-stack fs-4"></i>
+                    </div>
+                    <div class="ps-3">
+                      <h6>Package</h6>
+                      <span class="text-muted small">View Payment Records</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </a>
+          </div>
+
+          <!-- Upcoming Meetings -->
+          <div class="col-xxl-4 col-md-6">
+            <a href="/meeting_list" class="text-decoration-none">
+              <div class="card info-card meetings-card">
+                <div class="card-body">
+                  <h5 class="card-title">Upcoming Meetings</h5>
+                  <div class="d-flex align-items-center">
+                    <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                      <i class="bi bi-calendar-event"></i>
+                    </div>
+                    <div class="ps-3">
+                      <h6>3</h6>
+                      <span class="text-info small">Scheduled Meetings</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </a>
+          </div>
+
+          <!-- Family Tree -->
+          <div class="col-xxl-4 col-md-6">
+            <a href="/family_tree" class="text-decoration-none">
+              <div class="card info-card family-tree-card">
+                <div class="card-body">
+                  <h5 class="card-title">Family Tree</h5>
+                  <div class="d-flex align-items-center">
+                    <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                      <i class="bi bi-diagram-3 fs-4"></i>
+                    </div>
+                    <div class="ps-3">
+                      <span class="text-black small">
+                        View family lineage & structure
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </a>
+          </div>
+
+          <!-- Age Distribution Chart -->
+          <div class="col-12">
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title">Family Age Distribution</h5>
+                <canvas id="ageChart" style="max-height: 400px;"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Members Table -->
+          <div class="col-12">
+            <div class="card recent-sales overflow-auto">
+              <div class="card-body">
+                <h5 class="card-title">Family Members & Roles</h5>
+
+                <table class="table table-borderless">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Member Name</th>
+                      <th>Role</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th>1</th>
+                      <td>Maulid Mwalimu</td>
+                      <td>Family Admin</td>
+                      <td><span class="badge bg-info">Active</span></td>
+                    </tr>
+                    <tr>
+                      <th>2</th>
+                      <td>Salum Omary</td>
+                      <td>Member</td>
+                      <td><span class="badge bg-warning">Pending</span></td>
+                    </tr>
+                    <tr>
+                      <th>3</th>
+                      <td>Omary Salum</td>
+                      <td>Future Head</td>
+                      <td><span class="badge bg-info">Active</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Right side columns -->
+      <div class="col-lg-4">
+
+        <!-- Recent Activities -->
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">Recent Family Activities</h5>
+            <div class="activity">
+
+              <div class="activity-item d-flex">
+                <div class="activite-label">2h ago</div>
+                <i class="bi bi-circle-fill activity-badge text-primary"></i>
+                <div class="activity-content">
+                  New member <strong>Omary Ambari</strong> joined the family
+                </div>
+              </div>
+
+              <div class="activity-item d-flex">
+                <div class="activite-label">In 10 days</div>
+                <i class="bi bi-circle-fill activity-badge text-warning"></i>
+                <div class="activity-content">
+                  Upcoming family meeting scheduled
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- Future Head Information -->
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">Your Role as Future Head</h5>
+            <p>
+              Welcome! As the <strong>Future Head of Family</strong>, you are entrusted with 
+              understanding the structure, activities, and financial health of your family.
+            </p>
+            <ul class="small">
+              <li>Monitor family members and roles</li>
+              <li>Review meeting history and participation</li>
+              <li>Observe financial records and package status</li>
+              <li>Study reports to prepare for future leadership</li>
+            </ul>
+            <p class="mt-2">
+              <strong>Note:</strong> Management actions remain under the Family Admin. 
+              Your access is focused on transparency and leadership preparation.
+            </p>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<!-- ======= Footer ======= -->
+    <footer id="footer" class="footer">
+    <div class="copyright">
+        &copy; Copyright <strong><span>Family Genealogy System</span></strong>. All Rights Reserved
+    </div>
+    <div class="credits">
+        Developed by <strong>Maulid Mwalimu</strong>
+    </div>
+    </footer>
+    <!-- End Footer -->
+
+  <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+
+  <!-- Vendor JS Files -->
+  <script src="/assets/vendor/apexcharts/apexcharts.min.js"></script>
+  <script src="/assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="/assets/vendor/chart.js/chart.umd.js"></script>
+  <script src="/assets/vendor/echarts/echarts.min.js"></script>
+  <script src="/assets/vendor/quill/quill.js"></script>
+  <script src="/assets/vendor/simple-datatables/simple-datatables.js"></script>
+  <script src="/assets/vendor/tinymce/tinymce.min.js"></script>
+  <script src="/assets/vendor/php-email-form/validate.js"></script>
+
+  <!-- Main JS File -->
+  <script src="/assets/js/main.js"></script>
+
+</body>
+
+</html>

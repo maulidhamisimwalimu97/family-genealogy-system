@@ -136,4 +136,30 @@ app.get('/payment_history', (req, res) => {
 app.get('/family_report', (req, res) => {
   res.render('family_report'); // HOF
 });
+
+// future head of family
+
+// head_of_family
+app.get('/head_of_family', (req, res) => {
+  res.render('head_of_family'); // HOF
+});
+
+// head_of_family
+app.get('/view', (req, res) => {
+  res.render('view'); // HOF
+});
+
+// member
+
+// member
+app.get('/member', (req, res) => {
+  res.render('member'); // HOF
+});
+
+// Dependent
+
+// dependent
+app.get('/dependent', (req, res) => {
+  res.render('dependent'); // HOF
+});
 module.exports = app;
