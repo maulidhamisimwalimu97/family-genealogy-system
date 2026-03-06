@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
-  <title>Select Future Admin</title>
+  <title>Direct Messages</title>
   <meta content="Family Admin Panel for managing family genealogy records" name="description">
   <meta content="family, genealogy, admin, lineage" name="keywords">
 
@@ -24,8 +24,6 @@
   <link href="/assets/vendor/quill/quill.bubble.css" rel="stylesheet">
   <link href="/assets/vendor/remixicon/remixicon.css" rel="stylesheet">
   <link href="/assets/vendor/simple-datatables/style.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
-  <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
 
   <!-- Main CSS File -->
   <link href="assets/css/style.css" rel="stylesheet">
@@ -189,7 +187,7 @@
       </ul>
     </li>
 
-        <!-- Chats -->
+    <!-- Chats -->
     <li class="nav-item">
       <a class="nav-link collapsed" data-bs-target="#chat-nav" data-bs-toggle="collapse" href="#">
         <i class="bi bi-chat-dots"></i>
@@ -282,101 +280,145 @@
 <main id="main" class="main">
 
 <div class="pagetitle">
-  <h1>Select Future Head of Family</h1>
+  <h1>Direct Messages</h1>
 </div>
 
 <section class="section">
 
-<div class="row">
-<div class="col-lg-12">
-
 <div class="card">
-<div class="card-body">
+<div class="card-body p-0">
 
-<h5 class="card-title">Eligible Members (18+ Years)</h5>
+<div class="row g-0">
 
-<div class="alert alert-info">
-Only adult members (18 years and above) can be selected as a <b>Future Head of Family</b>.
+<!-- CONTACT LIST -->
+<div class="col-lg-4 border-end">
+
+<div class="p-3 border-bottom">
+<input type="text" class="form-control" placeholder="Search member...">
 </div>
 
-<div class="table-responsive">
+<div class="contact-list">
 
-<table class="table table-striped table-hover align-middle">
+<a href="#" class="contact-item active">
+<img src="https://i.pravatar.cc/40?img=5">
+<div>
+<strong>Amina</strong>
+<small class="d-block text-muted">See you at the meeting</small>
+</div>
+<span class="badge bg-primary ms-auto">2</span>
+</a>
 
-<thead class="table-dark">
-<tr>
-<th>Select</th>
-<th>Full Name</th>
-<th>Gender</th>
-<th>Age</th>
-<th>Relationship</th>
-<th>Branch</th>
-</tr>
-</thead>
+<a href="#" class="contact-item">
+<img src="https://i.pravatar.cc/40?img=11">
+<div>
+<strong>John</strong>
+<small class="d-block text-muted">Thanks for the update</small>
+</div>
+</a>
 
-<tbody>
+<a href="#" class="contact-item">
+<img src="https://i.pravatar.cc/40?img=15">
+<div>
+<strong>Fatuma</strong>
+<small class="d-block text-muted">Okay noted</small>
+</div>
+</a>
 
-<tr>
-<td>
-<input type="radio" name="future_head">
-</td>
-<td>John Michael</td>
-<td>Male</td>
-<td>35</td>
-<td>Brother</td>
-<td>Original Family</td>
-</tr>
-
-<tr>
-<td>
-<input type="radio" name="future_head">
-</td>
-<td>Sarah Daniel</td>
-<td>Female</td>
-<td>29</td>
-<td>Sister</td>
-<td>Original Family</td>
-</tr>
-
-<tr>
-<td>
-<input type="radio" name="future_head">
-</td>
-<td>Peter Joseph</td>
-<td>Male</td>
-<td>22</td>
-<td>Son</td>
-<td>New Branch</td>
-</tr>
-
-</tbody>
-
-</table>
+<a href="#" class="contact-item">
+<img src="https://i.pravatar.cc/40?img=21">
+<div>
+<strong>Omary</strong>
+<small class="d-block text-muted">Meeting link please</small>
+</div>
+</a>
 
 </div>
 
-<div class="text-end mt-3">
+</div>
 
-<button class="btn btn-secondary">
-Cancel
+
+<!-- CHAT AREA -->
+<div class="col-lg-8">
+
+<!-- Chat header -->
+<div class="chat-header">
+
+<div class="d-flex align-items-center">
+
+<img src="https://i.pravatar.cc/45?img=5" class="rounded-circle me-2">
+
+<div>
+<strong>Amina</strong><br>
+<small class="text-success">Online</small>
+</div>
+
+</div>
+
+<i class="bi bi-three-dots fs-5"></i>
+
+</div>
+
+
+<!-- Chat messages -->
+<div class="chat-body">
+
+<div class="message received">
+Hello, are you attending today's meeting?
+<span class="time">10:12</span>
+</div>
+
+<div class="message sent">
+Yes I will attend.
+<span class="time">10:14</span>
+</div>
+
+<div class="message received">
+Great 👍
+<span class="time">10:15</span>
+</div>
+
+</div>
+
+
+<!-- message input -->
+<div class="chat-footer">
+
+<form class="d-flex gap-2">
+
+<button class="btn btn-light">
+<i class="bi bi-emoji-smile"></i>
 </button>
+
+<button class="btn btn-light">
+<i class="bi bi-paperclip"></i>
+</button>
+
+<input
+type="text"
+class="form-control"
+placeholder="Type message..."
+>
 
 <button class="btn btn-primary">
-Confirm Future Head
+<i class="bi bi-send"></i>
 </button>
 
+</form>
+
 </div>
 
 </div>
-</div>
 
+</div>
 </div>
 </div>
 
 </section>
 
 </main>
-  <!-- ======= Footer ======= -->
+
+
+ <!-- ======= Footer ======= -->
     <footer id="footer" class="footer">
     <div class="copyright">
         &copy; Copyright <strong><span>Family Genealogy System</span></strong>. All Rights Reserved
@@ -390,32 +432,18 @@ Confirm Future Head
   <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
 
   <!-- Vendor JS Files -->
-<script src="/assets/vendor/apexcharts/apexcharts.min.js"></script>
-<script src="/assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-<script src="/assets/vendor/chart.js/chart.umd.js"></script>
-<script src="/assets/vendor/echarts/echarts.min.js"></script>
-<script src="/assets/vendor/quill/quill.js"></script>
-<script src="/assets/vendor/simple-datatables/simple-datatables.js"></script>
-<script src="/assets/vendor/tinymce/tinymce.min.js"></script>
-<script src="/assets/vendor/php-email-form/validate.js"></script>
+  <script src="/assets/vendor/apexcharts/apexcharts.min.js"></script>
+  <script src="/assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="/assets/vendor/chart.js/chart.umd.js"></script>
+  <script src="/assets/vendor/echarts/echarts.min.js"></script>
+  <script src="/assets/vendor/quill/quill.js"></script>
+  <script src="/assets/vendor/simple-datatables/simple-datatables.js"></script>
+  <script src="/assets/vendor/tinymce/tinymce.min.js"></script>
+  <script src="/assets/vendor/php-email-form/validate.js"></script>
 
-<!-- Initialize DataTable -->
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const familyTable = document.querySelector("#familyTable");
-    if (familyTable) {
-      new simpleDatatables.DataTable(familyTable, {
-        searchable: true,
-        fixedHeight: false,
-        perPage: 5,
-        perPageSelect: [5, 10, 25, 50]
-      });
-    }
-  });
-</script>
+  <!-- Main JS File -->
+  <script src="/assets/js/main.js"></script>
 
-<!-- Main JS File -->
-<script src="/assets/js/main.js"></script>
 </body>
 
 </html>

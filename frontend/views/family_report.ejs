@@ -187,6 +187,63 @@
       </ul>
     </li>
 
+        <!-- Chats -->
+    <li class="nav-item">
+      <a class="nav-link collapsed" data-bs-target="#chat-nav" data-bs-toggle="collapse" href="#">
+        <i class="bi bi-chat-dots"></i>
+        <span>Chats</span>
+        <i class="bi bi-chevron-down ms-auto"></i>
+      </a>
+
+      <ul id="chat-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
+
+        <li>
+          <a href="/chat_list">
+            <i class="bi bi-circle"></i><span>Chat List</span>
+          </a>
+        </li>
+
+        <li>
+          <a href="/family_chat">
+            <i class="bi bi-circle"></i><span>Family Group Chat</span>
+          </a>
+        </li>
+
+        <li>
+          <a href="/direct_messages">
+            <i class="bi bi-circle"></i><span>Direct Messages</span>
+          </a>
+        </li>
+
+      </ul>
+    </li>
+
+    <!-- Family Drive -->
+    <li class="nav-item">
+      <a class="nav-link collapsed" data-bs-target="#drive-nav" data-bs-toggle="collapse" href="#">
+        <i class="bi bi-hdd-stack"></i>
+        <span>Family Drive</span>
+        <i class="bi bi-chevron-down ms-auto"></i>
+      </a>
+
+      <ul id="drive-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
+
+        <li>
+          <a href="/drive_files">
+            <i class="bi bi-circle"></i>
+            <span>My Files</span>
+          </a>
+        </li>
+
+        <li>
+          <a href="/upload_file">
+            <i class="bi bi-circle"></i>
+            <span>Upload File</span>
+          </a>
+        </li>
+      </ul>
+    </li>
+
     <!-- Payments Dropdown -->
     <li class="nav-item">
       <a class="nav-link collapsed" data-bs-target="#payments-nav" data-bs-toggle="collapse" href="#">
@@ -219,232 +276,311 @@
   </ul>
 </aside>
 
-<!-- the main content start -->
+<!-- ======= Main Content ======= -->
 <main id="main" class="main">
-<div class="pagetitle">
+
+<div class="pagetitle d-flex justify-content-between align-items-center">
   <h1>Family System Report</h1>
+
+  <!-- Print Button -->
+  <button onclick="printReport()" class="btn btn-primary">
+    <i class="bi bi-printer"></i> Print Report
+  </button>
 </div>
 
 <section class="section">
-  <div class="row">
 
-    <!-- Stat Cards -->
-    <div class="col-xxl-3 col-md-6">
-      <div class="card info-card">
-        <div class="card-body">
-          <h5 class="card-title">Total Families</h5>
-          <div class="d-flex align-items-center">
-            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center bg-primary text-white">
-              <i class="bi bi-house"></i>
-            </div>
-            <div class="ps-3">
-              <h6>12</h6>
-              <span class="text-muted small">Families Registered</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+<!-- Printable Area -->
+<div id="printArea">
 
-    <div class="col-xxl-3 col-md-6">
-      <div class="card info-card">
-        <div class="card-body">
-          <h5 class="card-title">Total Members</h5>
-          <div class="d-flex align-items-center">
-            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center bg-success text-white">
-              <i class="bi bi-people"></i>
-            </div>
-            <div class="ps-3">
-              <h6>45</h6>
-              <span class="text-muted small">Adults & Dependents</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+<div class="row">
 
-    <div class="col-xxl-3 col-md-6">
-      <div class="card info-card">
-        <div class="card-body">
-          <h5 class="card-title">Payments Collected</h5>
-          <div class="d-flex align-items-center">
-            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center bg-warning text-white">
-              <i class="bi bi-currency-dollar"></i>
-            </div>
-            <div class="ps-3">
-              <h6>$1020</h6>
-              <span class="text-muted small">Total Paid</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+<!-- ===== Stat Cards ===== -->
 
-    <div class="col-xxl-3 col-md-6">
-      <div class="card info-card">
-        <div class="card-body">
-          <h5 class="card-title">Meetings Scheduled</h5>
-          <div class="d-flex align-items-center">
-            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center bg-info text-white">
-              <i class="bi bi-calendar-event"></i>
-            </div>
-            <div class="ps-3">
-              <h6>8</h6>
-              <span class="text-muted small">Upcoming / Completed</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+<div class="col-xxl-3 col-md-6">
+<div class="card info-card">
+<div class="card-body">
 
-    <!-- Charts Section -->
-    <div class="col-12 mt-4">
-      <div class="card">
-        <div class="card-body">
-          <h5 class="card-title">Family Members Age Distribution</h5>
-          <canvas id="ageReportChart" style="max-height: 400px;"></canvas>
-        </div>
-      </div>
-    </div>
+<h5 class="card-title">Total Families</h5>
 
-    <div class="col-12 mt-4">
-      <div class="card">
-        <div class="card-body">
-          <h5 class="card-title">Payment Status Overview</h5>
-          <canvas id="paymentReportChart" style="max-height: 400px;"></canvas>
-        </div>
-      </div>
-    </div>
+<div class="d-flex align-items-center">
 
-    <!-- Detailed Table -->
-    <div class="col-12 mt-4">
-      <div class="card recent-sales overflow-auto">
-        <div class="card-body">
-          <h5 class="card-title">Detailed Family Report</h5>
-          <table id="familyReportTable" class="table table-striped table-bordered dt-responsive nowrap" style="width:100%">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Family Name</th>
-                <th>Members</th>
-                <th>Adults</th>
-                <th>Dependents</th>
-                <th>Total Payment</th>
-                <th>Last Payment</th>
-                <th>Meetings Attended</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>1</td>
-                <td>Mwalimu Family</td>
-                <td>8</td>
-                <td>5</td>
-                <td>3</td>
-                <td>$200</td>
-                <td>2026-01-15</td>
-                <td>2</td>
-              </tr>
-              <tr>
-                <td>2</td>
-                <td>Salum Family</td>
-                <td>5</td>
-                <td>3</td>
-                <td>2</td>
-                <td>$150</td>
-                <td>2026-01-10</td>
-                <td>1</td>
-              </tr>
-              <tr>
-                <td>3</td>
-                <td>Omary Salum</td>
-                <td>7</td>
-                <td>4</td>
-                <td>3</td>
-                <td>$250</td>
-                <td>2026-01-12</td>
-                <td>3</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+<div class="card-icon rounded-circle d-flex align-items-center justify-content-center bg-primary text-white">
+<i class="bi bi-house"></i>
+</div>
 
-  </div>
+<div class="ps-3">
+<h6>12</h6>
+<span class="text-muted small">Families Registered</span>
+</div>
+
+</div>
+</div>
+</div>
+</div>
+
+<div class="col-xxl-3 col-md-6">
+<div class="card info-card">
+<div class="card-body">
+
+<h5 class="card-title">Total Members</h5>
+
+<div class="d-flex align-items-center">
+
+<div class="card-icon rounded-circle d-flex align-items-center justify-content-center bg-success text-white">
+<i class="bi bi-people"></i>
+</div>
+
+<div class="ps-3">
+<h6>45</h6>
+<span class="text-muted small">Adults & Dependents</span>
+</div>
+
+</div>
+</div>
+</div>
+</div>
+
+<div class="col-xxl-3 col-md-6">
+<div class="card info-card">
+<div class="card-body">
+
+<h5 class="card-title">Payments Collected</h5>
+
+<div class="d-flex align-items-center">
+
+<div class="card-icon rounded-circle d-flex align-items-center justify-content-center bg-warning text-white">
+<i class="bi bi-currency-dollar"></i>
+</div>
+
+<div class="ps-3">
+<h6>$1020</h6>
+<span class="text-muted small">Total Paid</span>
+</div>
+
+</div>
+</div>
+</div>
+</div>
+
+<div class="col-xxl-3 col-md-6">
+<div class="card info-card">
+<div class="card-body">
+
+<h5 class="card-title">Meetings Scheduled</h5>
+
+<div class="d-flex align-items-center">
+
+<div class="card-icon rounded-circle d-flex align-items-center justify-content-center bg-info text-white">
+<i class="bi bi-calendar-event"></i>
+</div>
+
+<div class="ps-3">
+<h6>8</h6>
+<span class="text-muted small">Upcoming / Completed</span>
+</div>
+
+</div>
+</div>
+</div>
+</div>
+
+<!-- ===== Charts ===== -->
+
+<div class="col-12 mt-4">
+<div class="card">
+
+<div class="card-body">
+<h5 class="card-title">Family Members Age Distribution</h5>
+
+<canvas id="ageReportChart" style="max-height:400px;"></canvas>
+
+</div>
+</div>
+</div>
+
+<div class="col-12 mt-4">
+<div class="card">
+
+<div class="card-body">
+<h5 class="card-title">Payment Status Overview</h5>
+
+<canvas id="paymentReportChart" style="max-height:400px;"></canvas>
+
+</div>
+</div>
+</div>
+
+<!-- ===== Table ===== -->
+
+<div class="col-12 mt-4">
+<div class="card recent-sales overflow-auto">
+
+<div class="card-body">
+
+<h5 class="card-title">Detailed Family Report</h5>
+
+<table id="familyReportTable"
+class="table table-striped table-bordered dt-responsive nowrap"
+style="width:100%">
+
+<thead>
+
+<tr>
+<th>#</th>
+<th>Family Name</th>
+<th>Members</th>
+<th>Adults</th>
+<th>Dependents</th>
+<th>Total Payment</th>
+<th>Last Payment</th>
+<th>Meetings Attended</th>
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+<td>1</td>
+<td>Mwalimu Family</td>
+<td>8</td>
+<td>5</td>
+<td>3</td>
+<td>$200</td>
+<td>2026-01-15</td>
+<td>2</td>
+</tr>
+
+<tr>
+<td>2</td>
+<td>Salum Family</td>
+<td>5</td>
+<td>3</td>
+<td>2</td>
+<td>$150</td>
+<td>2026-01-10</td>
+<td>1</td>
+</tr>
+
+<tr>
+<td>3</td>
+<td>Omary Family</td>
+<td>7</td>
+<td>4</td>
+<td>3</td>
+<td>$250</td>
+<td>2026-01-12</td>
+<td>3</td>
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+</div>
+</div>
+
+</div>
+</div>
+
 </section>
-
-<!-- Chart.js Script -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-  const ageCtx = document.getElementById('ageReportChart').getContext('2d');
-  const paymentCtx = document.getElementById('paymentReportChart').getContext('2d');
-
-  const ageData = {
-    labels: ['0-10 yrs', '11-20 yrs', '21-40 yrs', '41-60 yrs', '60+ yrs'],
-    datasets: [{
-      label: 'Number of Members',
-      data: [5, 10, 15, 7, 3], // dynamic from DB
-      backgroundColor: [
-        'rgba(75, 192, 192, 0.7)',
-        'rgba(54, 162, 235, 0.7)',
-        'rgba(255, 206, 86, 0.7)',
-        'rgba(255, 99, 132, 0.7)',
-        'rgba(153, 102, 255, 0.7)'
-      ],
-      borderWidth: 1
-    }]
-  };
-
-  new Chart(ageCtx, {
-    type: 'pie',
-    data: ageData,
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { position: 'bottom' },
-        title: { display: true, text: 'Family Members by Age Group' }
-      }
-    }
-  });
-
-  const paymentData = {
-    labels: ['Paid', 'Pending', 'Failed'],
-    datasets: [{
-      label: 'Payment Status',
-      data: [20, 5, 2],
-      backgroundColor: [
-        'rgba(75, 192, 192, 0.7)',
-        'rgba(255, 206, 86, 0.7)',
-        'rgba(255, 99, 132, 0.7)'
-      ],
-      borderWidth: 1
-    }]
-  };
-
-  new Chart(paymentCtx, {
-    type: 'doughnut',
-    data: paymentData,
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { position: 'bottom' },
-        title: { display: true, text: 'Payment Status Overview' }
-      }
-    }
-  });
-
-  // Init DataTable
-  document.addEventListener('DOMContentLoaded', function() {
-    new simpleDatatables.DataTable("#familyReportTable", {
-      searchable: true,
-      fixedHeight: false,
-      perPage: 10,
-      responsive: true
-    });
-  });
-</script>
 </main>
+
+<!-- ===== Chart JS ===== -->
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+
+const ageCtx = document.getElementById('ageReportChart').getContext('2d');
+
+new Chart(ageCtx,{
+type:'pie',
+
+data:{
+labels:['0-10 yrs','11-20 yrs','21-40 yrs','41-60 yrs','60+ yrs'],
+
+datasets:[{
+label:'Members',
+data:[5,10,15,7,3],
+
+backgroundColor:[
+'rgba(75,192,192,0.7)',
+'rgba(54,162,235,0.7)',
+'rgba(255,206,86,0.7)',
+'rgba(255,99,132,0.7)',
+'rgba(153,102,255,0.7)'
+]
+}]
+},
+
+options:{
+responsive:true,
+plugins:{
+legend:{position:'bottom'}
+}
+}
+
+})
+
+const paymentCtx = document.getElementById('paymentReportChart').getContext('2d');
+
+new Chart(paymentCtx,{
+type:'doughnut',
+
+data:{
+labels:['Paid','Pending','Failed'],
+
+datasets:[{
+data:[20,5,2],
+
+backgroundColor:[
+'rgba(75,192,192,0.7)',
+'rgba(255,206,86,0.7)',
+'rgba(255,99,132,0.7)'
+]
+}]
+},
+
+options:{
+responsive:true,
+plugins:{
+legend:{position:'bottom'}
+}
+}
+
+})
+
+</script>
+
+<!-- ===== DataTable ===== -->
+
+<script>
+
+document.addEventListener("DOMContentLoaded",function(){
+
+new simpleDatatables.DataTable("#familyReportTable",{
+searchable:true,
+perPage:10,
+responsive:true
+})
+
+})
+
+</script>
+
+<!-- ===== Print Function ===== -->
+
+<script>
+
+function printReport(){
+window.print();
+}
+
+</script>
+
   <!-- ======= Footer ======= -->
     <footer id="footer" class="footer">
     <div class="copyright">

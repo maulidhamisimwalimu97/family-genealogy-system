@@ -163,9 +163,40 @@ app.get('/dependent', (req, res) => {
   res.render('dependent'); // HOF
 });
 
-// dependent
+// select future head of family
 app.get('/select_future', (req, res) => {
   res.render('select_future'); // HOF
 });
+
+// chat list
+app.get('/chat_list', (req, res) => {
+  res.render('chat_list'); // HOF
+});
+
+// chat room
+app.get('/chat_room', (req, res) => {
+  res.render('chat_room'); // HOF
+});
+
+// family chat
+app.get('/family_chat', (req, res) => {
+  res.render('family_chat'); // HOF
+});
+
+// direct chat
+app.get('/direct_messages', (req, res) => {
+  res.render('direct_messages'); // HOF
+});
+
+// drive files
+app.get('/drive_files', (req, res) => {
+  res.render('drive_files'); // HOF
+});
+
+// upload files
+app.get('/upload_file', (req, res) => {
+  res.render('upload_file'); // HOF
+});
+
 
 module.exports = app;

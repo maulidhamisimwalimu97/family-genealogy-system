@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
-  <title>Select Future Admin</title>
+  <title>Upload Files</title>
   <meta content="Family Admin Panel for managing family genealogy records" name="description">
   <meta content="family, genealogy, admin, lineage" name="keywords">
 
@@ -24,8 +24,6 @@
   <link href="/assets/vendor/quill/quill.bubble.css" rel="stylesheet">
   <link href="/assets/vendor/remixicon/remixicon.css" rel="stylesheet">
   <link href="/assets/vendor/simple-datatables/style.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
-  <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
 
   <!-- Main CSS File -->
   <link href="assets/css/style.css" rel="stylesheet">
@@ -189,7 +187,7 @@
       </ul>
     </li>
 
-        <!-- Chats -->
+    <!-- Chats -->
     <li class="nav-item">
       <a class="nav-link collapsed" data-bs-target="#chat-nav" data-bs-toggle="collapse" href="#">
         <i class="bi bi-chat-dots"></i>
@@ -243,6 +241,7 @@
             <span>Upload File</span>
           </a>
         </li>
+
       </ul>
     </li>
 
@@ -282,100 +281,169 @@
 <main id="main" class="main">
 
 <div class="pagetitle">
-  <h1>Select Future Head of Family</h1>
+  <h1>Upload Family File</h1>
+  <nav>
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="/dashboard">Home</a></li>
+      <li class="breadcrumb-item"><a href="/drive_files">Family Drive</a></li>
+      <li class="breadcrumb-item active">Upload File</li>
+    </ol>
+  </nav>
 </div>
 
 <section class="section">
 
-<div class="row">
-<div class="col-lg-12">
+<div class="row justify-content-center">
+
+<div class="col-lg-8">
 
 <div class="card">
 <div class="card-body">
 
-<h5 class="card-title">Eligible Members (18+ Years)</h5>
+<h5 class="card-title">Upload New File</h5>
 
-<div class="alert alert-info">
-Only adult members (18 years and above) can be selected as a <b>Future Head of Family</b>.
-</div>
+<form class="row g-3">
 
-<div class="table-responsive">
+<!-- File Upload Area -->
+<div class="col-12">
 
-<table class="table table-striped table-hover align-middle">
+<div class="upload-box text-center p-5">
 
-<thead class="table-dark">
-<tr>
-<th>Select</th>
-<th>Full Name</th>
-<th>Gender</th>
-<th>Age</th>
-<th>Relationship</th>
-<th>Branch</th>
-</tr>
-</thead>
+<i class="bi bi-cloud-arrow-up fs-1 text-primary"></i>
 
-<tbody>
+<p class="mt-3">
+Drag & Drop files here
+</p>
 
-<tr>
-<td>
-<input type="radio" name="future_head">
-</td>
-<td>John Michael</td>
-<td>Male</td>
-<td>35</td>
-<td>Brother</td>
-<td>Original Family</td>
-</tr>
+<p class="text-muted small">
+or click to browse files
+</p>
 
-<tr>
-<td>
-<input type="radio" name="future_head">
-</td>
-<td>Sarah Daniel</td>
-<td>Female</td>
-<td>29</td>
-<td>Sister</td>
-<td>Original Family</td>
-</tr>
-
-<tr>
-<td>
-<input type="radio" name="future_head">
-</td>
-<td>Peter Joseph</td>
-<td>Male</td>
-<td>22</td>
-<td>Son</td>
-<td>New Branch</td>
-</tr>
-
-</tbody>
-
-</table>
+<input type="file" class="form-control mt-3">
 
 </div>
 
-<div class="text-end mt-3">
+</div>
 
-<button class="btn btn-secondary">
+
+<!-- File Name -->
+<div class="col-md-6">
+<label class="form-label">File Name</label>
+<input type="text" class="form-control" placeholder="Enter file name">
+</div>
+
+
+<!-- Folder -->
+<div class="col-md-6">
+<label class="form-label">Select Folder</label>
+
+<select class="form-select">
+<option>General</option>
+<option>Family Events</option>
+<option>Meetings</option>
+<option>Photos</option>
+<option>Documents</option>
+</select>
+
+</div>
+
+
+<!-- Description -->
+<div class="col-12">
+<label class="form-label">Description</label>
+
+<textarea class="form-control" rows="3" placeholder="Write file description..."></textarea>
+
+</div>
+
+
+<!-- Visibility -->
+<div class="col-md-6">
+
+<label class="form-label">Visibility</label>
+
+<select class="form-select">
+<option>All Family Members</option>
+<option>Admins Only</option>
+<option>Adults Only</option>
+</select>
+
+</div>
+
+
+<!-- File Preview -->
+<div class="col-12">
+
+<div class="card preview-box">
+
+<div class="card-body">
+
+<h6>File Preview</h6>
+
+<div class="d-flex align-items-center">
+
+<i class="bi bi-file-earmark fs-2 me-3"></i>
+
+<div>
+
+<strong>example_document.pdf</strong>
+
+<p class="small text-muted mb-0">
+Size: 2MB
+</p>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- Progress Bar -->
+<div class="col-12">
+
+<label class="form-label">Upload Progress</label>
+
+<div class="progress">
+<div class="progress-bar progress-bar-striped progress-bar-animated" style="width:40%">
+40%
+</div>
+</div>
+
+</div>
+
+
+<!-- Buttons -->
+<div class="col-12 text-end">
+
+<button type="reset" class="btn btn-secondary">
 Cancel
 </button>
 
-<button class="btn btn-primary">
-Confirm Future Head
+<button type="submit" class="btn btn-primary">
+<i class="bi bi-upload"></i> Upload File
 </button>
 
 </div>
 
+
+</form>
+
 </div>
 </div>
 
 </div>
+
 </div>
 
 </section>
 
 </main>
+
   <!-- ======= Footer ======= -->
     <footer id="footer" class="footer">
     <div class="copyright">
@@ -390,32 +458,18 @@ Confirm Future Head
   <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
 
   <!-- Vendor JS Files -->
-<script src="/assets/vendor/apexcharts/apexcharts.min.js"></script>
-<script src="/assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-<script src="/assets/vendor/chart.js/chart.umd.js"></script>
-<script src="/assets/vendor/echarts/echarts.min.js"></script>
-<script src="/assets/vendor/quill/quill.js"></script>
-<script src="/assets/vendor/simple-datatables/simple-datatables.js"></script>
-<script src="/assets/vendor/tinymce/tinymce.min.js"></script>
-<script src="/assets/vendor/php-email-form/validate.js"></script>
+  <script src="/assets/vendor/apexcharts/apexcharts.min.js"></script>
+  <script src="/assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="/assets/vendor/chart.js/chart.umd.js"></script>
+  <script src="/assets/vendor/echarts/echarts.min.js"></script>
+  <script src="/assets/vendor/quill/quill.js"></script>
+  <script src="/assets/vendor/simple-datatables/simple-datatables.js"></script>
+  <script src="/assets/vendor/tinymce/tinymce.min.js"></script>
+  <script src="/assets/vendor/php-email-form/validate.js"></script>
 
-<!-- Initialize DataTable -->
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const familyTable = document.querySelector("#familyTable");
-    if (familyTable) {
-      new simpleDatatables.DataTable(familyTable, {
-        searchable: true,
-        fixedHeight: false,
-        perPage: 5,
-        perPageSelect: [5, 10, 25, 50]
-      });
-    }
-  });
-</script>
+  <!-- Main JS File -->
+  <script src="/assets/js/main.js"></script>
 
-<!-- Main JS File -->
-<script src="/assets/js/main.js"></script>
 </body>
 
 </html>
