@@ -162,4 +162,10 @@ app.get('/member', (req, res) => {
 app.get('/dependent', (req, res) => {
   res.render('dependent'); // HOF
 });
+
+// dependent
+app.get('/select_future', (req, res) => {
+  res.render('select_future'); // HOF
+});
+
 module.exports = app;
