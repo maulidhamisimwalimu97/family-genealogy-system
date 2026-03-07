@@ -1,0 +1,69 @@
+<% if (typeof error !== 'undefined' && error) { %>
+  <div id="errorToast" class="toast-toast toast-error">
+    <div class="toast-icon">
+      <svg class="xmark-svg" viewBox="0 0 52 52">
+        <circle class="xmark-circle" cx="26" cy="26" r="25" fill="none" />
+        <path class="xmark-line x1" d="M16 16 L36 36" fill="none" />
+        <path class="xmark-line x2" d="M36 16 L16 36" fill="none" />
+      </svg>
+    </div>
+    <div class="toast-message"><%= error %></div>
+  </div>
+<% } %>
+
+<% if (typeof success !== 'undefined' && success) { %>
+  <div id="successToast" class="toast-toast toast-success">
+    <div class="toast-icon">
+      <svg class="tick-svg" viewBox="0 0 52 52" >
+        <circle class="tick-circle" cx="26" cy="26" r="25" fill="none" />
+        <path class="tick-check" fill="none" d="M14 27l7 7 16-16" />
+      </svg>
+    </div>
+    <div class="toast-message"><%= success %></div>
+  </div>
+<% } %>
+
+<style>
+  /* Base Toast */
+  .toast-toast {
+    position: fixed;
+    top: 30px;
+    right: 20px;
+    width: 320px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    animation: slideIn 0.5s ease forwards;
+  }
+  @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+  .toast-error { background: #fff1f0; color: #d93025; border-left: 6px solid #d93025; }
+  .toast-success { background: #f6ffed; color: #52c41a; border-left: 6px solid #52c41a; }
+
+  /* SVG Animations */
+  .tick-svg, .xmark-svg { width: 35px; height: 35px; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+  .tick-circle, .xmark-circle { stroke-dasharray: 166; stroke-dashoffset: 166; stroke: currentColor; animation: strokeAnim 0.6s forwards; }
+  .tick-check, .xmark-line { stroke-dasharray: 48; stroke-dashoffset: 48; stroke: currentColor; }
+  .tick-check { animation: strokeAnim 0.3s 0.6s forwards; }
+  .xmark-line.x1 { animation: strokeAnim 0.3s 0.6s forwards; }
+  .xmark-line.x2 { animation: strokeAnim 0.3s 0.9s forwards; }
+
+  @keyframes strokeAnim { to { stroke-dashoffset: 0; } }
+</style>
+
+<script>
+  function closeToasts() {
+    const toasts = document.querySelectorAll('.toast-toast');
+    toasts.forEach(t => {
+      t.style.transition = "opacity 0.5s ease, transform 0.5s ease";
+      t.style.opacity = '0';
+      t.style.transform = 'translateX(20px)';
+      setTimeout(() => t.remove(), 500);
+    });
+  }
+  setTimeout(closeToasts, 5000);
+</script>

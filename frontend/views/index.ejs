@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Family Genealogy Login</title>
+
+<!-- Bootstrap -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- Bootstrap Icons -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+<style>
+
+body{
+    background:#f5f7fb;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:'Segoe UI', sans-serif;
+}
+
+.login-container{
+    width:100%;
+    max-width:420px;
+}
+
+.login-card{
+    border:none;
+    border-radius:12px;
+    box-shadow:0 8px 30px rgba(0,0,0,0.08);
+}
+
+.login-header{
+    text-align:center;
+    margin-bottom:20px;
+}
+
+.system-title{
+    font-size:24px;
+    font-weight:600;
+    color:#0d6efd;
+}
+
+/* password icon */
+.password-wrapper{
+    position:relative;
+}
+
+.password-wrapper input{
+    padding-right:45px;
+}
+
+.password-wrapper i{
+    position:absolute;
+    right:12px;
+    top:38px;
+    cursor:pointer;
+    color:#6c757d;
+    font-size:18px;
+}
+
+.login-btn{
+    width:100%;
+    padding:10px;
+    font-weight:500;
+}
+
+.forgot-link{
+    text-decoration:none;
+    font-size:14px;
+}
+
+.forgot-link:hover{
+    text-decoration:underline;
+}
+
+/* Floating Home Button */
+
+.home-btn{
+    position:fixed;
+    bottom:25px;
+    right:25px;
+    width:55px;
+    height:55px;
+    background:#0d6efd;
+    color:white;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:24px;
+    box-shadow:0 6px 18px rgba(0,0,0,0.2);
+    text-decoration:none;
+    transition:all 0.3s ease;
+}
+
+.home-btn:hover{
+    background:#0b5ed7;
+    transform:scale(1.08);
+    color:white;
+}
+
+/* Mobile */
+
+@media(max-width:500px){
+
+.login-container{
+    padding:15px;
+}
+
+.home-btn{
+    width:50px;
+    height:50px;
+    font-size:22px;
+    bottom:20px;
+    right:20px;
+}
+
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="login-container">
+
+<div class="card login-card">
+
+<div class="card-body p-4">
+
+<div class="login-header">
+<div class="system-title">Family Genealogy</div>
+</div>
+
+<form action="/index" method="POST">
+
+<% if(error){ %>
+<div class="alert alert-danger">
+<%= error %>
+</div>
+<% } %>
+
+<!-- Phone Number -->
+
+<div class="mb-3">
+
+<label class="form-label">Phone Number</label>
+
+<input
+type="tel"
+name="phone"
+class="form-control"
+placeholder="Enter phone number"
+required>
+
+</div>
+
+<!-- Password -->
+
+<div class="mb-3 password-wrapper">
+
+<label class="form-label">Password</label>
+
+<input
+type="password"
+name="password"
+class="form-control"
+id="password"
+placeholder="Enter password"
+required>
+
+<i class="bi bi-eye-slash" id="togglePassword"></i>
+
+</div>
+
+<!-- Forgot password -->
+
+<div class="d-flex justify-content-end mb-3">
+
+<a href="/forgot_password" class="forgot-link">
+Forgot Password?
+</a>
+
+</div>
+
+<!-- Login -->
+
+<button type="submit" class="btn btn-primary login-btn">
+
+<i class="bi bi-box-arrow-in-right"></i>
+ Login
+
+</button>
+
+</form>
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+const togglePassword = document.getElementById("togglePassword");
+const password = document.getElementById("password");
+
+togglePassword.addEventListener("click", function(){
+
+const type = password.getAttribute("type") === "password" ? "text" : "password";
+
+password.setAttribute("type", type);
+
+this.classList.toggle("bi-eye");
+this.classList.toggle("bi-eye-slash");
+
+});
+
+</script>
+
+<a href="/" class="home-btn">
+<i class="bi bi-house"></i>
+</a>
+
+</body>
+</html>
