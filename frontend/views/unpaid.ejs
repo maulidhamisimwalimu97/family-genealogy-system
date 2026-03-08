@@ -34,113 +34,81 @@
 <body>
 
   <!-- ======= Header ======= -->
-  <header id="header" class="header fixed-top d-flex align-items-center">
+ <header id="header" class="header fixed-top d-flex align-items-center">
 
-    <div class="d-flex align-items-center justify-content-between">
-      <a href="/" class="logo d-flex align-items-center">
-        <img src="" alt="">
-        <span class="d-none d-lg-block">Family Genealogy</span>
-      </a>
-      <i class="bi bi-list toggle-sidebar-btn"></i>
-    </div><!-- End Logo -->
+  <div class="d-flex align-items-center justify-content-between">
+    <a href="/Admin" class="logo d-flex align-items-center">
+      <img src="assets/img/logo.png" alt=""> <span class="d-none d-lg-block">Family Genealogy</span>
+    </a>
+    <i class="bi bi-list toggle-sidebar-btn"></i>
+  </div><nav class="header-nav ms-auto">
+    <ul class="d-flex align-items-center">
 
+      <li class="nav-item dropdown">
+        <a class="nav-link nav-icon" href="#" data-bs-toggle="dropdown">
+          <i class="bi bi-bell"></i>
+          <span class="badge bg-primary badge-number"><%= familyCount %></span>
+        </a><ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow notifications">
+          <li class="dropdown-header">
+            You have <%= familyCount %> families registered
+            <a href="#">
+              <span class="badge rounded-pill bg-primary p-2 ms-2">View all</span>
+            </a>
+          </li>
 
-    <nav class="header-nav ms-auto">
-      <ul class="d-flex align-items-center">
+          <li><hr class="dropdown-divider"></li>
 
-        
-
-        <li class="nav-item dropdown">
-
-  <a class="nav-link nav-icon" href="#" data-bs-toggle="dropdown">
-    <i class="bi bi-bell"></i>
-    <span class="badge bg-primary badge-number">0</span>
-  </a><!-- End Notification Icon -->
-
-  <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow notifications">
-
-    <li class="dropdown-header">
-      You have 0 new notifications
-      <a href="#">
-        <span class="badge rounded-pill bg-primary p-2 ms-2">View all</span>
-      </a>
-    </li>
-
-    <li><hr class="dropdown-divider"></li>
-
-    <!-- No notifications -->
-    <li class="notification-item text-center">
-      <div>No notifications available</div>
-    </li>
-
-    <li><hr class="dropdown-divider"></li>
-
-    <!-- Example notification (you can remove if not needed) -->
-    <!--
-    <li class="notification-item">
-      <i class="bi bi-exclamation-circle text-warning"></i>
-      <div>
-        <h4>Low Stock</h4>
-        <p>Sample item - only 2 left</p>
-        <p>Just now</p>
-      </div>
-    </li>
-    <li><hr class="dropdown-divider"></li>
-    -->
-
-    <li class="dropdown-footer">
-      <a href="#">Show all notifications</a>
-    </li>
-
-  </ul>
-
-        <li class="nav-item dropdown pe-3">
-
-            <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
-            <img src="assets/img/3.png" alt="Profile" class="rounded-circle">
-            <span class="d-none d-md-block dropdown-toggle ps-2">Admin</span>
-            </a><!-- End Profile Image Icon -->
-
-            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
-            <li class="dropdown-header">
-                <h6>Admin</h6>
-                <span><b>Admin</b></span>
+          <% if (familyCount > 0) { %>
+            <li class="notification-item">
+              <i class="bi bi-check-circle text-success"></i>
+              <div>
+                <h4>Families Active</h4>
+                <p>There are <%= familyCount %> records in the system.</p>
+              </div>
             </li>
-
-            <li>
-              <hr class="dropdown-divider">
+          <% } else { %>
+            <li class="notification-item text-center">
+              <div>No notifications available</div>
             </li>
+          <% } %>
 
-            <li>
-              <a class="dropdown-item d-flex align-items-center" href="/users-profile">
-                <i class="bi bi-person"></i>
-                <span>My Profile</span>
-              </a>
-            </li>
-            <li>
-              <hr class="dropdown-divider">
-            </li>
-            <li>
-              <hr class="dropdown-divider">
-            </li>
-            <li>
-              <hr class="dropdown-divider">
-            </li>
+          <li><hr class="dropdown-divider"></li>
+          <li class="dropdown-footer">
+            <a href="#">Show all notifications</a>
+          </li>
+        </ul>
+      </li>
 
-            <li>
-              <a class="dropdown-item d-flex align-items-center" href="/logout">
-                <i class="bi bi-box-arrow-right"></i>
-                <span>Sign Out</span>
-              </a>
-            </li>
+      <li class="nav-item dropdown pe-3">
+        <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
+          <img src="assets/img/3.png" alt="Profile" class="rounded-circle">
+          <span class="d-none d-md-block dropdown-toggle ps-2"><%= adminName %></span>
+        </a><ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
+          <li class="dropdown-header">
+            <h6><%= adminName %></h6>
+            <span>System Admin</span>
+          </li>
 
-          </ul><!-- End Profile Dropdown Items -->
-        </li><!-- End Profile Nav -->
+          <li><hr class="dropdown-divider"></li>
 
-      </ul>
-    </nav><!-- End Icons Navigation -->
+          <li>
+            <a class="dropdown-item d-flex align-items-center" href="/users-profile">
+              <i class="bi bi-person"></i>
+              <span>My Profile</span>
+            </a>
+          </li>
+          
+          <li><hr class="dropdown-divider"></li>
 
-  </header><!-- End Header -->
+          <li>
+            <a class="dropdown-item d-flex align-items-center" href="/logout">
+              <i class="bi bi-box-arrow-right"></i>
+              <span>Sign Out</span>
+            </a>
+          </li>
+
+        </ul></li></ul>
+  </nav></header>
 
   <!-- ======= Sidebar ======= -->
     <aside id="sidebar" class="sidebar">
@@ -288,42 +256,38 @@
                 </thead>
 
                 <tbody>
-                <tr>
-                    <td>1</td>
-                    <td>Kweka Family</td>
-                    <td>Joseph Kweka</td>
-                    <td>0789 456 321</td>
-                    <td>30,000</td>
-                    <td>—</td>
-                    <td><span class="badge bg-danger">Unpaid</span></td>
-                    <td>
-                    <button class="btn btn-sm btn-outline-primary" title="View Family">
-                        <i class="bi bi-eye"></i>
-                    </button>
-                    <button class="btn btn-sm btn-outline-warning" title="Send Reminder">
-                        <i class="bi bi-bell"></i>
-                    </button>
-                    </td>
-                </tr>
-
-                <tr>
-                    <td>2</td>
-                    <td>Msangi Family</td>
-                    <td>Anna Msangi</td>
-                    <td>0712 888 999</td>
-                    <td>30,000</td>
-                    <td>2025-12-15</td>
-                    <td><span class="badge bg-warning text-dark">Pending</span></td>
-                    <td>
-                    <button class="btn btn-sm btn-outline-primary" title="View Family">
-                        <i class="bi bi-eye"></i>
-                    </button>
-                    <button class="btn btn-sm btn-outline-warning" title="Send Reminder">
-                        <i class="bi bi-bell"></i>
-                    </button>
-                    </td>
-                </tr>
-
+                  <% if (locals.unpaidFamilies && unpaidFamilies.length > 0) { %>
+                    <% unpaidFamilies.forEach((family, index) => { %>
+                      <tr>
+                        <td><%= index + 1 %></td>
+                        <td><%= family.family_name %></td>
+                        <td><%= family.first_name %> <%= family.last_name %></td>
+                        <td><%= family.phone %></td>
+                        <td>30,000</td> <td>
+                            <%= family.last_payment_date ? new Date(family.last_payment_date).toLocaleDateString('en-CA') : '—' %>
+                        </td>
+                        <td>
+                            <span class="badge <%= family.last_payment_date ? 'bg-warning text-dark' : 'bg-danger' %>">
+                                <%= family.last_payment_date ? 'Pending' : 'Unpaid' %>
+                            </span>
+                        </td>
+                        <td>
+                          <button class="btn btn-sm btn-outline-primary" title="View Family">
+                            <i class="bi bi-eye"></i>
+                          </button>
+                          <button class="btn btn-sm btn-outline-warning" title="Send Reminder">
+                            <i class="bi bi-bell"></i>
+                          </button>
+                        </td>
+                      </tr>
+                    <% }); %>
+                  <% } else { %>
+                    <tr>
+                      <td colspan="8" class="text-center table-success text-success py-4">
+                        <i class="bi bi-check-circle-fill me-2"></i> Excellent! All families have completed their payments.
+                      </td>
+                    </tr>
+                  <% } %>
                 </tbody>
             </table>
             </div>

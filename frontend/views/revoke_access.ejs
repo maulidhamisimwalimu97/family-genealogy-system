@@ -34,113 +34,82 @@
 <body>
 
   <!-- ======= Header ======= -->
-  <header id="header" class="header fixed-top d-flex align-items-center">
+ <header id="header" class="header fixed-top d-flex align-items-center">
 
-    <div class="d-flex align-items-center justify-content-between">
-      <a href="/" class="logo d-flex align-items-center">
-        <img src="" alt="">
-        <span class="d-none d-lg-block">Family Genealogy</span>
-      </a>
-      <i class="bi bi-list toggle-sidebar-btn"></i>
-    </div><!-- End Logo -->
+  <div class="d-flex align-items-center justify-content-between">
+    <a href="/Admin" class="logo d-flex align-items-center">
+      <img src="assets/img/logo.png" alt=""> <span class="d-none d-lg-block">Family Genealogy</span>
+    </a>
+    <i class="bi bi-list toggle-sidebar-btn"></i>
+  </div><nav class="header-nav ms-auto">
+    <ul class="d-flex align-items-center">
 
+      <li class="nav-item dropdown">
+        <a class="nav-link nav-icon" href="#" data-bs-toggle="dropdown">
+          <i class="bi bi-bell"></i>
+          <span class="badge bg-primary badge-number"><%= familyCount %></span>
+        </a><ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow notifications">
+          <li class="dropdown-header">
+            You have <%= familyCount %> families registered
+            <a href="#">
+              <span class="badge rounded-pill bg-primary p-2 ms-2">View all</span>
+            </a>
+          </li>
 
-    <nav class="header-nav ms-auto">
-      <ul class="d-flex align-items-center">
+          <li><hr class="dropdown-divider"></li>
 
-        
-
-        <li class="nav-item dropdown">
-
-  <a class="nav-link nav-icon" href="#" data-bs-toggle="dropdown">
-    <i class="bi bi-bell"></i>
-    <span class="badge bg-primary badge-number">0</span>
-  </a><!-- End Notification Icon -->
-
-  <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow notifications">
-
-    <li class="dropdown-header">
-      You have 0 new notifications
-      <a href="#">
-        <span class="badge rounded-pill bg-primary p-2 ms-2">View all</span>
-      </a>
-    </li>
-
-    <li><hr class="dropdown-divider"></li>
-
-    <!-- No notifications -->
-    <li class="notification-item text-center">
-      <div>No notifications available</div>
-    </li>
-
-    <li><hr class="dropdown-divider"></li>
-
-    <!-- Example notification (you can remove if not needed) -->
-    <!--
-    <li class="notification-item">
-      <i class="bi bi-exclamation-circle text-warning"></i>
-      <div>
-        <h4>Low Stock</h4>
-        <p>Sample item - only 2 left</p>
-        <p>Just now</p>
-      </div>
-    </li>
-    <li><hr class="dropdown-divider"></li>
-    -->
-
-    <li class="dropdown-footer">
-      <a href="#">Show all notifications</a>
-    </li>
-
-  </ul>
-
-        <li class="nav-item dropdown pe-3">
-
-            <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
-            <img src="assets/img/3.png" alt="Profile" class="rounded-circle">
-            <span class="d-none d-md-block dropdown-toggle ps-2">Admin</span>
-            </a><!-- End Profile Image Icon -->
-
-            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
-            <li class="dropdown-header">
-                <h6>Admin</h6>
-                <span><b>Admin</b></span>
+          <% if (familyCount > 0) { %>
+            <li class="notification-item">
+              <i class="bi bi-check-circle text-success"></i>
+              <div>
+                <h4>Families Active</h4>
+                <p>There are <%= familyCount %> records in the system.</p>
+              </div>
             </li>
-
-            <li>
-              <hr class="dropdown-divider">
+          <% } else { %>
+            <li class="notification-item text-center">
+              <div>No notifications available</div>
             </li>
+          <% } %>
 
-            <li>
-              <a class="dropdown-item d-flex align-items-center" href="/users-profile">
-                <i class="bi bi-person"></i>
-                <span>My Profile</span>
-              </a>
-            </li>
-            <li>
-              <hr class="dropdown-divider">
-            </li>
-            <li>
-              <hr class="dropdown-divider">
-            </li>
-            <li>
-              <hr class="dropdown-divider">
-            </li>
+          <li><hr class="dropdown-divider"></li>
+          <li class="dropdown-footer">
+            <a href="#">Show all notifications</a>
+          </li>
+        </ul>
+      </li>
 
-            <li>
-              <a class="dropdown-item d-flex align-items-center" href="/logout">
-                <i class="bi bi-box-arrow-right"></i>
-                <span>Sign Out</span>
-              </a>
-            </li>
+      <li class="nav-item dropdown pe-3">
+        <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
+          <img src="assets/img/3.png" alt="Profile" class="rounded-circle">
+          <span class="d-none d-md-block dropdown-toggle ps-2"><%= adminName %></span>
+        </a><ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
+          <li class="dropdown-header">
+            <h6><%= adminName %></h6>
+            <span>System Admin</span>
+          </li>
 
-          </ul><!-- End Profile Dropdown Items -->
-        </li><!-- End Profile Nav -->
+          <li><hr class="dropdown-divider"></li>
 
-      </ul>
-    </nav><!-- End Icons Navigation -->
+          <li>
+            <a class="dropdown-item d-flex align-items-center" href="/users-profile">
+              <i class="bi bi-person"></i>
+              <span>My Profile</span>
+            </a>
+          </li>
+          
+          <li><hr class="dropdown-divider"></li>
 
-  </header><!-- End Header -->
+          <li>
+            <a class="dropdown-item d-flex align-items-center" href="/logout">
+              <i class="bi bi-box-arrow-right"></i>
+              <span>Sign Out</span>
+            </a>
+          </li>
+
+        </ul></li></ul>
+  </nav></header>
+
 
   <!-- ======= Sidebar ======= -->
     <aside id="sidebar" class="sidebar">
@@ -287,82 +256,72 @@
                         <th>Action</th>
                     </tr>
                     </thead>
-
-                    <tbody>
-                    <tr>
-                        <td>1</td>
-                        <td>Mwalimu Family</td>
-                        <td>Maulid Mwalimu</td>
-                        <td>0742 700 833</td>
-                        <td>
-                        <button class="btn btn-sm btn-outline-danger" title="Revoke Access">
-                            <i class="bi bi-shield-x"></i>
-                        </button>
-                        </td>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td>2</td>
-                        <td>Nkya Family</td>
-                        <td>John Nkya</td>
-                        <td>0756 123 456</td>
-                        <td>
-                        <button class="btn btn-sm btn-outline-danger" title="Revoke Access">
-                            <i class="bi bi-shield-x"></i>
-                        </button>
-                        </td>
-                    </tr>
-
-                    </tbody>
+                      <tbody>
+                          <% if (locals.activeFamilies && activeFamilies.length > 0) { %>
+                              <% activeFamilies.forEach((family, index) => { %>
+                                  <tr>
+                                      <td><%= index + 1 %></td>
+                                      <td><strong><%= family.family_name %></strong></td>
+                                      <td><%= family.first_name %> <%= family.last_name %></td>
+                                      <td><%= family.phone %></td>
+                                      <td>
+                                          <button class="btn btn-sm btn-outline-danger" 
+                                                  onclick="prepareRevoke('<%= family.family_id %>', '<%= family.family_name %>')" 
+                                                  title="Select to Revoke">
+                                              <i class="bi bi-shield-x"></i> Select
+                                          </button>
+                                      </td>
+                                  </tr>
+                              <% }); %>
+                          <% } else { %>
+                              <tr>
+                                <td colspan="5" class="text-center table-danger text-danger py-3">
+                                    <i class="bi bi-exclamation-triangle-fill me-2"></i> 
+                                    No families with active access found.
+                                </td>
+                              </tr>
+                          <% } %>
+                      </tbody>
                 </table>
                 </div>
             </div>
             </div>
         </div>
 
-        <!-- ================= REVOKE DETAILS ================= -->
-        <div class="col-lg-5 col-md-12">
-            <div class="card shadow-sm">
-            <div class="card-header">
-                <h5 class="mb-0">Revoke Access Details</h5>
-            </div>
-
-            <div class="card-body">
-                <p class="text-muted small">
-                Select features to revoke for the selected family.
-                </p>
-
-                <h6 class="text-danger">Dashboard</h6>
-                <div class="form-check mb-2">
-                <input class="form-check-input" type="checkbox">
-                <label class="form-check-label">Disable Dashboard Access</label>
+      <div class="col-lg-5 col-md-12">
+            <div class="card shadow-sm border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">Revoke Access Details</h5>
                 </div>
 
-                <h6 class="text-danger mt-3">Family</h6>
-                <div class="form-check mb-2">
-                <input class="form-check-input" type="checkbox">
-                <label class="form-check-label">Remove Member Management</label>
-                </div>
+                <div class="card-body">
+                    <form action="/confirm-revoke" method="POST">
+                        <input type="hidden" name="family_id" id="revoke_family_id" required>
 
-                <div class="form-check mb-2">
-                <input class="form-check-input" type="checkbox">
-                <label class="form-check-label">Disable Document Upload</label>
-                </div>
+                        <div class="mt-3 p-3 bg-light rounded border border-danger-subtle">
+                            <span class="text-muted small d-block">Target Family:</span>
+                            <h5 id="target_family_display" class="text-danger fw-bold mb-0">None Selected</h5>
+                        </div>
 
-                <h6 class="text-danger mt-3">Advanced</h6>
-                <div class="form-check mb-3">
-                <input class="form-check-input" type="checkbox">
-                <label class="form-check-label">Revoke Family Tree Access</label>
-                </div>
+                        <hr>
 
-                <button class="btn btn-danger w-100">
-                <i class="bi bi-shield-x"></i> Confirm Revoke
-                </button>
-            </div>
+                        <p class="text-muted small mb-3">
+                            <i class="bi bi-info-circle"></i> 
+                            Confirming this action will immediately strip the family of all dashboard privileges and features.
+                        </p>
+
+                        <div class="alert alert-warning py-2 small">
+                            <i class="bi bi-exclamation-triangle"></i> 
+                            This will clear the <strong>permissions</strong> field in the database.
+                        </div>
+
+                        <button type="submit" class="btn btn-danger w-100 py-2 shadow-sm" id="confirmRevokeBtn" disabled>
+                            <i class="bi bi-shield-x"></i> Confirm & Revoke Access
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
-
         </div>
     </div>
     </main>

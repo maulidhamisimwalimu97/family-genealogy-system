@@ -34,113 +34,81 @@
 <body>
 
   <!-- ======= Header ======= -->
-  <header id="header" class="header fixed-top d-flex align-items-center">
+   <header id="header" class="header fixed-top d-flex align-items-center">
 
-    <div class="d-flex align-items-center justify-content-between">
-      <a href="/" class="logo d-flex align-items-center">
-        <img src="" alt="">
-        <span class="d-none d-lg-block">Family Genealogy</span>
-      </a>
-      <i class="bi bi-list toggle-sidebar-btn"></i>
-    </div><!-- End Logo -->
+  <div class="d-flex align-items-center justify-content-between">
+    <a href="/Admin" class="logo d-flex align-items-center">
+      <img src="assets/img/logo.png" alt=""> <span class="d-none d-lg-block">Family Genealogy</span>
+    </a>
+    <i class="bi bi-list toggle-sidebar-btn"></i>
+  </div><nav class="header-nav ms-auto">
+    <ul class="d-flex align-items-center">
 
+      <li class="nav-item dropdown">
+        <a class="nav-link nav-icon" href="#" data-bs-toggle="dropdown">
+          <i class="bi bi-bell"></i>
+          <span class="badge bg-primary badge-number"><%= familyCount %></span>
+        </a><ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow notifications">
+          <li class="dropdown-header">
+            You have <%= familyCount %> families registered
+            <a href="#">
+              <span class="badge rounded-pill bg-primary p-2 ms-2">View all</span>
+            </a>
+          </li>
 
-    <nav class="header-nav ms-auto">
-      <ul class="d-flex align-items-center">
+          <li><hr class="dropdown-divider"></li>
 
-        
-
-        <li class="nav-item dropdown">
-
-  <a class="nav-link nav-icon" href="#" data-bs-toggle="dropdown">
-    <i class="bi bi-bell"></i>
-    <span class="badge bg-primary badge-number">0</span>
-  </a><!-- End Notification Icon -->
-
-  <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow notifications">
-
-    <li class="dropdown-header">
-      You have 0 new notifications
-      <a href="#">
-        <span class="badge rounded-pill bg-primary p-2 ms-2">View all</span>
-      </a>
-    </li>
-
-    <li><hr class="dropdown-divider"></li>
-
-    <!-- No notifications -->
-    <li class="notification-item text-center">
-      <div>No notifications available</div>
-    </li>
-
-    <li><hr class="dropdown-divider"></li>
-
-    <!-- Example notification (you can remove if not needed) -->
-    <!--
-    <li class="notification-item">
-      <i class="bi bi-exclamation-circle text-warning"></i>
-      <div>
-        <h4>Low Stock</h4>
-        <p>Sample item - only 2 left</p>
-        <p>Just now</p>
-      </div>
-    </li>
-    <li><hr class="dropdown-divider"></li>
-    -->
-
-    <li class="dropdown-footer">
-      <a href="#">Show all notifications</a>
-    </li>
-
-  </ul>
-
-        <li class="nav-item dropdown pe-3">
-
-            <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
-            <img src="assets/img/3.png" alt="Profile" class="rounded-circle">
-            <span class="d-none d-md-block dropdown-toggle ps-2">Admin</span>
-            </a><!-- End Profile Image Icon -->
-
-            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
-            <li class="dropdown-header">
-                <h6>Admin</h6>
-                <span><b>Admin</b></span>
+          <% if (familyCount > 0) { %>
+            <li class="notification-item">
+              <i class="bi bi-check-circle text-success"></i>
+              <div>
+                <h4>Families Active</h4>
+                <p>There are <%= familyCount %> records in the system.</p>
+              </div>
             </li>
-
-            <li>
-              <hr class="dropdown-divider">
+          <% } else { %>
+            <li class="notification-item text-center">
+              <div>No notifications available</div>
             </li>
+          <% } %>
 
-            <li>
-              <a class="dropdown-item d-flex align-items-center" href="/users-profile">
-                <i class="bi bi-person"></i>
-                <span>My Profile</span>
-              </a>
-            </li>
-            <li>
-              <hr class="dropdown-divider">
-            </li>
-            <li>
-              <hr class="dropdown-divider">
-            </li>
-            <li>
-              <hr class="dropdown-divider">
-            </li>
+          <li><hr class="dropdown-divider"></li>
+          <li class="dropdown-footer">
+            <a href="#">Show all notifications</a>
+          </li>
+        </ul>
+      </li>
 
-            <li>
-              <a class="dropdown-item d-flex align-items-center" href="/logout">
-                <i class="bi bi-box-arrow-right"></i>
-                <span>Sign Out</span>
-              </a>
-            </li>
+      <li class="nav-item dropdown pe-3">
+        <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
+          <img src="assets/img/3.png" alt="Profile" class="rounded-circle">
+          <span class="d-none d-md-block dropdown-toggle ps-2"><%= adminName %></span>
+        </a><ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
+          <li class="dropdown-header">
+            <h6><%= adminName %></h6>
+            <span>System Admin</span>
+          </li>
 
-          </ul><!-- End Profile Dropdown Items -->
-        </li><!-- End Profile Nav -->
+          <li><hr class="dropdown-divider"></li>
 
-      </ul>
-    </nav><!-- End Icons Navigation -->
+          <li>
+            <a class="dropdown-item d-flex align-items-center" href="/users-profile">
+              <i class="bi bi-person"></i>
+              <span>My Profile</span>
+            </a>
+          </li>
+          
+          <li><hr class="dropdown-divider"></li>
 
-  </header><!-- End Header -->
+          <li>
+            <a class="dropdown-item d-flex align-items-center" href="/logout">
+              <i class="bi bi-box-arrow-right"></i>
+              <span>Sign Out</span>
+            </a>
+          </li>
+
+        </ul></li></ul>
+  </nav></header>
 
   <!-- ======= Sidebar ======= -->
     <aside id="sidebar" class="sidebar">
@@ -259,175 +227,164 @@
 <main id="main" class="main">
   <div class="container-fluid">
 
-    <!-- Page Title -->
     <div class="pagetitle mb-4 d-print-none">
       <h1>System Reports</h1>
       <p class="text-muted">Overview of family registrations, payments, and activities</p>
     </div>
 
-    <!-- Actions -->
     <div class="d-flex justify-content-end mb-3 d-print-none">
-      <button onclick="window.print()" class="btn btn-primary">
+      <button onclick="window.print()" class="btn btn-primary shadow-sm">
         <i class="bi bi-printer"></i> Print Report
       </button>
     </div>
 
-    <!-- ================= SUMMARY CARDS ================= -->
     <div class="row mb-4">
 
       <div class="col-md-3 col-6">
-        <div class="card text-center shadow-sm">
+        <div class="card text-center shadow-sm border-start border-primary border-4">
           <div class="card-body">
-            <h6 class="text-muted">Families Today</h6>
-            <h3 class="fw-bold">12</h3>
+            <h6 class="text-muted mt-2">Families Today</h6>
+            <h3 class="fw-bold text-primary"><%= stats.today %></h3>
           </div>
         </div>
       </div>
 
       <div class="col-md-3 col-6">
-        <div class="card text-center shadow-sm">
+        <div class="card text-center shadow-sm border-start border-info border-4">
           <div class="card-body">
-            <h6 class="text-muted">This Month</h6>
-            <h3 class="fw-bold">145</h3>
+            <h6 class="text-muted mt-2">This Month</h6>
+            <h3 class="fw-bold text-info"><%= stats.month %></h3>
           </div>
         </div>
       </div>
 
       <div class="col-md-3 col-6 mt-3 mt-md-0">
-        <div class="card text-center shadow-sm">
+        <div class="card text-center shadow-sm border-start border-success border-4">
           <div class="card-body">
-            <h6 class="text-muted">This Year</h6>
-            <h3 class="fw-bold">1,284</h3>
+            <h6 class="text-muted mt-2">This Year</h6>
+            <h3 class="fw-bold text-success"><%= stats.year %></h3>
           </div>
         </div>
       </div>
 
       <div class="col-md-3 col-6 mt-3 mt-md-0">
-        <div class="card text-center shadow-sm">
+        <div class="card text-center shadow-sm border-start border-dark border-4">
           <div class="card-body">
-            <h6 class="text-muted">Total Families</h6>
-            <h3 class="fw-bold">2,310</h3>
+            <h6 class="text-muted mt-2">Total Families</h6>
+            <h3 class="fw-bold text-dark"><%= stats.total %></h3>
           </div>
         </div>
       </div>
 
     </div>
 
-    <!-- ================= FAMILY REGISTRATION REPORT ================= -->
-    <div class="card shadow-sm mb-4">
-      <div class="card-header">
-        <h5 class="mb-0">Family Registration Report</h5>
+    <div class="row">
+      <div class="col-lg-6">
+        <div class="card shadow-sm mb-4">
+          <div class="card-header bg-white">
+            <h5 class="mb-0 fw-bold"><i class="bi bi-people me-2"></i>Registration Period</h5>
+          </div>
+          <div class="card-body pt-3">
+            <table class="table table-hover">
+              <thead class="table-light">
+                <tr>
+                  <th>Period</th>
+                  <th class="text-end">Registered Families</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Today</td><td class="text-end fw-bold"><%= stats.today %></td></tr>
+                <tr><td>This Month</td><td class="text-end fw-bold"><%= stats.month %></td></tr>
+                <tr><td>This Year</td><td class="text-end fw-bold"><%= stats.year %></td></tr>
+                <tr><td>All Time</td><td class="text-end fw-bold"><%= stats.total %></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
 
-      <div class="card-body">
-        <table class="table table-bordered">
-          <thead class="table-light">
-            <tr>
-              <th>Period</th>
-              <th>Registered Families</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Today</td>
-              <td>12</td>
-            </tr>
-            <tr>
-              <td>This Month</td>
-              <td>145</td>
-            </tr>
-            <tr>
-              <td>This Year</td>
-              <td>1,284</td>
-            </tr>
-            <tr>
-              <td>All Time</td>
-              <td>2,310</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- ================= PAYMENT REPORT ================= -->
-    <div class="card shadow-sm mb-4">
-      <div class="card-header">
-        <h5 class="mb-0">Payments Summary</h5>
-      </div>
-
-      <div class="card-body">
-        <table class="table table-bordered">
-          <thead class="table-light">
-            <tr>
-              <th>Status</th>
-              <th>Number of Families</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Paid</td>
-              <td>1,620</td>
-            </tr>
-            <tr>
-              <td>Unpaid</td>
-              <td>690</td>
-            </tr>
-          </tbody>
-        </table>
+      <div class="col-lg-6">
+        <div class="card shadow-sm mb-4">
+          <div class="card-header bg-white">
+            <h5 class="mb-0 fw-bold"><i class="bi bi-cash-stack me-2"></i>Payments Summary</h5>
+          </div>
+          <div class="card-body pt-3">
+            <table class="table table-hover">
+              <thead class="table-light">
+                <tr>
+                  <th>Status</th>
+                  <th class="text-end">Families</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="text-success"><i class="bi bi-check-circle-fill me-2"></i>Paid</td>
+                  <td class="text-end fw-bold text-success"><%= stats.paid %></td>
+                </tr>
+                <tr>
+                  <td class="text-danger"><i class="bi bi-x-circle-fill me-2"></i>Unpaid</td>
+                  <td class="text-end fw-bold text-danger"><%= stats.unpaid %></td>
+                </tr>
+              </tbody>
+              <tfoot class="table-light">
+                <tr class="fw-bold">
+                  <td>Total</td>
+                  <td class="text-end"><%= stats.total %></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- ================= SYSTEM ACTIVITY REPORT ================= -->
     <div class="card shadow-sm mb-4">
-      <div class="card-header">
-        <h5 class="mb-0">System Activities</h5>
+      <div class="card-header bg-white">
+        <h5 class="mb-0 fw-bold"><i class="bi bi-activity me-2"></i>System Activities</h5>
       </div>
-
-      <div class="card-body">
-        <table class="table table-bordered">
+      <div class="card-body pt-3">
+        <table class="table table-striped">
           <thead class="table-light">
             <tr>
-              <th>Activity</th>
-              <th>Count</th>
+              <th>Activity Type</th>
+              <th class="text-center">Total Count</th>
             </tr>
           </thead>
           <tbody>
             <tr>
               <td>Families Registered</td>
-              <td>2,310</td>
+              <td class="text-center"><%= stats.total %></td>
             </tr>
             <tr>
-              <td>Payments Made</td>
-              <td>1,620</td>
+              <td>Successful Payments</td>
+              <td class="text-center text-success"><%= stats.paid %></td>
             </tr>
             <tr>
-              <td>Access Granted</td>
-              <td>1,580</td>
+              <td>Active Dashboard Access</td>
+              <td class="text-center text-primary"><%= stats.granted %></td>
             </tr>
             <tr>
-              <td>Access Revoked</td>
-              <td>120</td>
+              <td>Revoked/Inactive Access</td>
+              <td class="text-center text-danger"><%= stats.revoked %></td>
             </tr>
             <tr>
-              <td>System Users</td>
-              <td>14</td>
+              <td>System Administrators</td>
+              <td class="text-center"><%= stats.users %></td>
             </tr>
           </tbody>
         </table>
       </div>
     </div>
 
-    <!-- ================= FOOTER FOR PRINT ================= -->
-    <div class="text-center mt-4">
+    <div class="text-center mt-4 pb-4">
       <p class="small text-muted">
-        Report generated on <strong>2026-01-27</strong><br>
-        Family Genealogy Management System
+        Report generated on <strong><%= stats.dateGenerated %></strong><br>
+        <span class="fw-bold">Family Genealogy Management System</span>
       </p>
     </div>
 
   </div>
 </main>
-
 
 
     <!-- ======= Footer ======= -->

@@ -34,113 +34,81 @@
 <body>
 
   <!-- ======= Header ======= -->
-  <header id="header" class="header fixed-top d-flex align-items-center">
+ <header id="header" class="header fixed-top d-flex align-items-center">
 
-    <div class="d-flex align-items-center justify-content-between">
-      <a href="/" class="logo d-flex align-items-center">
-        <img src="" alt="">
-        <span class="d-none d-lg-block">Family Genealogy</span>
-      </a>
-      <i class="bi bi-list toggle-sidebar-btn"></i>
-    </div><!-- End Logo -->
+  <div class="d-flex align-items-center justify-content-between">
+    <a href="/Admin" class="logo d-flex align-items-center">
+      <img src="assets/img/logo.png" alt=""> <span class="d-none d-lg-block">Family Genealogy</span>
+    </a>
+    <i class="bi bi-list toggle-sidebar-btn"></i>
+  </div><nav class="header-nav ms-auto">
+    <ul class="d-flex align-items-center">
 
+      <li class="nav-item dropdown">
+        <a class="nav-link nav-icon" href="#" data-bs-toggle="dropdown">
+          <i class="bi bi-bell"></i>
+          <span class="badge bg-primary badge-number"><%= familyCount %></span>
+        </a><ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow notifications">
+          <li class="dropdown-header">
+            You have <%= familyCount %> families registered
+            <a href="#">
+              <span class="badge rounded-pill bg-primary p-2 ms-2">View all</span>
+            </a>
+          </li>
 
-    <nav class="header-nav ms-auto">
-      <ul class="d-flex align-items-center">
+          <li><hr class="dropdown-divider"></li>
 
-        
-
-        <li class="nav-item dropdown">
-
-  <a class="nav-link nav-icon" href="#" data-bs-toggle="dropdown">
-    <i class="bi bi-bell"></i>
-    <span class="badge bg-primary badge-number">0</span>
-  </a><!-- End Notification Icon -->
-
-  <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow notifications">
-
-    <li class="dropdown-header">
-      You have 0 new notifications
-      <a href="#">
-        <span class="badge rounded-pill bg-primary p-2 ms-2">View all</span>
-      </a>
-    </li>
-
-    <li><hr class="dropdown-divider"></li>
-
-    <!-- No notifications -->
-    <li class="notification-item text-center">
-      <div>No notifications available</div>
-    </li>
-
-    <li><hr class="dropdown-divider"></li>
-
-    <!-- Example notification (you can remove if not needed) -->
-    <!--
-    <li class="notification-item">
-      <i class="bi bi-exclamation-circle text-warning"></i>
-      <div>
-        <h4>Low Stock</h4>
-        <p>Sample item - only 2 left</p>
-        <p>Just now</p>
-      </div>
-    </li>
-    <li><hr class="dropdown-divider"></li>
-    -->
-
-    <li class="dropdown-footer">
-      <a href="#">Show all notifications</a>
-    </li>
-
-  </ul>
-
-        <li class="nav-item dropdown pe-3">
-
-            <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
-            <img src="assets/img/3.png" alt="Profile" class="rounded-circle">
-            <span class="d-none d-md-block dropdown-toggle ps-2">Admin</span>
-            </a><!-- End Profile Image Icon -->
-
-            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
-            <li class="dropdown-header">
-                <h6>Admin</h6>
-                <span><b>Admin</b></span>
+          <% if (familyCount > 0) { %>
+            <li class="notification-item">
+              <i class="bi bi-check-circle text-success"></i>
+              <div>
+                <h4>Families Active</h4>
+                <p>There are <%= familyCount %> records in the system.</p>
+              </div>
             </li>
-
-            <li>
-              <hr class="dropdown-divider">
+          <% } else { %>
+            <li class="notification-item text-center">
+              <div>No notifications available</div>
             </li>
+          <% } %>
 
-            <li>
-              <a class="dropdown-item d-flex align-items-center" href="/users-profile">
-                <i class="bi bi-person"></i>
-                <span>My Profile</span>
-              </a>
-            </li>
-            <li>
-              <hr class="dropdown-divider">
-            </li>
-            <li>
-              <hr class="dropdown-divider">
-            </li>
-            <li>
-              <hr class="dropdown-divider">
-            </li>
+          <li><hr class="dropdown-divider"></li>
+          <li class="dropdown-footer">
+            <a href="#">Show all notifications</a>
+          </li>
+        </ul>
+      </li>
 
-            <li>
-              <a class="dropdown-item d-flex align-items-center" href="/logout">
-                <i class="bi bi-box-arrow-right"></i>
-                <span>Sign Out</span>
-              </a>
-            </li>
+      <li class="nav-item dropdown pe-3">
+        <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
+          <img src="assets/img/3.png" alt="Profile" class="rounded-circle">
+          <span class="d-none d-md-block dropdown-toggle ps-2"><%= adminName %></span>
+        </a><ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
+          <li class="dropdown-header">
+            <h6><%= adminName %></h6>
+            <span>System Admin</span>
+          </li>
 
-          </ul><!-- End Profile Dropdown Items -->
-        </li><!-- End Profile Nav -->
+          <li><hr class="dropdown-divider"></li>
 
-      </ul>
-    </nav><!-- End Icons Navigation -->
+          <li>
+            <a class="dropdown-item d-flex align-items-center" href="/users-profile">
+              <i class="bi bi-person"></i>
+              <span>My Profile</span>
+            </a>
+          </li>
+          
+          <li><hr class="dropdown-divider"></li>
 
-  </header><!-- End Header -->
+          <li>
+            <a class="dropdown-item d-flex align-items-center" href="/logout">
+              <i class="bi bi-box-arrow-right"></i>
+              <span>Sign Out</span>
+            </a>
+          </li>
+
+        </ul></li></ul>
+  </nav></header>
 
   <!-- ======= Sidebar ======= -->
     <aside id="sidebar" class="sidebar">
@@ -259,129 +227,169 @@
     <main id="main" class="main">
     <div class="container-fluid">
 
-        <!-- Page Title -->
         <div class="pagetitle mb-4">
-        <h1>Grant Family Access</h1>
-        <p class="text-muted">
-            Manage dashboard access for families with completed payments
-        </p>
+            <h1>Grant Family Access</h1>
+            <p class="text-muted">
+                Manage dashboard access for families with completed payments
+            </p>
         </div>
 
         <div class="row g-4">
 
-        <!-- ================= PAID FAMILIES LIST ================= -->
-        <div class="col-lg-7 col-md-12">
-            <div class="card shadow-sm">
-            <div class="card-header">
-                <h5 class="mb-0">Paid Families</h5>
-            </div>
+            <div class="col-lg-7 col-md-12">
+                <div class="card shadow-sm">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Paid Families</h5>
+                        <small class="text-muted">Click 'Select' to configure access</small>
+                    </div>
 
-            <div class="card-body">
-                <div class="table-responsive">
-                <table id="grantAccessTable" class="table table-hover table-striped nowrap" style="width:100%">
-                    <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Family</th>
-                        <th>Family Admin</th>
-                        <th>Phone</th>
-                        <th>Access</th>
-                    </tr>
-                    </thead>
-
-                    <tbody>
-                    <tr>
-                        <td>1</td>
-                        <td>Mwalimu Family</td>
-                        <td>Maulid Mwalimu</td>
-                        <td>0742 700 833</td>
-                        <td>
-                        <button class="btn btn-sm btn-outline-primary">
-                            <i class="bi bi-shield-check"></i> Grant Access
-                        </button>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td>2</td>
-                        <td>Nkya Family</td>
-                        <td>John Nkya</td>
-                        <td>0756 123 456</td>
-                        <td>
-                        <button class="btn btn-sm btn-outline-primary">
-                            <i class="bi bi-shield-check"></i> Grant Access
-                        </button>
-                        </td>
-                    </tr>
-
-                    </tbody>
-                </table>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table id="grantAccessTable" class="table table-hover table-striped nowrap" style="width:100%">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Family</th>
+                                        <th>Admin</th>
+                                        <th>Amount</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                  <tbody>
+                                      <% if (locals.paidFamilies && paidFamilies.length > 0) { %>
+                                          <% paidFamilies.forEach((family, index) => { %>
+                                              <tr>
+                                                  <td><%= index + 1 %></td>
+                                                  <td><strong><%= family.family_name || 'N/A' %></strong></td>
+                                                  <td><%= (family.first_name || '') %> <%= (family.last_name || '') %></td>
+                                                  <td><%= Number(family.amount || 0).toLocaleString() %></td>
+                                                  <td>
+                                                      <button type="button" 
+                                                              class="btn btn-sm btn-outline-primary select-family-btn"
+                                                              data-id="<%= family.family_id %>"
+                                                              data-name="<%= family.family_name %>"
+                                                              data-amount="<%= family.amount %>">
+                                                          <i class="bi bi-shield-check"></i> Select
+                                                      </button>
+                                                  </td>
+                                              </tr>
+                                          <% }); %>
+                                      <% } %>
+                                  </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
+
+            <div class="col-lg-5 col-md-12">
+                <div class="card shadow-sm border-primary">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Access Control Panel</h5>
+                    </div>
+
+                    <div class="card-body">
+                        <form action="/save-family-access" method="POST">
+                            <input type="hidden" name="family_id" id="selected_family_id" required>
+                            
+                            <div class="mt-3 p-2 bg-light rounded border">
+                                <span class="text-muted small">Target Family:</span>
+                                <h6 id="display_family_name" class="text-dark mb-0">None Selected</h6>
+                                <span id="display_package" class="badge bg-secondary">N/A</span>
+                            </div>
+
+                            <hr>
+
+                            <h6 class="text-primary fw-bold">My Family & Core</h6>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" name="permissions" value="register_family" id="perm_register" checked>
+                                <label class="form-check-label">Register/Add Members</label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" name="permissions" value="family_lists" id="perm_lists" checked>
+                                <label class="form-check-label">View Family List</label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" name="permissions" value="family_tree" id="perm_tree" checked>
+                                <label class="form-check-label">View Family Tree</label>
+                            </div>
+
+                            <h6 class="text-primary fw-bold mt-3">Meetings & Reminders</h6>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" name="permissions" value="meetings" id="perm_meetings">
+                                <label class="form-check-label">Access Meetings (Schedule/Attend)</label>
+                            </div>
+
+                            <h6 class="text-primary fw-bold mt-3">Advanced Storage</h6>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" name="permissions" value="drive" id="perm_drive">
+                                <label class="form-check-label">Family Drive (Files/Uploads)</label>
+                            </div>
+
+                            <h6 class="text-primary fw-bold mt-3">Analytics</h6>
+                            <div class="form-check mb-4">
+                                <input class="form-check-input" type="checkbox" name="permissions" value="reports" id="perm_reports">
+                                <label class="form-check-label">Generate Reports</label>
+                            </div>
+
+                            <button type="submit" class="btn btn-success w-100 py-2" id="saveBtn" disabled>
+                                <i class="bi bi-save"></i> Save & Grant Access
+                            </button>
+                        </form>
+                    </div>
+                </div>
             </div>
-        </div>
-
-        <!-- ================= ACCESS CONTROL PANEL ================= -->
-        <div class="col-lg-5 col-md-12">
-            <div class="card shadow-sm">
-            <div class="card-header">
-                <h5 class="mb-0">Family Dashboard Access</h5>
-            </div>
-
-            <div class="card-body">
-                <p class="text-muted small mb-3">
-                Select features to enable on the family dashboard
-                </p>
-
-                <!-- Dashboard -->
-                <h6 class="text-primary">Dashboard</h6>
-                <div class="form-check mb-2">
-                <input class="form-check-input" type="checkbox" checked>
-                <label class="form-check-label">View Dashboard</label>
-                </div>
-
-                <!-- Family -->
-                <h6 class="text-primary mt-3">Family</h6>
-                <div class="form-check mb-2">
-                <input class="form-check-input" type="checkbox">
-                <label class="form-check-label">Add Family Members</label>
-                </div>
-
-                <div class="form-check mb-2">
-                <input class="form-check-input" type="checkbox">
-                <label class="form-check-label">Edit Family Information</label>
-                </div>
-
-                <div class="form-check mb-2">
-                <input class="form-check-input" type="checkbox">
-                <label class="form-check-label">Upload Documents</label>
-                </div>
-
-                <!-- Advanced -->
-                <h6 class="text-primary mt-3">Advanced</h6>
-                <div class="form-check mb-2">
-                <input class="form-check-input" type="checkbox">
-                <label class="form-check-label">View Family Tree</label>
-                </div>
-
-                <div class="form-check mb-3">
-                <input class="form-check-input" type="checkbox">
-                <label class="form-check-label">Reports & Analytics</label>
-                </div>
-
-                <button class="btn btn-success w-100">
-                <i class="bi bi-save"></i> Save Access
-                </button>
-
-            </div>
-            </div>
-        </div>
 
         </div>
     </div>
-    </main>
+</main>
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Select all buttons with our class
+    const selectButtons = document.querySelectorAll('.select-family-btn');
 
+    selectButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            // Get data from attributes
+            const familyId = this.getAttribute('data-id');
+            const familyName = this.getAttribute('data-name');
+            const amount = parseInt(this.getAttribute('data-amount')) || 0;
+
+            // Run the configuration logic
+            autoConfigureAccess(familyId, familyName, amount);
+        });
+    });
+});
+
+function autoConfigureAccess(familyId, familyName, amount) {
+    // 1. Set Identifiers
+    document.getElementById('selected_family_id').value = familyId;
+    document.getElementById('display_family_name').innerText = familyName;
+    document.getElementById('saveBtn').disabled = false;
+
+    // 2. Elements
+    const meetings = document.getElementById('perm_meetings');
+    const drive = document.getElementById('perm_drive');
+    const reports = document.getElementById('perm_reports');
+    const pkgBadge = document.getElementById('display_package');
+
+    // 3. Logic based on Amount
+    if (amount >= 50000) {
+        pkgBadge.innerText = "Advance Package";
+        pkgBadge.className = "badge bg-success";
+        meetings.checked = true; drive.checked = true; reports.checked = true;
+    } else if (amount >= 30000) {
+        pkgBadge.innerText = "Standard Package";
+        pkgBadge.className = "badge bg-info text-dark";
+        meetings.checked = false; drive.checked = true; reports.checked = false;
+    } else {
+        pkgBadge.innerText = "Local Package";
+        pkgBadge.className = "badge bg-warning text-dark";
+        meetings.checked = false; drive.checked = false; reports.checked = false;
+    }
+}
+</script>
     <!-- ======= Footer ======= -->
     <footer id="footer" class="footer">
     <div class="copyright">

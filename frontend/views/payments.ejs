@@ -34,113 +34,81 @@
 <body>
 
   <!-- ======= Header ======= -->
-  <header id="header" class="header fixed-top d-flex align-items-center">
+<header id="header" class="header fixed-top d-flex align-items-center">
 
-    <div class="d-flex align-items-center justify-content-between">
-      <a href="/" class="logo d-flex align-items-center">
-        <img src="" alt="">
-        <span class="d-none d-lg-block">Family Genealogy</span>
-      </a>
-      <i class="bi bi-list toggle-sidebar-btn"></i>
-    </div><!-- End Logo -->
+  <div class="d-flex align-items-center justify-content-between">
+    <a href="/Admin" class="logo d-flex align-items-center">
+      <img src="assets/img/logo.png" alt=""> <span class="d-none d-lg-block">Family Genealogy</span>
+    </a>
+    <i class="bi bi-list toggle-sidebar-btn"></i>
+  </div><nav class="header-nav ms-auto">
+    <ul class="d-flex align-items-center">
 
+      <li class="nav-item dropdown">
+        <a class="nav-link nav-icon" href="#" data-bs-toggle="dropdown">
+          <i class="bi bi-bell"></i>
+          <span class="badge bg-primary badge-number"><%= familyCount %></span>
+        </a><ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow notifications">
+          <li class="dropdown-header">
+            You have <%= familyCount %> families registered
+            <a href="#">
+              <span class="badge rounded-pill bg-primary p-2 ms-2">View all</span>
+            </a>
+          </li>
 
-    <nav class="header-nav ms-auto">
-      <ul class="d-flex align-items-center">
+          <li><hr class="dropdown-divider"></li>
 
-        
-
-        <li class="nav-item dropdown">
-
-  <a class="nav-link nav-icon" href="#" data-bs-toggle="dropdown">
-    <i class="bi bi-bell"></i>
-    <span class="badge bg-primary badge-number">0</span>
-  </a><!-- End Notification Icon -->
-
-  <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow notifications">
-
-    <li class="dropdown-header">
-      You have 0 new notifications
-      <a href="#">
-        <span class="badge rounded-pill bg-primary p-2 ms-2">View all</span>
-      </a>
-    </li>
-
-    <li><hr class="dropdown-divider"></li>
-
-    <!-- No notifications -->
-    <li class="notification-item text-center">
-      <div>No notifications available</div>
-    </li>
-
-    <li><hr class="dropdown-divider"></li>
-
-    <!-- Example notification (you can remove if not needed) -->
-    <!--
-    <li class="notification-item">
-      <i class="bi bi-exclamation-circle text-warning"></i>
-      <div>
-        <h4>Low Stock</h4>
-        <p>Sample item - only 2 left</p>
-        <p>Just now</p>
-      </div>
-    </li>
-    <li><hr class="dropdown-divider"></li>
-    -->
-
-    <li class="dropdown-footer">
-      <a href="#">Show all notifications</a>
-    </li>
-
-  </ul>
-
-        <li class="nav-item dropdown pe-3">
-
-            <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
-            <img src="assets/img/3.png" alt="Profile" class="rounded-circle">
-            <span class="d-none d-md-block dropdown-toggle ps-2">Admin</span>
-            </a><!-- End Profile Image Icon -->
-
-            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
-            <li class="dropdown-header">
-                <h6>Admin</h6>
-                <span><b>Admin</b></span>
+          <% if (familyCount > 0) { %>
+            <li class="notification-item">
+              <i class="bi bi-check-circle text-success"></i>
+              <div>
+                <h4>Families Active</h4>
+                <p>There are <%= familyCount %> records in the system.</p>
+              </div>
             </li>
-
-            <li>
-              <hr class="dropdown-divider">
+          <% } else { %>
+            <li class="notification-item text-center">
+              <div>No notifications available</div>
             </li>
+          <% } %>
 
-            <li>
-              <a class="dropdown-item d-flex align-items-center" href="/users-profile">
-                <i class="bi bi-person"></i>
-                <span>My Profile</span>
-              </a>
-            </li>
-            <li>
-              <hr class="dropdown-divider">
-            </li>
-            <li>
-              <hr class="dropdown-divider">
-            </li>
-            <li>
-              <hr class="dropdown-divider">
-            </li>
+          <li><hr class="dropdown-divider"></li>
+          <li class="dropdown-footer">
+            <a href="#">Show all notifications</a>
+          </li>
+        </ul>
+      </li>
 
-            <li>
-              <a class="dropdown-item d-flex align-items-center" href="/logout">
-                <i class="bi bi-box-arrow-right"></i>
-                <span>Sign Out</span>
-              </a>
-            </li>
+      <li class="nav-item dropdown pe-3">
+        <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
+          <img src="assets/img/3.png" alt="Profile" class="rounded-circle">
+          <span class="d-none d-md-block dropdown-toggle ps-2"><%= adminName %></span>
+        </a><ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
+          <li class="dropdown-header">
+            <h6><%= adminName %></h6>
+            <span>System Admin</span>
+          </li>
 
-          </ul><!-- End Profile Dropdown Items -->
-        </li><!-- End Profile Nav -->
+          <li><hr class="dropdown-divider"></li>
 
-      </ul>
-    </nav><!-- End Icons Navigation -->
+          <li>
+            <a class="dropdown-item d-flex align-items-center" href="/users-profile">
+              <i class="bi bi-person"></i>
+              <span>My Profile</span>
+            </a>
+          </li>
+          
+          <li><hr class="dropdown-divider"></li>
 
-  </header><!-- End Header -->
+          <li>
+            <a class="dropdown-item d-flex align-items-center" href="/logout">
+              <i class="bi bi-box-arrow-right"></i>
+              <span>Sign Out</span>
+            </a>
+          </li>
+
+        </ul></li></ul>
+  </nav></header>
 
   <!-- ======= Sidebar ======= -->
     <aside id="sidebar" class="sidebar">
@@ -290,58 +258,39 @@
                 </thead>
 
                 <tbody>
-                <tr>
-                    <td>1</td>
-                    <td>Mwalimu Family</td>
-                    <td>Maulid Mwalimu</td>
-                    <td>0742 700 833</td>
-                    <td>30,000</td>
-                    <td><span class="badge bg-info">M-Pesa</span></td>
-                    <td>MPZ23901K</td>
-                    <td>2026-02-02</td>
-                    <td><span class="badge bg-success">Paid</span></td>
-                    <td>
-                    <button class="btn btn-sm btn-outline-primary" title="View">
-                        <i class="bi bi-eye"></i>
-                    </button>
-                    </td>
-                </tr>
-
-                <tr>
-                    <td>2</td>
-                    <td>Nkya Family</td>
-                    <td>John Nkya</td>
-                    <td>0756 123 456</td>
-                    <td>30,000</td>
-                    <td><span class="badge bg-warning text-dark">TigoPesa</span></td>
-                    <td>TGP77291X</td>
-                    <td>2026-02-01</td>
-                    <td><span class="badge bg-warning text-dark">Pending</span></td>
-                    <td>
-                    <button class="btn btn-sm btn-outline-primary" title="View">
-                        <i class="bi bi-eye"></i>
-                    </button>
-                    </td>
-                </tr>
-
-                <tr>
-                    <td>3</td>
-                    <td>Kweka Family</td>
-                    <td>Peter Kweka</td>
-                    <td>0789 456 112</td>
-                    <td>30,000</td>
-                    <td><span class="badge bg-secondary">Airtel Money</span></td>
-                    <td>AMN88231</td>
-                    <td>2026-01-29</td>
-                    <td><span class="badge bg-danger">Failed</span></td>
-                    <td>
-                    <button class="btn btn-sm btn-outline-primary" title="View">
-                        <i class="bi bi-eye"></i>
-                    </button>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
+                  <% if (payments && payments.length > 0) { %>
+                    <% payments.forEach((payment, index) => { %>
+                      <tr>
+                        <td><%= index + 1 %></td>
+                        <td><%= payment.family_name %></td>
+                        <td><%= payment.note || 'N/A' %></td> <td><%= payment.payment_type %></td> <td><%= Number(payment.amount).toLocaleString() %></td>
+                        <td>
+                          <% if(payment.payment_method === 'mobile_money') { %>
+                            <span class="badge bg-info text-dark">Mobile Money</span>
+                          <% } else if(payment.payment_method === 'bank') { %>
+                            <span class="badge bg-primary">Bank</span>
+                          <% } else { %>
+                            <span class="badge bg-secondary">Cash</span>
+                          <% } %>
+                        </td>
+                        <td><%= payment.payment_id %></td> <td><%= new Date(payment.payment_date).toLocaleDateString('en-GB') %></td>
+                        <td><span class="badge bg-success">Paid</span></td>
+                        <td>
+                          <button class="btn btn-sm btn-outline-primary" title="View">
+                            <i class="bi bi-eye"></i>
+                          </button>
+                        </td>
+                      </tr>
+                    <% }); %>
+                  <% } else { %>
+                    <tr>
+                      <td colspan="10" class="text-center table-danger text-danger">
+                          <strong><i class="bi bi-exclamation-triangle-fill"></i> No payment records found.</strong>
+                      </td>
+                    </tr>
+                  <% } %>
+                </tbody>            
+              </table>
             </div>
         </div>
         </div>

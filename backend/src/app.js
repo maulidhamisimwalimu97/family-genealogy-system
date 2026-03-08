@@ -311,42 +311,346 @@ app.post('/delete-family', (req, res) => {
 
 // lists of Payments 
 app.get('/payments', (req, res) => {
-  res.render('payments'); // Admin
+    const adminId = req.session.adminId;
+    if (!adminId) return res.redirect('/index');
+
+    // SQL to get payment details + family name
+    // Adjust 'family_name' or 'payer_name' columns based on your specific table schema
+    const sql = `
+        SELECT p.*, f.family_name 
+        FROM payment p
+        JOIN family f ON p.family_id = f.family_id
+        ORDER BY p.payment_date DESC`;
+
+    db.query(sql, (err, payments) => {
+        if (err) {
+            console.error("Payment Fetch Error:", err);
+            return res.render('payments', { payments: [], error: "Could not load payments." });
+        }
+
+        res.render('payments', { 
+            payments: payments,
+            error: null,
+            success: req.query.success || null 
+        });
+    });
 });
 
 // lists of Family Paid
 app.get('/paid', (req, res) => {
-  res.render('paid'); // Admin
+    const adminId = req.session.adminId;
+    if (!adminId) return res.redirect('/index');
+
+    // Query to get family details, the admin of that family, and their payment info
+    const sql = `
+        SELECT 
+            f.family_name, 
+            fm.first_name, 
+            fm.last_name, 
+            fm.phone, 
+            p.amount, 
+            p.payment_method, 
+            p.payment_date,
+            p.payment_id
+        FROM payment p
+        JOIN family f ON p.family_id = f.family_id
+        JOIN family_member fm ON f.family_id = fm.family_id 
+        WHERE fm.role = 'family_admin' 
+        ORDER BY p.payment_date DESC`;
+
+    db.query(sql, (err, paidFamilies) => {
+        if (err) {
+            console.error("Fetch Paid Error:", err);
+            return res.render('paid', { paidFamilies: [], error: "Error fetching paid records." });
+        }
+
+        res.render('paid', { 
+            paidFamilies: paidFamilies,
+            error: null 
+        });
+    });
 });
 
 // lists of Family Unpaid
 app.get('/unpaid', (req, res) => {
-  res.render('unpaid'); // Admin
+    const adminId = req.session.adminId;
+    if (!adminId) return res.redirect('/index');
+
+    // SQL to find families that have NO records in the payment table
+    const sql = `
+        SELECT 
+            f.family_id,
+            f.family_name, 
+            fm.first_name, 
+            fm.last_name, 
+            fm.phone,
+            (SELECT MAX(payment_date) FROM payment WHERE family_id = f.family_id) as last_payment_date
+        FROM family f
+        JOIN family_member fm ON f.family_id = fm.family_id
+        LEFT JOIN payment p ON f.family_id = p.family_id
+        WHERE fm.role = 'family_admin' 
+        AND p.payment_id IS NULL
+        ORDER BY f.created_at DESC`;
+
+    db.query(sql, (err, unpaidFamilies) => {
+        if (err) {
+            console.error("Fetch Unpaid Error:", err);
+            return res.render('unpaid', { unpaidFamilies: [], error: "Error fetching unpaid families." });
+        }
+
+        res.render('unpaid', { 
+            unpaidFamilies: unpaidFamilies,
+            error: null 
+        });
+    });
 });
 
 // Grant Access
 app.get('/grant_access', (req, res) => {
-  res.render('grant_access'); // Admin
+    const adminId = req.session.adminId;
+    const adminName = req.session.adminName; 
+
+    if (!adminId) return res.redirect('/index');
+
+    const sql = `
+        SELECT f.family_id, f.family_name, fm.first_name, fm.last_name, fm.phone, p.amount
+        FROM family f
+        JOIN payment p ON f.family_id = p.family_id
+        JOIN family_member fm ON f.family_id = fm.family_id
+        WHERE fm.role = 'family_admin'
+        ORDER BY p.payment_date DESC`;
+
+    db.query(sql, (err, results) => {
+        if (err) {
+            console.error(err);
+            return res.render('grant_access', { 
+                paidFamilies: [], 
+                // Ondoa familyCount hapa ili itumie ile ya middleware
+            }); 
+        }
+
+        res.render('grant_access', { 
+            paidFamilies: results || []
+            // Ondoa familyCount hapa ili itumie ile ya middleware
+        });
+    });
+});
+
+app.post('/save-family-access', (req, res) => {
+    const { family_id, permissions } = req.body;
+    
+    // permissions will be an array of strings (e.g., ['meetings', 'drive'])
+    // We convert it to a comma-separated string for the database
+    const permsString = Array.isArray(permissions) ? permissions.join(',') : permissions;
+
+    const sql = "UPDATE family SET permissions = ? WHERE family_id = ?";
+    
+    db.query(sql, [permsString, family_id], (err, result) => {
+        if (err) {
+            console.error(err);
+            return res.redirect('/grant_access?error=Failed to update');
+        }
+        res.redirect('/grant_access?success=Access updated successfully');
+    });
 });
 
 // Revoke Access
 app.get('/revoke_access', (req, res) => {
-  res.render('revoke_access'); // Admin
+    const adminId = req.session.adminId;
+    if (!adminId) return res.redirect('/index');
+
+    // Tunatafuta familia ambazo tayari zina permissions (haziko null)
+    const sql = `
+        SELECT f.family_id, f.family_name, fm.first_name, fm.last_name, fm.phone 
+        FROM family f
+        JOIN family_member fm ON f.family_id = fm.family_id
+        WHERE fm.role = 'family_admin' 
+        AND f.permissions IS NOT NULL 
+        AND f.permissions != ''
+        ORDER BY f.family_name ASC`;
+
+    db.query(sql, (err, results) => {
+        if (err) {
+            console.error(err);
+            return res.render('revoke_access', { activeFamilies: [] });
+        }
+        res.render('revoke_access', { activeFamilies: results || [] });
+    });
 });
+
+// Route ya kufanya Revoke (Kutoa Access)
+app.post('/confirm-revoke', (req, res) => {
+    const { family_id } = req.body;
+    
+    // Tunafuta permissions kwa kuifanya iwe NULL
+    const sql = "UPDATE family SET permissions = NULL WHERE family_id = ?";
+    
+    db.query(sql, [family_id], (err, result) => {
+        if (err) {
+            console.error(err);
+            return res.redirect('/revoke_access?error=Failed to revoke access');
+        }
+        res.redirect('/revoke_access?success=Access revoked successfully');
+    });
+});
+
+app.use((req, res, next) => {
+    // 1. INAWEZESHA TOAST: Inasoma ujumbe kutoka kwenye URL na kuuweka kwenye res.locals
+    res.locals.success = req.query.success || null;
+    res.locals.error = req.query.error || null;
+
+    const adminId = req.session.adminId;
+    const adminName = req.session.adminName;
+
+    res.locals.adminName = adminName || null;
+    res.locals.familyCount = 0;
+
+    if (!adminId) return next();
+
+    const sql = "SELECT COUNT(*) AS totalFamilies FROM family WHERE registered_by = ?";
+    db.query(sql, [adminId], (err, result) => {
+        if (!err && result.length > 0) {
+            res.locals.familyCount = result[0].totalFamilies;
+        }
+        next();
+    });
+});
+
 
 // Register Users
 app.get('/user', (req, res) => {
   res.render('user'); // Admin
 });
 
+
+// Route ya kupokea usajili wa User mpya
+app.post('/register-system-user', async (req, res) => {
+    const { full_name, email, phone, role, password, confirm_password } = req.body;
+
+    // 1. Validations za haraka
+    if (password !== confirm_password) {
+        return res.redirect('/user?error=Passwords do not match');
+    }
+
+    try {
+        // 2. Ficha password (Hashing)
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+
+        // 3. SQL Query (Jina la table ni system_admin kulingana na picha yako)
+        const sql = `INSERT INTO system_admin (role, full_name, email, phone, password) VALUES (?, ?, ?, ?, ?)`;
+        const values = [role, full_name, email, phone, hashedPassword];
+
+        db.query(sql, values, (err, result) => {
+            if (err) {
+                console.error("Registration Error:", err);
+                if (err.code === 'ER_DUP_ENTRY') {
+                    return res.redirect('/user?error=Email already registered');
+                }
+                return res.redirect('/user?error=Database error occurred');
+            }
+            
+            res.redirect('/user?success=System user registered successfully');
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.redirect('/user?error=Something went wrong');
+    }
+});
+
 // Lists of users
 app.get('/lists_user', (req, res) => {
-  res.render('lists_user'); // Admin
+    const query = "SELECT * FROM system_admin ORDER BY created_at DESC";
+    
+    // Extract parameters from the URL query string
+    const status = req.query.status;
+    const message = req.query.message;
+
+    db.query(query, (err, results) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send("Database Error");
+        }
+
+        res.render('lists_user', { 
+            users: results,
+            // Map the query params to the variables used in your partial
+            success: status === 'success' ? message : null,
+            error: status === 'error' ? message : null
+        });
+    });
+});
+// --- Update System Admin ---
+app.post('/update_user', (req, res) => {
+    const { admin_id, full_name, email, role, phone } = req.body;
+    const sql = "UPDATE system_admin SET full_name = ?, email = ?, role = ?, phone = ? WHERE admin_id = ?";
+    
+    db.query(sql, [full_name, email, role, phone, admin_id], (err, result) => {
+        if (err) {
+            return res.redirect('/lists_user?status=error&message=Update failed');
+        }
+        res.redirect('/lists_user?status=success&message=User updated successfully');
+    });
 });
 
 // reports for admin
-app.get('/report', (req, res) => {
-  res.render('report'); // Admin
+app.get('/report', async (req, res) => {
+    const adminId = req.session.adminId;
+    if (!adminId) return res.redirect('/index');
+
+    try {
+        const queries = {
+            today: "SELECT COUNT(*) AS count FROM family WHERE DATE(created_at) = CURDATE()",
+            month: "SELECT COUNT(*) AS count FROM family WHERE MONTH(created_at) = MONTH(CURDATE()) AND YEAR(created_at) = YEAR(CURDATE())",
+            year: "SELECT COUNT(*) AS count FROM family WHERE YEAR(created_at) = YEAR(CURDATE())",
+            total: "SELECT COUNT(*) AS count FROM family",
+            paid: "SELECT COUNT(DISTINCT family_id) AS count FROM payment",
+            accessGranted: "SELECT COUNT(*) AS count FROM family WHERE permissions IS NOT NULL AND permissions != ''",
+            revoked: "SELECT COUNT(*) AS count FROM family WHERE permissions IS NULL OR permissions = ''",
+            users: "SELECT COUNT(*) AS count FROM admin" // Hakikisha table inaitwa 'admin'
+        };
+
+        // Kazi ya kusaidia kurudisha 0 kama query ikifeli
+        const runQuery = (sql) => {
+            return new Promise((resolve) => {
+                db.query(sql, (err, r) => {
+                    if (err || !r || r.length === 0) {
+                        resolve(0); // Rudisha 0 kama kuna kosa
+                    } else {
+                        resolve(r[0].count || 0);
+                    }
+                });
+            });
+        };
+
+        const [today, month, year, total, paid, granted, revoked, users] = await Promise.all([
+            runQuery(queries.today),
+            runQuery(queries.month),
+            runQuery(queries.year),
+            runQuery(queries.total),
+            runQuery(queries.paid),
+            runQuery(queries.accessGranted),
+            runQuery(queries.revoked),
+            runQuery(queries.users)
+        ]);
+
+        const stats = {
+            today, month, year, total,
+            paid,
+            unpaid: Math.max(0, total - paid),
+            granted,
+            revoked,
+            users,
+            dateGenerated: new Date().toISOString().split('T')[0]
+        };
+
+        res.render('report', { stats });
+
+    } catch (error) {
+        console.error("Report Generation Error:", error);
+        res.status(500).send("Tulipata tatizo kutengeneza ripoti.");
+    }
 });
 
 // header.ejs

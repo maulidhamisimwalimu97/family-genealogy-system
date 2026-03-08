@@ -34,113 +34,81 @@
 <body>
 
   <!-- ======= Header ======= -->
-  <header id="header" class="header fixed-top d-flex align-items-center">
+   <header id="header" class="header fixed-top d-flex align-items-center">
 
-    <div class="d-flex align-items-center justify-content-between">
-      <a href="/" class="logo d-flex align-items-center">
-        <img src="" alt="">
-        <span class="d-none d-lg-block">Family Genealogy</span>
-      </a>
-      <i class="bi bi-list toggle-sidebar-btn"></i>
-    </div><!-- End Logo -->
+  <div class="d-flex align-items-center justify-content-between">
+    <a href="/Admin" class="logo d-flex align-items-center">
+      <img src="assets/img/logo.png" alt=""> <span class="d-none d-lg-block">Family Genealogy</span>
+    </a>
+    <i class="bi bi-list toggle-sidebar-btn"></i>
+  </div><nav class="header-nav ms-auto">
+    <ul class="d-flex align-items-center">
 
+      <li class="nav-item dropdown">
+        <a class="nav-link nav-icon" href="#" data-bs-toggle="dropdown">
+          <i class="bi bi-bell"></i>
+          <span class="badge bg-primary badge-number"><%= familyCount %></span>
+        </a><ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow notifications">
+          <li class="dropdown-header">
+            You have <%= familyCount %> families registered
+            <a href="#">
+              <span class="badge rounded-pill bg-primary p-2 ms-2">View all</span>
+            </a>
+          </li>
 
-    <nav class="header-nav ms-auto">
-      <ul class="d-flex align-items-center">
+          <li><hr class="dropdown-divider"></li>
 
-        
-
-        <li class="nav-item dropdown">
-
-  <a class="nav-link nav-icon" href="#" data-bs-toggle="dropdown">
-    <i class="bi bi-bell"></i>
-    <span class="badge bg-primary badge-number">0</span>
-  </a><!-- End Notification Icon -->
-
-  <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow notifications">
-
-    <li class="dropdown-header">
-      You have 0 new notifications
-      <a href="#">
-        <span class="badge rounded-pill bg-primary p-2 ms-2">View all</span>
-      </a>
-    </li>
-
-    <li><hr class="dropdown-divider"></li>
-
-    <!-- No notifications -->
-    <li class="notification-item text-center">
-      <div>No notifications available</div>
-    </li>
-
-    <li><hr class="dropdown-divider"></li>
-
-    <!-- Example notification (you can remove if not needed) -->
-    <!--
-    <li class="notification-item">
-      <i class="bi bi-exclamation-circle text-warning"></i>
-      <div>
-        <h4>Low Stock</h4>
-        <p>Sample item - only 2 left</p>
-        <p>Just now</p>
-      </div>
-    </li>
-    <li><hr class="dropdown-divider"></li>
-    -->
-
-    <li class="dropdown-footer">
-      <a href="#">Show all notifications</a>
-    </li>
-
-  </ul>
-
-        <li class="nav-item dropdown pe-3">
-
-            <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
-            <img src="assets/img/3.png" alt="Profile" class="rounded-circle">
-            <span class="d-none d-md-block dropdown-toggle ps-2">Admin</span>
-            </a><!-- End Profile Image Icon -->
-
-            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
-            <li class="dropdown-header">
-                <h6>Admin</h6>
-                <span><b>Admin</b></span>
+          <% if (familyCount > 0) { %>
+            <li class="notification-item">
+              <i class="bi bi-check-circle text-success"></i>
+              <div>
+                <h4>Families Active</h4>
+                <p>There are <%= familyCount %> records in the system.</p>
+              </div>
             </li>
-
-            <li>
-              <hr class="dropdown-divider">
+          <% } else { %>
+            <li class="notification-item text-center">
+              <div>No notifications available</div>
             </li>
+          <% } %>
 
-            <li>
-              <a class="dropdown-item d-flex align-items-center" href="/users-profile">
-                <i class="bi bi-person"></i>
-                <span>My Profile</span>
-              </a>
-            </li>
-            <li>
-              <hr class="dropdown-divider">
-            </li>
-            <li>
-              <hr class="dropdown-divider">
-            </li>
-            <li>
-              <hr class="dropdown-divider">
-            </li>
+          <li><hr class="dropdown-divider"></li>
+          <li class="dropdown-footer">
+            <a href="#">Show all notifications</a>
+          </li>
+        </ul>
+      </li>
 
-            <li>
-              <a class="dropdown-item d-flex align-items-center" href="/logout">
-                <i class="bi bi-box-arrow-right"></i>
-                <span>Sign Out</span>
-              </a>
-            </li>
+      <li class="nav-item dropdown pe-3">
+        <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
+          <img src="assets/img/3.png" alt="Profile" class="rounded-circle">
+          <span class="d-none d-md-block dropdown-toggle ps-2"><%= adminName %></span>
+        </a><ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
+          <li class="dropdown-header">
+            <h6><%= adminName %></h6>
+            <span>System Admin</span>
+          </li>
 
-          </ul><!-- End Profile Dropdown Items -->
-        </li><!-- End Profile Nav -->
+          <li><hr class="dropdown-divider"></li>
 
-      </ul>
-    </nav><!-- End Icons Navigation -->
+          <li>
+            <a class="dropdown-item d-flex align-items-center" href="/users-profile">
+              <i class="bi bi-person"></i>
+              <span>My Profile</span>
+            </a>
+          </li>
+          
+          <li><hr class="dropdown-divider"></li>
 
-  </header><!-- End Header -->
+          <li>
+            <a class="dropdown-item d-flex align-items-center" href="/logout">
+              <i class="bi bi-box-arrow-right"></i>
+              <span>Sign Out</span>
+            </a>
+          </li>
+
+        </ul></li></ul>
+  </nav></header>
 
   <!-- ======= Sidebar ======= -->
     <aside id="sidebar" class="sidebar">
@@ -255,7 +223,10 @@
     </ul>
     </aside>
 
+
     <main id="main" class="main">
+
+    <%- include('partials/notifications') %>
         <div class="container-fluid">
 
             <!-- Page Title -->
@@ -288,75 +259,44 @@
                                 </tr>
                             </thead>
 
-                            <tbody>
+                           <tbody>
+                                <% users.forEach((user, index) => { %>
                                 <tr>
-                                    <td>1</td>
-                                    <td>Maulid Mwalimu</td>
-                                    <td>maulid.admin</td>
-                                    <td>maulid@email.com</td>
+                                    <td><%= index + 1 %></td>
+                                    <td><%= user.full_name %></td>
+                                    <td><%= user.email %></td> <td><%= user.email %></td>
                                     <td>
-                                        <span class="badge bg-primary">Super Admin</span>
+                                        <span class="badge <%= user.role === 'Admin' ? 'bg-primary' : 'bg-info text-dark' %>">
+                                            <%= user.role %>
+                                        </span>
                                     </td>
+                                    <td><span class="badge bg-success">Active</span></td>
+                                    <td><%= new Date(user.created_at).toLocaleDateString() %></td>
                                     <td>
-                                        <span class="badge bg-success">Active</span>
-                                    </td>
-                                    <td>2026-01-10</td>
-                                    <td>
-                                        <!-- View -->
-                                        <button class="btn btn-sm btn-outline-secondary" title="View">
+                                        <button class="btn btn-sm btn-outline-secondary" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#viewUserModal"
+                                            data-name="<%= user.full_name %>"
+                                            data-email="<%= user.email %>"
+                                            data-role="<%= user.role %>"
+                                            data-phone="<%= user.phone %>">
                                             <i class="bi bi-eye"></i>
                                         </button>
 
-                                        <!-- Edit -->
-                                        <button class="btn btn-sm btn-outline-primary" title="Edit">
+                                        <button class="btn btn-sm btn-outline-primary"
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#editUserModal"
+                                            data-id="<%= user.admin_id %>"
+                                            data-name="<%= user.full_name %>"
+                                            data-email="<%= user.email %>"
+                                            data-phone="<%= user.phone %>"
+                                            data-role="<%= user.role %>">
                                             <i class="bi bi-pencil-square"></i>
-                                        </button>
-
-                                        <!-- Deactivate -->
-                                        <button class="btn btn-sm btn-outline-warning" title="Deactivate">
-                                            <i class="bi bi-slash-circle"></i>
-                                        </button>
-
-                                        <!-- Delete -->
-                                        <button class="btn btn-sm btn-outline-danger" title="Delete">
-                                            <i class="bi bi-trash"></i>
                                         </button>
                                     </td>
                                 </tr>
-
-                                <tr>
-                                    <td>2</td>
-                                    <td>Asha Mohamed</td>
-                                    <td>asha.assistant</td>
-                                    <td>asha@email.com</td>
-                                    <td>
-                                        <span class="badge bg-info text-dark">Assistant</span>
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-danger">Inactive</span>
-                                    </td>
-                                    <td>2026-01-15</td>
-                                    <td>
-                                        <button class="btn btn-sm btn-outline-secondary" title="View">
-                                            <i class="bi bi-eye"></i>
-                                        </button>
-
-                                        <button class="btn btn-sm btn-outline-primary" title="Edit">
-                                            <i class="bi bi-pencil-square"></i>
-                                        </button>
-
-                                        <!-- Activate -->
-                                        <button class="btn btn-sm btn-outline-success" title="Activate">
-                                            <i class="bi bi-check-circle"></i>
-                                        </button>
-
-                                        <button class="btn btn-sm btn-outline-danger" title="Delete">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </td>
-                                </tr>
+                                <% }) %>
                             </tbody>
-
                         </table>
                     </div>
                 </div>
@@ -364,7 +304,87 @@
 
         </div>
     </main>
+    <div class="modal fade" id="viewUserModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">User Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Full Name:</strong> <span id="view-name"></span></p>
+                <p><strong>Email:</strong> <span id="view-email"></span></p>
+                <p><strong>Phone:</strong> <span id="view-phone"></span></p>
+                <p><strong>Role:</strong> <span id="view-role"></span></p>
+            </div>
+        </div>
+    </div>
+</div>
 
+<div class="modal fade" id="editUserModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form action="/update_user" method="POST">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit User</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="admin_id" id="edit-id">
+                    
+                    <input type="hidden" name="phone" id="edit-phone">
+
+                    <div class="mb-3">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" name="full_name" id="edit-name" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" name="email" id="edit-email" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Role</label>
+                        <select name="role" id="edit-role" class="form-select">
+                            <option value="Admin">Admin</option>
+                            <option value="Assistant">Assistant</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // View Modal Logic
+    const viewModal = document.getElementById('viewUserModal');
+    viewModal.addEventListener('show.bs.modal', function (event) {
+        const button = event.relatedTarget;
+        document.getElementById('view-name').textContent = button.getAttribute('data-name');
+        document.getElementById('view-email').textContent = button.getAttribute('data-email');
+        document.getElementById('view-phone').textContent = button.getAttribute('data-phone') || 'N/A';
+        document.getElementById('view-role').textContent = button.getAttribute('data-role');
+    });
+
+    // Edit Modal Logic
+    const editModal = document.getElementById('editUserModal');
+    editModal.addEventListener('show.bs.modal', function (event) {
+        const button = event.relatedTarget;
+        document.getElementById('edit-id').value = button.getAttribute('data-id');
+        document.getElementById('edit-name').value = button.getAttribute('data-name');
+        document.getElementById('edit-email').value = button.getAttribute('data-email');
+        document.getElementById('edit-role').value = button.getAttribute('data-role');
+        
+        // ADDED: Populate the hidden phone field so it remains the same in the DB
+        document.getElementById('edit-phone').value = button.getAttribute('data-phone') || '';
+    });
+});
+</script>
 
 
 
