@@ -653,6 +653,77 @@ app.get('/report', async (req, res) => {
     }
 });
 
+// user profile.ejs
+app.get('/users-profile', (req, res) => {
+    const adminId = req.session.adminId; 
+    const sql = "SELECT * FROM system_admin WHERE admin_id = ?";
+
+    const status = req.query.status;
+    const message = req.query.message;
+
+    db.query(sql, [adminId], (err, results) => {
+        if (err || results.length === 0) return res.redirect('/index');
+        
+        const admin = results[0];
+        res.render('users-profile', {
+            adminName: admin.full_name,
+            adminPhone: admin.phone || 'N/A',
+            adminEmail: admin.email || 'N/A',
+            adminRole: admin.role,
+            // Genealogy Context
+            systemTitle: "Family Genealogy System",
+            // Notifications for your toast partial
+            success: status === 'success' ? message : null,
+            error: status === 'error' ? message : null
+        });
+    });
+});
+
+app.post('/update-profile', (req, res) => {
+    const { fullName, phone, email } = req.body;
+    const adminId = req.session.adminId;
+
+    const sql = "UPDATE system_admin SET full_name = ?, phone = ?, email = ? WHERE admin_id = ?";
+    
+    db.query(sql, [fullName, phone, email, adminId], (err) => {
+        if (err) {
+            return res.redirect('/users-profile?status=error&message=Update failed');
+        }
+        res.redirect('/users-profile?status=success&message=Profile updated successfully');
+    });
+});
+
+
+app.post('/password', async (req, res) => {
+    const { currentPassword, newPassword, confirmNewPassword } = req.body;
+    const adminId = req.session.adminId;
+
+    if (newPassword !== confirmNewPassword) {
+        return res.redirect('/users-profile?status=error&message=New passwords do not match');
+    }
+
+    // 1. Get current hashed password from DB
+    db.query("SELECT password FROM system_admin WHERE admin_id = ?", [adminId], async (err, results) => {
+        if (err || results.length === 0) return res.redirect('/users-profile?status=error&message=User not found');
+
+        const userPassword = results[0].password;
+
+        // 2. Compare currentPassword with hashed password
+        const isMatch = await bcrypt.compare(currentPassword, userPassword);
+        if (!isMatch) {
+            return res.redirect('/users-profile?status=error&message=Current password is incorrect');
+        }
+
+        // 3. Hash new password and update
+        const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+        db.query("UPDATE system_admin SET password = ? WHERE admin_id = ?", [hashedNewPassword, adminId], (err) => {
+            if (err) return res.redirect('/users-profile?status=error&message=Password update failed');
+            res.redirect('/users-profile?status=success&message=Password changed successfully');
+        });
+    });
+});
+
+
 // header.ejs
 app.get('/header', (req, res) => {
   res.render('header'); // Admin
