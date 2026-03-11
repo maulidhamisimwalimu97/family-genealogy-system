@@ -13,9 +13,11 @@
 
 
   <!-- Google Fonts -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.4.1/css/responsive.bootstrap5.min.css"> 
   <link href="https://fonts.gstatic.com" rel="preconnect">
   <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Nunito:300,300i,400,400i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
-
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <!-- Vendor CSS Files -->
   <link href="/assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
   <link href="/assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
@@ -272,11 +274,10 @@
                             </span>
                         </td>
                         <td>
-                          <button class="btn btn-sm btn-outline-primary" title="View Family">
-                            <i class="bi bi-eye"></i>
-                          </button>
-                          <button class="btn btn-sm btn-outline-warning" title="Send Reminder">
-                            <i class="bi bi-bell"></i>
+                          <button class="btn btn-sm btn-outline-warning" 
+                                  title="Send Reminder"
+                                  onclick="sendReminder('<%= family.phone %>', '<%= family.family_name %>')">
+                              <i class="bi bi-bell"></i>
                           </button>
                         </td>
                       </tr>
@@ -298,6 +299,69 @@
     </main>
 
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.4.1/js/dataTables.responsive.min.js"></script>
+
+<script>
+$(document).ready(function() {
+    $('#unpaidFamiliesTable').DataTable({
+        responsive: true,
+        columnDefs: [
+            { responsivePriority: 1, targets: 1 }, // Family Name
+            { responsivePriority: 2, targets: 7 }, // Action Button
+            { responsivePriority: 3, targets: 3 }  // Phone
+        ],
+        language: {
+            search: "_INPUT_",
+            searchPlaceholder: "Search families...",
+        }
+    });
+});
+
+function sendReminder(phone, familyName) {
+    if (!phone || phone === 'N/A') {
+        Swal.fire('Hitilafu', 'Namba ya simu haipatikani!', 'error');
+        return;
+    }
+
+    Swal.fire({
+        title: 'Tuma Ukumbusho?',
+        text: `Je, unataka kutuma SMS ya ukumbusho wa malipo kwa familia ya ${familyName}?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#ffc107',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Ndiyo, Tuma',
+        cancelButtonText: 'Hapana'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.fire({
+                title: 'Inatuma SMS...',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+
+            fetch('/send-payment-reminder', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone, familyName })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire('Imetumwa!', `Ujumbe umetumwa kwa familia ya ${familyName}.`, 'success');
+                } else {
+                    Swal.fire('Imeshindwa', 'SMS haijatumwa. Angalia salio la Beem au intaneti.', 'error');
+                }
+            })
+            .catch(error => {
+                Swal.fire('Error', 'Hitilafu ya kiufundi imetokea.', 'error');
+            });
+        }
+    });
+}
+</script>
 
 
     <!-- ======= Footer ======= -->

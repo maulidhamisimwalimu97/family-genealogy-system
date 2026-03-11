@@ -1708,3 +1708,70 @@ font-size:12px;
 }
 
 }
+
+    /* Fix for mobile responsiveness overflow */
+    .table-responsive {
+        overflow-x: hidden !important;
+    }
+    @media (max-width: 768px) {
+        .btn-sm {
+            padding: 0.4rem 0.6rem;
+            font-size: 0.75rem;
+        }
+    }
+
+    /* Prevent table horizontal scrollbar since responsive plugin handles it */
+    .table-responsive {
+        overflow-x: hidden !important;
+    }
+    
+    /* Better spacing for badges in mobile view */
+    .badge {
+        font-weight: 500;
+        padding: 0.5em 0.8em;
+    }
+
+   
+    /* Adjust button size for mobile genealogy admins */
+    @media (max-width: 576px) {
+        .select-family-btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+        }
+        .card-header h5 {
+            font-size: 0.95rem;
+        }
+    }
+
+    /* Style the expand icon for hidden columns */
+    table.dataTable.dtr-inline.collapsed > tbody > tr > td.dtr-control:before {
+        background-color: #0d6efd !important;
+    }
+
+    /* Ensure table container doesn't force a scrollbar if DataTables is handling it */
+    .table-responsive {
+        overflow-x: hidden !important;
+    }
+
+    /* Style for the responsive expand icon */
+    table.dataTable.dtr-inline.collapsed > tbody > tr > td.dtr-control:before {
+        background-color: #0d6efd !important;
+        border-radius: 50%;
+    }
+
+    /* Mobile adjustments */
+    @media (max-width: 991px) {
+        .card-body { padding: 1rem; }
+        #saveBtn { margin-bottom: 2rem; }
+    }
+
+    /* Prevent card stretching and style the responsive icon */
+    .table-responsive { overflow-x: hidden !important; }
+    
+    table.dataTable.dtr-inline.collapsed > tbody > tr > td.dtr-control:before {
+        background-color: #dc3545 !important; /* Red to match Revoke theme */
+    }
+
+    @media (max-width: 576px) {
+        .btn-sm { padding: 0.4rem 0.5rem; font-size: 0.75rem; }
+    }

@@ -240,7 +240,7 @@ app.get('/register', (req, res) => {
           getCountAndRender('Something went wrong during processing.', null);
       }
   });
-  // --- GET: List All Families ---
+
   // --- GET: List All Families with Live Notification Count ---
   app.get('/lists_family', (req, res) => {
     const adminId = req.session.adminId;
@@ -403,6 +403,42 @@ app.get('/unpaid', (req, res) => {
             error: null 
         });
     });
+});
+
+app.post('/send-payment-reminder', async (req, res) => {
+    const { phone, familyName } = req.body;
+    const adminId = req.session.adminId;
+
+    if (!adminId) return res.status(401).json({ success: false, message: "Unauthorized" });
+
+    // The message you requested in Swahili
+    const message = `Habari! Huu ni ukumbusho wa kulipia kifurushi chako cha familia ya ${familyName} ili uendelee kufurahia mfumo wetu, kufahamu asili ya ukoo wako na shughuli nyingine za kifamilia.`;
+
+    // Beem Auth (Using your provided keys)
+    const auth = Buffer.from('7296068691500366:NmZjN2I0Njg5YTA5YWEyY2E2YmY1ZTZlOTY3ZTM0ZDA4ODgyNjkyYjk2OTdmNjlkMTY1OWZjZTE0MjAwZjRkMg==').toString('base64');
+
+    try {
+        await axios.post('https://apisms.beem.africa/v1/send', {
+            source_addr: 'AFYASTOCK', 
+            message: message,
+            schedule_time: '',
+            encoding: '0',
+            recipients: [{ 
+                recipient_id: 1, 
+                dest_addr: phone 
+            }]
+        }, { 
+            headers: { 
+                'Authorization': `Basic ${auth}`,
+                'Content-Type': 'application/json'
+            } 
+        });
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error("Beem SMS Reminder Failed:", error.response ? error.response.data : error.message);
+        res.status(500).json({ success: false, message: "SMS Gateway Error" });
+    }
 });
 
 // Grant Access
