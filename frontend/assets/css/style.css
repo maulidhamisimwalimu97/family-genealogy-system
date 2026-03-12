@@ -1775,3 +1775,21 @@ font-size:12px;
     @media (max-width: 576px) {
         .btn-sm { padding: 0.4rem 0.5rem; font-size: 0.75rem; }
     }
+
+/* Hide top Google Translate banner */
+.goog-te-banner-frame.skiptranslate { display: none !important; }
+
+/* Remove any top margin added by Google */
+body { top: 0 !important; }
+
+/* Hide the floating iframe/menu */
+iframe.goog-te-menu-frame { display: none !important; }
+
+/* Hide Google Translate logo or gadget links */
+.goog-logo-link, .goog-te-gadget { display: none !important; }
+
+/* Hide the “Translated to: ...” tooltip/notification */
+body > .skiptranslate { display: none !important; }
+
+/* Force iframe containing Google Translate text to be hidden */
+iframe[src*="translate.google.com"] { display: none !important; }
