@@ -215,6 +215,42 @@ Confirm Future Head
 </section>
 
 </main>
+<!-- Google Translate Element -->
+<div id="google_translate_element" style="visibility: hidden; position: absolute; z-index: -1;"></div>
+
+<script>
+function googleTranslateElementInit() {
+  new google.translate.TranslateElement({
+    pageLanguage: 'en',
+    includedLanguages: 'en,sw',
+    autoDisplay: false
+  }, 'google_translate_element');
+
+  var savedLang = localStorage.getItem("selectedLanguage");
+  if (savedLang) {
+    setTimeout(function () {
+      setLanguage(savedLang);
+    }, 800);
+  }
+}
+
+function changeLanguage(lang) {
+  localStorage.setItem("selectedLanguage", lang);
+  setLanguage(lang);
+}
+
+function setLanguage(lang) {
+  var select = document.querySelector(".goog-te-combo");
+  if (select) {
+    select.value = lang;
+    select.dispatchEvent(new Event("change"));
+  } else {
+    setTimeout(function () {
+      setLanguage(lang);
+    }, 300);
+  }
+}
+</script>
   <!-- ======= Footer ======= -->
     <footer id="footer" class="footer">
     <div class="copyright">
@@ -237,6 +273,7 @@ Confirm Future Head
 <script src="/assets/vendor/simple-datatables/simple-datatables.js"></script>
 <script src="/assets/vendor/tinymce/tinymce.min.js"></script>
 <script src="/assets/vendor/php-email-form/validate.js"></script>
+<script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
 <!-- Initialize DataTable -->
 <script>
