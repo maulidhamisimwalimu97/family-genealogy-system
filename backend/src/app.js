@@ -768,7 +768,93 @@ app.get('/header', (req, res) => {
 
 // Head of family Dashboard
 app.get('/family_admin', (req, res) => {
-  res.render('family_admin'); // Admin
+  const family_id = req.session.family_id;
+
+  // ✅ Real SQL queries
+  const membersQuery = `
+    SELECT COUNT(*) AS total_members
+    FROM family_member
+    WHERE family_id = ?
+  `;
+
+  const adultsQuery = `
+    SELECT COUNT(*) AS total_adults
+    FROM family_member
+    WHERE family_id = ? AND role = 'member'
+  `;
+
+  const meetingsQuery = `
+    SELECT COUNT(*) AS total_meetings
+    FROM meeting
+    WHERE family_id = ? AND meeting_date >= CURDATE()
+  `;
+
+  const ageQuery = `
+    SELECT
+      SUM(CASE WHEN TIMESTAMPDIFF(YEAR, date_of_birth, CURDATE()) BETWEEN 0 AND 10 THEN 1 ELSE 0 END) AS age_0_10,
+      SUM(CASE WHEN TIMESTAMPDIFF(YEAR, date_of_birth, CURDATE()) BETWEEN 11 AND 20 THEN 1 ELSE 0 END) AS age_11_20,
+      SUM(CASE WHEN TIMESTAMPDIFF(YEAR, date_of_birth, CURDATE()) BETWEEN 21 AND 40 THEN 1 ELSE 0 END) AS age_21_40,
+      SUM(CASE WHEN TIMESTAMPDIFF(YEAR, date_of_birth, CURDATE()) BETWEEN 41 AND 60 THEN 1 ELSE 0 END) AS age_41_60,
+      SUM(CASE WHEN TIMESTAMPDIFF(YEAR, date_of_birth, CURDATE()) > 60 THEN 1 ELSE 0 END) AS age_60_plus
+    FROM family_member
+    WHERE family_id = ?
+  `;
+
+  const familyMembersQuery = `
+    SELECT first_name, last_name, role, is_future_head, created_at
+    FROM family_member
+    WHERE family_id = ?
+    ORDER BY created_at DESC
+  `;
+
+  const recentActivitiesQuery = `
+    SELECT 'member' AS type, CONCAT(first_name, ' ', last_name) AS name, created_at AS activity_time
+    FROM family_member
+    WHERE family_id = ?
+    ORDER BY created_at DESC
+    LIMIT 5
+  `;
+
+  // Execute all queries
+  db.query(membersQuery, [family_id], (err, membersResult) => {
+    if (err) throw err;
+
+    db.query(adultsQuery, [family_id], (err, adultsResult) => {
+      if (err) throw err;
+
+      db.query(meetingsQuery, [family_id], (err, meetingsResult) => {
+        if (err) throw err;
+
+        db.query(ageQuery, [family_id], (err, ageResult) => {
+          if (err) throw err;
+
+          db.query(familyMembersQuery, [family_id], (err, familyMembers) => {
+            if (err) throw err;
+
+            db.query(recentActivitiesQuery, [family_id], (err, recentActivities) => {
+              if (err) throw err;
+
+              res.render('family_admin', {
+                totalMembers: membersResult[0].total_members,
+                totalAdults: adultsResult[0].total_adults,
+                totalMeetings: meetingsResult[0].total_meetings,
+
+                age_0_10: ageResult[0].age_0_10 || 0,
+                age_11_20: ageResult[0].age_11_20 || 0,
+                age_21_40: ageResult[0].age_21_40 || 0,
+                age_41_60: ageResult[0].age_41_60 || 0,
+                age_60_plus: ageResult[0].age_60_plus || 0,
+
+                familyMembers,
+                recentActivities
+              });
+
+            });
+          });
+        });
+      });
+    });
+  });
 });
 
 // Register family member
