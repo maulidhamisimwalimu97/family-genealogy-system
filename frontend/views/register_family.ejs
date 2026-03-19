@@ -33,275 +33,176 @@
 <body>
 
   <!-- ======= Header ======= -->
-  <header id="header" class="header fixed-top d-flex align-items-center">
-
-    <div class="d-flex align-items-center justify-content-between">
-      <a href="/" class="logo d-flex align-items-center">
-        <img src="" alt="">
-        <span class="d-none d-lg-block">Family Genealogy</span>
-      </a>
-      <i class="bi bi-list toggle-sidebar-btn"></i>
-    </div><!-- End Logo -->
-
-    <nav class="header-nav ms-auto">
-      <ul class="d-flex align-items-center">
-
-        <!-- Notifications -->
-        <li class="nav-item dropdown">
-          <a class="nav-link nav-icon" href="#" data-bs-toggle="dropdown">
-            <i class="bi bi-bell"></i>
-            <span class="badge bg-primary badge-number">0</span>
-          </a><!-- End Notification Icon -->
-
-          <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow notifications">
-            <li class="dropdown-header">
-              You have 0 new notifications
-              <a href="#">
-                <span class="badge rounded-pill bg-primary p-2 ms-2">View all</span>
-              </a>
-            </li>
-
-            <li><hr class="dropdown-divider"></li>
-
-            <li class="notification-item text-center">
-              <div>No notifications available</div>
-            </li>
-
-            <li><hr class="dropdown-divider"></li>
-
-            <li class="dropdown-footer">
-              <a href="#">Show all notifications</a>
-            </li>
-          </ul>
-        </li><!-- End Notifications -->
-
-        <!-- Profile -->
-        <li class="nav-item dropdown pe-3">
-          <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
-            <img src="assets/img/3.png" alt="Profile" class="rounded-circle">
-            <span class="d-none d-md-block dropdown-toggle ps-2">Family Admin</span>
-          </a><!-- End Profile Image Icon -->
-
-          <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
-            <li class="dropdown-header">
-              <h6>Family Admin</h6>
-              <span><b>Family Account</b></span>
-            </li>
-
-            <li><hr class="dropdown-divider"></li>
-
-            <li>
-              <a class="dropdown-item d-flex align-items-center" href="/family_admin/profile">
-                <i class="bi bi-person"></i>
-                <span>My Profile</span>
-              </a>
-            </li>
-
-            <li><hr class="dropdown-divider"></li>
-
-            <li>
-              <a class="dropdown-item d-flex align-items-center" href="/logout">
-                <i class="bi bi-box-arrow-right"></i>
-                <span>Sign Out</span>
-              </a>
-            </li>
-          </ul><!-- End Profile Dropdown Items -->
-        </li><!-- End Profile Nav -->
-
-      </ul>
-    </nav><!-- End Icons Navigation -->
-
-  </header><!-- End Header -->
-
+<%- include('partials/title') %>
 <%- include('partials/header') %>
+<%- include('partials/notifications') %>
 
-<!-- the main content start -->
 <main id="main" class="main">
 
-<div class="pagetitle">
-<h1>Register Family Member</h1>
-</div>
+  <div class="pagetitle">
+    <h1>Register Family Member</h1>
+  </div>
 
-<section class="section">
-<div class="row">
-<div class="col-lg-12">
+  <section class="section">
+    <div class="row">
+      <div class="col-lg-12">
 
-<div class="card">
-<div class="card-body">
+        <div class="card">
+          <div class="card-body">
 
-<h5 class="card-title">Add New Family Member</h5>
+            <h5 class="card-title">Add New Family Member</h5>
 
-<form class="row g-3">
+            <!-- Display Success/Error -->
+            <% if (error) { %>
+              <div class="alert alert-danger"><%= error %></div>
+            <% } %>
+            <% if (success) { %>
+              <div class="alert alert-success"><%= success %></div>
+            <% } %>
 
-<!-- Required Notice -->
-<div class="col-12">
-<p class="text-muted">
-Fields marked with <span class="text-danger">*</span> are compulsory.
-</p>
-</div>
+            <!-- Form -->
+            <form class="row g-3" action="/register-member" method="POST">
 
-<!-- Personal Information -->
-<div class="col-12">
-<h6 class="fw-bold text-primary">Personal Information</h6>
-<hr>
-</div>
+              <!-- Required Notice -->
+              <div class="col-12">
+                <p class="text-muted">
+                  Fields marked with <span class="text-danger">*</span> are compulsory.
+                </p>
+              </div>
 
-<div class="col-md-4">
-<label class="form-label">
-First Name <span class="text-danger">*</span>
-</label>
-<input type="text" class="form-control" required>
-</div>
+              <!-- Personal Information -->
+              <div class="col-12">
+                <h6 class="fw-bold text-primary">Personal Information</h6>
+                <hr>
+              </div>
 
-<div class="col-md-4">
-<label class="form-label">
-Middle Name
-</label>
-<input type="text" class="form-control">
-</div>
+              <div class="col-md-4">
+                <label class="form-label">First Name <span class="text-danger">*</span></label>
+                <input type="text" name="first_name" class="form-control" required>
+              </div>
 
-<div class="col-md-4">
-<label class="form-label">
-Last Name <span class="text-danger">*</span>
-</label>
-<input type="text" class="form-control" required>
-</div>
+              <div class="col-md-4">
+                <label class="form-label">Middle Name</label>
+                <input type="text" name="middle_name" class="form-control">
+              </div>
 
-<div class="col-md-4">
-<label class="form-label">
-Gender <span class="text-danger">*</span>
-</label>
-<select class="form-select" required>
-<option value="">Select Gender</option>
-<option>Male</option>
-<option>Female</option>
-</select>
-</div>
+              <div class="col-md-4">
+                <label class="form-label">Last Name <span class="text-danger">*</span></label>
+                <input type="text" name="last_name" class="form-control" required>
+              </div>
 
-<div class="col-md-4">
-<label class="form-label">
-Date of Birth <span class="text-danger">*</span>
-</label>
-<input type="date" id="dob" class="form-control" required>
-</div>
+              <div class="col-md-4">
+                <label class="form-label">Gender <span class="text-danger">*</span></label>
+                <select class="form-select" name="gender" required>
+                  <option value="">Select Gender</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                </select>
+              </div>
 
-<div class="col-md-4">
-<label class="form-label">
-Age (Auto)
-</label>
-<input type="text" id="age" class="form-control" readonly>
-</div>
+              <div class="col-md-4">
+                <label class="form-label">Date of Birth <span class="text-danger">*</span></label>
+                <input type="date" id="dob" name="date_of_birth" class="form-control" required>
+              </div>
 
-<div class="col-md-4">
-<label class="form-label">
-Marital Status
-</label>
-<select class="form-select">
-<option value="">Select Status</option>
-<option>Single</option>
-<option>Married</option>
-<option>Widowed</option>
-<option>Divorced</option>
-</select>
-</div>
+              <div class="col-md-4">
+                <label class="form-label">Age (Auto)</label>
+                <input type="text" id="age" class="form-control" readonly>
+              </div>
 
-<!-- Relationship -->
-<div class="col-12 mt-4">
-<h6 class="fw-bold text-primary">Family Relationship</h6>
-<hr>
-</div>
+              <div class="col-md-4">
+                <label class="form-label">Marital Status</label>
+                <select class="form-select" name="marital_status">
+                  <option value="">Select Status</option>
+                  <option value="single">Single</option>
+                  <option value="married">Married</option>
+                  <option value="widowed">Widowed</option>
+                  <option value="divorced">Divorced</option>
+                </select>
+              </div>
 
-<div class="col-md-4">
-<label class="form-label">
-Relationship to Head of Family <span class="text-danger">*</span>
-</label>
-<select class="form-select" required>
-<option value="">Select Relationship</option>
-<option>Spouse</option>
-<option>Child</option>
-<option>Grandchild</option>
-<option>Brother / Sister</option>
-<option>Uncle / Aunt</option>
-<option>Cousin</option>
-<option>Other Relative</option>
-</select>
-</div>
+              <!-- Family Relationship -->
+              <div class="col-12 mt-4">
+                <h6 class="fw-bold text-primary">Family Relationship</h6>
+                <hr>
+              </div>
 
-<div class="col-md-4">
-<label class="form-label">
-Branch Type <span class="text-danger">*</span>
-</label>
-<select class="form-select" required>
-<option value="">Select Branch Type</option>
-<option value="origin">Original Family</option>
-<option value="new_branch">New Family Branch</option>
-</select>
-</div>
+              <div class="col-md-4">
+                <label class="form-label">Relationship to Head of Family <span class="text-danger">*</span></label>
+                <select class="form-select" name="relationship" required>
+                  <option value="">Select Relationship</option>
+                  <option value="spouse">Spouse</option>
+                  <option value="child">Child</option>
+                  <option value="grandchild">Grandchild</option>
+                  <option value="sibling">Brother / Sister</option>
+                  <option value="uncle_aunt">Uncle / Aunt</option>
+                  <option value="cousin">Cousin</option>
+                  <option value="other">Other Relative</option>
+                </select>
+              </div>
 
-<!-- SYSTEM CATEGORY AUTO -->
-<div class="col-md-4">
-<label class="form-label">
-System Category
-</label>
-<input type="text" id="category" class="form-control" readonly placeholder="Auto generated">
-</div>
+              <div class="col-md-4">
+                <label class="form-label">Branch Type <span class="text-danger">*</span></label>
+                <select class="form-select" name="branch_type" required>
+                  <option value="">Select Branch Type</option>
+                  <option value="origin">Original Family</option>
+                  <option value="new_branch">New Family Branch</option>
+                </select>
+              </div>
 
-<!-- Contact Information -->
-<div class="col-12 mt-4">
-<h6 class="fw-bold text-primary">Contact Information</h6>
-<hr>
-</div>
+              <div class="col-md-4">
+                <label class="form-label">System Category</label>
+                <input type="text" id="category" class="form-control" readonly placeholder="Auto generated">
+              </div>
 
-<div class="col-md-4">
-<label class="form-label">
-Phone Number <span class="text-danger">*</span>
-</label>
-<input type="text" class="form-control" required>
-</div>
+              <!-- Contact Information -->
+              <div class="col-12 mt-4">
+                <h6 class="fw-bold text-primary">Contact Information</h6>
+                <hr>
+              </div>
 
-<div class="col-md-4">
-<label class="form-label">
-Email Address
-</label>
-<input type="email" class="form-control">
-</div>
+              <div class="col-md-4">
+                <label class="form-label">Phone Number <span class="text-danger">*</span></label>
+                <input type="text" name="phone" class="form-control" required>
+              </div>
 
-<div class="col-md-4">
-<label class="form-label">
-Residential Address <span class="text-danger">*</span>
-</label>
-<input type="text" class="form-control" required>
-</div>
+              <div class="col-md-4">
+                <label class="form-label">Email Address</label>
+                <input type="email" name="email" class="form-control">
+              </div>
 
-<!-- System Logic Notice -->
-<div class="col-12 mt-4">
-<div class="alert alert-info">
+              <div class="col-md-4">
+                <label class="form-label">Residential Address <span class="text-danger">*</span></label>
+                <input type="text" name="address" class="form-control" required>
+              </div>
 
-<strong>System Categorization Rules:</strong><br>
+              <!-- System Logic Notice -->
+              <div class="col-12 mt-4">
+                <div class="alert alert-info">
+                  <strong>System Categorization Rules:</strong><br>
+                  • Members under 18 years → Registered as <b>Dependants</b><br>
+                  • Members 18 years and above → Registered as <b>Members</b><br>
+                  • <b>Future Head of Family</b> will be selected later by Family Admin from adult members.<br>
+                  • Family Admin role belongs only to the account owner.
+                </div>
+              </div>
 
-• Members under 18 years → Registered as <b>Dependants</b><br>
-• Members 18 years and above → Registered as <b>Members</b><br>
-• <b>Future Head of Family</b> will be selected later by Family Admin from adult members.<br>
-• Family Admin role belongs only to the account owner.
+              <!-- Submit -->
+              <div class="col-12 text-end mt-3">
+                <button type="reset" class="btn btn-secondary">Cancel</button>
+                <button type="submit" class="btn btn-primary">Register Member</button>
+              </div>
 
-</div>
-</div>
+            </form>
 
-<!-- Submit -->
-<div class="col-12 text-end mt-3">
-<button type="reset" class="btn btn-secondary">Cancel</button>
-<button type="submit" class="btn btn-primary">Register Member</button>
-</div>
+          </div>
+        </div>
 
-</form>
-
-</div>
-</div>
-
-</div>
-</div>
-</section>
+      </div>
+    </div>
+  </section>
 </main>
+
 <!-- Google Translate Element -->
 <div id="google_translate_element" style="visibility: hidden; position: absolute; z-index: -1;"></div>
 
