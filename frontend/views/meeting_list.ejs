@@ -35,170 +35,245 @@
 <body>
 
   <!-- ======= Header ======= -->
-  <header id="header" class="header fixed-top d-flex align-items-center">
 
-    <div class="d-flex align-items-center justify-content-between">
-      <a href="/" class="logo d-flex align-items-center">
-        <img src="" alt="">
-        <span class="d-none d-lg-block">Family Genealogy</span>
-      </a>
-      <i class="bi bi-list toggle-sidebar-btn"></i>
-    </div><!-- End Logo -->
+<%- include('partials/title') %>
+   <style>
+  #main.main {
+    padding: 20px;
+    transition: all 0.3s;
+  }
 
-    <nav class="header-nav ms-auto">
-      <ul class="d-flex align-items-center">
+  /* Force responsive container */
+  .table-responsive {
+    display: block !important;
+    width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 15px;
+  }
 
-        <!-- Notifications -->
-        <li class="nav-item dropdown">
-          <a class="nav-link nav-icon" href="#" data-bs-toggle="dropdown">
-            <i class="bi bi-bell"></i>
-            <span class="badge bg-primary badge-number">0</span>
-          </a><!-- End Notification Icon -->
+  #meetingTable {
+    width: 100% !important;
+    border-collapse: collapse !important;
+  }
 
-          <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow notifications">
-            <li class="dropdown-header">
-              You have 0 new notifications
-              <a href="#">
-                <span class="badge rounded-pill bg-primary p-2 ms-2">View all</span>
-              </a>
-            </li>
+  #meetingTable th, #meetingTable td {
+    white-space: nowrap !important;
+    padding: 12px 15px !important;
+  }
 
-            <li><hr class="dropdown-divider"></li>
-
-            <li class="notification-item text-center">
-              <div>No notifications available</div>
-            </li>
-
-            <li><hr class="dropdown-divider"></li>
-
-            <li class="dropdown-footer">
-              <a href="#">Show all notifications</a>
-            </li>
-          </ul>
-        </li><!-- End Notifications -->
-
-        <!-- Profile -->
-        <li class="nav-item dropdown pe-3">
-          <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
-            <img src="assets/img/3.png" alt="Profile" class="rounded-circle">
-            <span class="d-none d-md-block dropdown-toggle ps-2">Family Admin</span>
-          </a><!-- End Profile Image Icon -->
-
-          <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
-            <li class="dropdown-header">
-              <h6>Family Admin</h6>
-              <span><b>Family Account</b></span>
-            </li>
-
-            <li><hr class="dropdown-divider"></li>
-
-            <li>
-              <a class="dropdown-item d-flex align-items-center" href="/family_admin/profile">
-                <i class="bi bi-person"></i>
-                <span>My Profile</span>
-              </a>
-            </li>
-
-            <li><hr class="dropdown-divider"></li>
-
-            <li>
-              <a class="dropdown-item d-flex align-items-center" href="/logout">
-                <i class="bi bi-box-arrow-right"></i>
-                <span>Sign Out</span>
-              </a>
-            </li>
-          </ul><!-- End Profile Dropdown Items -->
-        </li><!-- End Profile Nav -->
-
-      </ul>
-    </nav><!-- End Icons Navigation -->
+  /* MAREKEBISHO KWA SIMU */
+  @media (max-width: 768px) {
+    #main.main {
+      padding: 10px !important;
+    }
+    
+    /* Hii inalazimisha table kuwa na upana mkubwa ili scroll itokee */
+    .dataTables_scrollBody #meetingTable, 
+    .table-responsive #meetingTable {
+      min-width: 900px !important; 
+    }
+    
+    /* Inaficha scrollbar ya browser na kutumia ya DataTable */
+    .table-responsive {
+        border: none !important;
+    }
+  }
+</style>
 
   </header><!-- End Header -->
 
 <%- include('partials/header') %>
 
-<!-- the main content start -->
 <main id="main" class="main">
-    <div class="pagetitle">
-  <h1>Meeting List</h1>
-</div>
+  <%- include('partials/notifications') %>
 
-<section class="section">
-  <div class="card">
-    <div class="card-body">
+  <div class="pagetitle">
+    <h1>Meeting List</h1>
+  </div>
 
-      <h5 class="card-title">Scheduled Meetings</h5>
+  <section class="section">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Scheduled Meetings</h5>
 
-      <table id="meetingTable" class="table datatable">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Title</th>
-            <th>Date</th>
-            <th>Time</th>
-            <th>Type</th>
-            <th>Participants</th>
-            <th>Status</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
+        <div class="table-responsive">
+          <table id="meetingTable" class="table table-hover table-bordered align-middle">
+            <thead class="table-dark text-nowrap">
+              <tr>
+                <th>#</th>
+                <th>Title</th>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Location/Link</th>
+                <th class="text-center">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (meetings && meetings.length > 0) { %>
+                <% meetings.forEach((m, i) => { %>
+                  <tr id="row-<%= m.meeting_id %>">
+                    <td><%= i + 1 %></td>
+                    <td class="fw-bold"><%= m.title %></td>
+                    <td><%= m.meeting_date.toISOString().split('T')[0] %></td>
+                    <td><%= m.meeting_time %></td>
+                    <td>
+                      <span class="text-truncate d-inline-block" style="max-width: 150px;">
+                        <%= m.location || 'N/A' %>
+                      </span>
+                    </td>
+                    <td>
+                      <div class="d-flex gap-1 justify-content-center">
+                        <button type="button" class="btn btn-sm btn-outline-info edit-btn" 
+                                data-id="<%= m.meeting_id %>"
+                                data-title="<%= m.title %>"
+                                data-date="<%= m.meeting_date.toISOString().split('T')[0] %>"
+                                data-time="<%= m.meeting_time %>"
+                                data-loc="<%= m.location %>">
+                          <i class="bi bi-eye"></i>
+                        </button>
 
-          <!-- Example Data -->
-          <tr>
-            <td>1</td>
-            <td>Annual Family Meeting</td>
-            <td>2026-03-15</td>
-            <td>10:00 AM - 12:00 PM</td>
-            <td>Online</td>
-            <td>15</td>
-            <td>
-              <span class="badge bg-warning">Upcoming</span>
-            </td>
-            <td>
-              <button class="btn btn-sm btn-info">View</button>
-              <button class="btn btn-sm btn-success">Join</button>
-              <button class="btn btn-sm btn-danger">Cancel</button>
-            </td>
-          </tr>
+                        <% if(m.location && m.location.startsWith('http')) { %>
+                          <a href="<%= m.location %>" target="_blank" class="btn btn-sm btn-success">Join</a>
+                        <% } %>
 
-          <tr>
-            <td>2</td>
-            <td>Branch B Planning</td>
-            <td>2026-02-01</td>
-            <td>2:00 PM - 3:00 PM</td>
-            <td>Physical</td>
-            <td>8</td>
-            <td>
-              <span class="badge bg-secondary">Completed</span>
-            </td>
-            <td>
-              <button class="btn btn-sm btn-info">View</button>
-            </td>
-          </tr>
+                        <button class="btn btn-sm btn-outline-danger" 
+                                onclick="deleteMeeting('<%= m.meeting_id %>', '<%= m.title %>')">
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                <% }); %>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
 
-          <tr>
-            <td>3</td>
-            <td>Emergency Discussion</td>
-            <td>2026-02-20</td>
-            <td>6:00 PM - 7:00 PM</td>
-            <td>Online</td>
-            <td>5</td>
-            <td>
-              <span class="badge bg-danger">Cancelled</span>
-            </td>
-            <td>
-              <button class="btn btn-sm btn-info">View</button>
-            </td>
-          </tr>
-
-        </tbody>
-      </table>
-
+<div class="modal fade" id="editMeetingModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title">Edit Meeting Details</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <form id="editMeetingForm">
+        <div class="modal-body">
+          <input type="hidden" id="m_id">
+          <div class="mb-3">
+            <label class="form-label">Title</label>
+            <input type="text" id="m_title" class="form-control" required>
+          </div>
+          <div class="row">
+            <div class="col-6 mb-3">
+              <label class="form-label">Date</label>
+              <input type="date" id="m_date" class="form-control" required>
+            </div>
+            <div class="col-6 mb-3">
+              <label class="form-label">Time</label>
+              <input type="time" id="m_time" class="form-control" required>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Location / Link</label>
+            <input type="text" id="m_loc" class="form-control" placeholder="Physical location or URL">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
     </div>
   </div>
-</section>
-</main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // 1. Initialize Meeting DataTable
+    const meetingTableElement = document.querySelector("#meetingTable");
+    let dataTable;
+    
+    if (meetingTableElement) {
+      dataTable = new simpleDatatables.DataTable(meetingTableElement, {
+        perPage: 5,
+        searchable: true,
+        fixedHeight: false
+      });
+
+      // 2. SIKILIZA CLICK KWENYE JICHO (Hata ukibadili page)
+      // Tunatumia "Event Delegation" kwenye body ya table
+      meetingTableElement.querySelector('tbody').addEventListener('click', function(e) {
+        // Angalia kama aliyebonyezwa ni button ya jicho au icon ndani yake
+        const btn = e.target.closest('.edit-btn');
+        
+        if (btn) {
+          e.preventDefault();
+          openMeetingModal(btn);
+        }
+      });
+    }
+
+    // 3. FUNCTION YA KUFUNGUA MODAL
+    function openMeetingModal(btn) {
+      const modalEl = document.getElementById('editMeetingModal');
+      if (!modalEl) return;
+
+      const editModal = new bootstrap.Modal(modalEl);
+
+      // Chukua data kutoka kwenye attributes za button
+      document.getElementById('m_id').value = btn.getAttribute('data-id') || '';
+      document.getElementById('m_title').value = btn.getAttribute('data-title') || '';
+      document.getElementById('m_date').value = btn.getAttribute('data-date') || '';
+      document.getElementById('m_time').value = btn.getAttribute('data-time') || '';
+      document.getElementById('m_loc').value = btn.getAttribute('data-loc') || '';
+
+      editModal.show();
+    }
+
+    // 4. SAVE CHANGES (Update via Fetch)
+    const editForm = document.getElementById('editMeetingForm');
+    if (editForm) {
+      editForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const id = document.getElementById('m_id').value;
+        const payload = {
+          title: document.getElementById('m_title').value,
+          meeting_date: document.getElementById('m_date').value,
+          meeting_time: document.getElementById('m_time').value,
+          location: document.getElementById('m_loc').value
+        };
+
+        fetch(`/update-meeting/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        })
+        .then(res => res.json())
+        .then(res => {
+          if (res.success) window.location.reload();
+        })
+        .catch(err => console.error("Error updating:", err));
+      });
+    }
+  });
+
+  // 5. DELETE FUNCTION (Iweke nje ili onclick="deleteMeeting" ifanye kazi)
+  function deleteMeeting(id, title) {
+    if (confirm(`Are you sure you want to delete "${title}"?`)) {
+      fetch(`/delete-meeting/${id}`, { method: 'DELETE' })
+      .then(res => res.json())
+      .then(res => {
+        if (res.success) window.location.reload();
+      });
+    }
+  }
+</script>
 <!-- Google Translate Element -->
 <div id="google_translate_element" style="visibility: hidden; position: absolute; z-index: -1;"></div>
 
@@ -249,6 +324,7 @@ function setLanguage(lang) {
   <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
 
   <!-- Vendor JS Files -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="/assets/vendor/apexcharts/apexcharts.min.js"></script>
 <script src="/assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 <script src="/assets/vendor/chart.js/chart.umd.js"></script>

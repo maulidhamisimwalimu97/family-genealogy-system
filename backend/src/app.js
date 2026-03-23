@@ -1269,6 +1269,7 @@ app.delete('/delete-member/:id', (req, res) => {
         res.json({ success: true });
     });
 });
+
 // --- GET: Family Tree ---
 app.get('/family_tree', (req, res) => {
   const familyId = req.session.family_id;
@@ -1343,14 +1344,112 @@ app.get('/family_tree', (req, res) => {
   });
 });
 
-// shedule
+// --- GET: Schedule Page ---
 app.get('/schedule', (req, res) => {
-  res.render('schedule'); // HOF
+    const familyId = req.session.family_id;
+    const memberId = req.session.member_id;
+
+    if (!familyId || !memberId) return res.redirect('/index');
+
+    // Profile & Notifications Queries (Kama ilivyo kwenye kurasa nyingine)
+    const profileQuery = `SELECT first_name, last_name, role FROM family_member WHERE member_id = ? LIMIT 1`;
+    const notificationsQuery = `
+        SELECT 'member' AS type, CONCAT(first_name, ' ', last_name) AS title, created_at FROM family_member WHERE registered_by = ?
+        UNION
+        SELECT 'meeting' AS type, title, created_at FROM meeting WHERE created_by = ?
+        ORDER BY created_at DESC LIMIT 5`;
+
+    db.query(profileQuery, [memberId], (err, profileRes) => {
+        const profile = profileRes[0] || { first_name: 'User' };
+        db.query(notificationsQuery, [memberId, memberId], (err2, notifications) => {
+            res.render('schedule', {
+                profile,
+                notifications,
+                totalNotifications: notifications.length,
+                success: req.session.success, // ✅ Soma toast
+                error: req.session.error
+            });
+            req.session.success = null;
+            req.session.error = null;
+        });
+    });
 });
 
-// Meeting List
+// --- POST: Save Meeting ---
+app.post('/schedule-meeting', (req, res) => {
+    const { title, description, meeting_date, meeting_time, location } = req.body;
+    const family_id = req.session.family_id;
+    const created_by = req.session.member_id;
+
+    if (!family_id) return res.status(403).json({ success: false });
+
+    const sql = `
+        INSERT INTO meeting (family_id, title, description, meeting_date, meeting_time, location, created_by)
+        VALUES (?, ?, ?, ?, ?, ?, ?)`;
+
+    db.query(sql, [family_id, title, description, meeting_date, meeting_time, location, created_by], (err, result) => {
+        if (err) {
+            console.error(err);
+            return res.json({ success: false });
+        }
+        
+        // Weka ujumbe wa mafanikio kwenye session
+        req.session.success = "Meeting scheduled successfully!";
+        res.json({ success: true });
+    });
+});
+
+// --- GET: Meeting List Page ---
 app.get('/meeting_list', (req, res) => {
-  res.render('meeting_list'); // HOF
+    const familyId = req.session.family_id;
+    const memberId = req.session.member_id;
+
+    if (!familyId || !memberId) return res.redirect('/index');
+
+    const profileQuery = `SELECT first_name, last_name, role FROM family_member WHERE member_id = ? LIMIT 1`;
+    const meetingsQuery = `SELECT * FROM meeting WHERE family_id = ? ORDER BY meeting_date DESC`;
+    const notificationsQuery = `
+        SELECT 'member' AS type, CONCAT(first_name, ' ', last_name) AS title, created_at FROM family_member WHERE registered_by = ?
+        UNION
+        SELECT 'meeting' AS type, title, created_at FROM meeting WHERE created_by = ?
+        ORDER BY created_at DESC LIMIT 5`;
+
+    db.query(profileQuery, [memberId], (err, profileRes) => {
+        db.query(notificationsQuery, [memberId, memberId], (err2, notifications) => {
+            db.query(meetingsQuery, [familyId], (err3, meetings) => {
+                res.render('meeting_list', {
+                    profile: profileRes[0] || { first_name: 'User' },
+                    notifications,
+                    totalNotifications: notifications.length,
+                    meetings, // Tuma list ya mikutano hapa
+                    success: req.session.success,
+                    error: req.session.error
+                });
+                req.session.success = null;
+                req.session.error = null;
+            });
+        });
+    });
+});
+
+// --- API: Update Meeting ---
+app.put('/update-meeting/:id', (req, res) => {
+    const { title, meeting_date, meeting_time, location } = req.body;
+    const sql = `UPDATE meeting SET title = ?, meeting_date = ?, meeting_time = ?, location = ? WHERE meeting_id = ?`;
+    db.query(sql, [title, meeting_date, meeting_time, location, req.params.id], (err) => {
+        if (err) return res.json({ success: false });
+        req.session.success = "Meeting updated successfully!";
+        res.json({ success: true });
+    });
+});
+
+// --- API: Delete Meeting ---
+app.delete('/delete-meeting/:id', (req, res) => {
+    db.query("DELETE FROM meeting WHERE meeting_id = ?", [req.params.id], (err) => {
+        if (err) return res.json({ success: false });
+        req.session.success = "Meeting cancelled and deleted.";
+        res.json({ success: true });
+    });
 });
 
 // attend meeting
