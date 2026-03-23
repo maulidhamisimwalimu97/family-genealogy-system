@@ -33,231 +33,82 @@
 <body>
 
   <!-- ======= Header ======= -->
-  <header id="header" class="header fixed-top d-flex align-items-center">
-
-    <div class="d-flex align-items-center justify-content-between">
-      <a href="/" class="logo d-flex align-items-center">
-        <img src="" alt="">
-        <span class="d-none d-lg-block">Family Genealogy</span>
-      </a>
-      <i class="bi bi-list toggle-sidebar-btn"></i>
-    </div><!-- End Logo -->
-
-    <nav class="header-nav ms-auto">
-      <ul class="d-flex align-items-center">
-
-        <!-- Notifications -->
-        <li class="nav-item dropdown">
-          <a class="nav-link nav-icon" href="#" data-bs-toggle="dropdown">
-            <i class="bi bi-bell"></i>
-            <span class="badge bg-primary badge-number">0</span>
-          </a><!-- End Notification Icon -->
-
-          <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow notifications">
-            <li class="dropdown-header">
-              You have 0 new notifications
-              <a href="#">
-                <span class="badge rounded-pill bg-primary p-2 ms-2">View all</span>
-              </a>
-            </li>
-
-            <li><hr class="dropdown-divider"></li>
-
-            <li class="notification-item text-center">
-              <div>No notifications available</div>
-            </li>
-
-            <li><hr class="dropdown-divider"></li>
-
-            <li class="dropdown-footer">
-              <a href="#">Show all notifications</a>
-            </li>
-          </ul>
-        </li><!-- End Notifications -->
-
-        <!-- Profile -->
-        <li class="nav-item dropdown pe-3">
-          <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
-            <img src="assets/img/3.png" alt="Profile" class="rounded-circle">
-            <span class="d-none d-md-block dropdown-toggle ps-2">Family Admin</span>
-          </a><!-- End Profile Image Icon -->
-
-          <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
-            <li class="dropdown-header">
-              <h6>Family Admin</h6>
-              <span><b>Family Account</b></span>
-            </li>
-
-            <li><hr class="dropdown-divider"></li>
-
-            <li>
-              <a class="dropdown-item d-flex align-items-center" href="/family_admin/profile">
-                <i class="bi bi-person"></i>
-                <span>My Profile</span>
-              </a>
-            </li>
-
-            <li><hr class="dropdown-divider"></li>
-
-            <li>
-              <a class="dropdown-item d-flex align-items-center" href="/logout">
-                <i class="bi bi-box-arrow-right"></i>
-                <span>Sign Out</span>
-              </a>
-            </li>
-          </ul><!-- End Profile Dropdown Items -->
-        </li><!-- End Profile Nav -->
-
-      </ul>
-    </nav><!-- End Icons Navigation -->
-
-  </header><!-- End Header -->
-
+<%- include('partials/title') %>
 <%- include('partials/header') %>
 
-<!-- the main content start -->
 <main id="main" class="main">
-<div class="pagetitle">
-  <h1>Send Meeting Reminder</h1>
-</div>
-
-<section class="section">
-  <div class="row">
-
-    <!-- Reminder Form -->
-    <div class="col-lg-8">
-      <div class="card">
-        <div class="card-body">
-
-          <h5 class="card-title">Create Reminder</h5>
-
-          <form>
-
-            <!-- Select Meeting -->
-            <div class="mb-3">
-              <label class="form-label">
-                Select Meeting <span class="text-danger">*</span>
-              </label>
-              <select class="form-select" required>
-                <option value="">Choose Meeting</option>
-                <option>Annual Family Meeting</option>
-                <option>Branch B Planning</option>
-                <option>Emergency Discussion</option>
-              </select>
-            </div>
-
-            <!-- Reminder Type -->
-            <div class="mb-3">
-              <label class="form-label">
-                Reminder Method <span class="text-danger">*</span>
-              </label>
-              <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="sms" id="smsCheck">
-                <label class="form-check-label" for="smsCheck">
-                  SMS Reminder
-                </label>
-              </div>
-              <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="email" id="emailCheck">
-                <label class="form-check-label" for="emailCheck">
-                  Email Reminder
-                </label>
-              </div>
-              <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="app" id="appCheck">
-                <label class="form-check-label" for="appCheck">
-                  In-App Notification
-                </label>
-              </div>
-            </div>
-
-            <!-- Recipients -->
-            <div class="mb-3">
-              <label class="form-label">
-                Send To <span class="text-danger">*</span>
-              </label>
-              <select class="form-select" required>
-                <option value="all">All Family Members</option>
-                <option value="branch">Specific Branch</option>
-                <option value="selected">Selected Members</option>
-              </select>
-            </div>
-
-            <!-- Schedule Time -->
-            <div class="row">
-              <div class="col-md-6 mb-3">
-                <label class="form-label">
-                  Reminder Date <span class="text-danger">*</span>
-                </label>
-                <input type="date" class="form-control" required>
-              </div>
-
-              <div class="col-md-6 mb-3">
-                <label class="form-label">
-                  Reminder Time <span class="text-danger">*</span>
-                </label>
-                <input type="time" class="form-control" required>
-              </div>
-            </div>
-
-            <!-- Custom Message -->
-            <div class="mb-3">
-              <label class="form-label">
-                Custom Message
-              </label>
-              <textarea class="form-control" rows="4"
-                placeholder="Example: Dear family member, this is a reminder for our upcoming meeting scheduled for..."></textarea>
-            </div>
-
-            <!-- Buttons -->
-            <div class="text-end">
-              <button type="reset" class="btn btn-secondary">Cancel</button>
-              <button type="submit" class="btn btn-primary">
-                Send Reminder
-              </button>
-            </div>
-
-          </form>
-
-        </div>
-      </div>
-    </div>
-
-    <!-- Reminder History -->
-    <div class="col-lg-4">
-      <div class="card">
-        <div class="card-body">
-
-          <h5 class="card-title">Recent Reminders</h5>
-
-          <ul class="list-group list-group-flush">
-
-            <li class="list-group-item">
-              <strong>Annual Meeting</strong><br>
-              <small>SMS sent to 25 members</small><br>
-              <span class="badge bg-success">Sent</span>
-            </li>
-
-            <li class="list-group-item">
-              <strong>Branch Planning</strong><br>
-              <small>Email sent to 10 members</small><br>
-              <span class="badge bg-warning">Scheduled</span>
-            </li>
-
-            <li class="list-group-item">
-              <strong>Emergency Meeting</strong><br>
-              <small>App notification sent</small><br>
-              <span class="badge bg-secondary">Completed</span>
-            </li>
-
-          </ul>
-
-        </div>
-      </div>
-    </div>
-
+  <div class="pagetitle">
+    <h1>Send Meeting Reminder</h1>
   </div>
-</section>
+
+  <section class="section">
+    <div class="row">
+      <div class="col-lg-8">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">Create Reminder</h5>
+
+            <form action="/send-reminder" method="POST">
+
+              <div class="mb-3">
+                <label class="form-label">Select Meeting <span class="text-danger">*</span></label>
+                <select name="meeting_id" class="form-select" required>
+                  <option value="">Choose Meeting</option>
+                  <% meetings.forEach(meeting => { %>
+                    <option value="<%= meeting.meeting_id %>"><%= meeting.title %> (<%= meeting.meeting_date.toISOString().split('T')[0] %>)</option>
+                  <% }) %>
+                </select>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Reminder Method <span class="text-danger">*</span></label>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="method" value="sms" id="smsCheck" checked>
+                  <label class="form-check-label" for="smsCheck">SMS Reminder (TegaSMS)</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="method" value="app" id="appCheck" checked>
+                  <label class="form-check-label" for="appCheck">In-App Notification</label>
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Send To <span class="text-danger">*</span></label>
+                <select name="recipient_group" class="form-select" required>
+                  <option value="all">All Family Members</option>
+                </select>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Custom Message</label>
+                <textarea name="custom_message" class="form-control" rows="4" 
+                  placeholder="Habari, huu ni ukumbusho wa kikao chetu cha..."></textarea>
+              </div>
+
+              <div class="text-end">
+                <button type="reset" class="btn btn-secondary">Cancel</button>
+                <button type="submit" class="btn btn-primary">Send Reminder Now</button>
+              </div>
+            </form>
+
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-4">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">Recent Activity</h5>
+            <ul class="list-group list-group-flush">
+              <li class="list-group-item">
+                <small class="text-muted">Notifications are sent to all registered family members via TegaSMS.</small>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 </main>
 <!-- Google Translate Element -->
 <div id="google_translate_element" style="visibility: hidden; position: absolute; z-index: -1;"></div>

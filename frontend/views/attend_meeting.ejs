@@ -33,157 +33,107 @@
 <body>
 
   <!-- ======= Header ======= -->
-  <header id="header" class="header fixed-top d-flex align-items-center">
-
-    <div class="d-flex align-items-center justify-content-between">
-      <a href="/" class="logo d-flex align-items-center">
-        <img src="" alt="">
-        <span class="d-none d-lg-block">Family Genealogy</span>
-      </a>
-      <i class="bi bi-list toggle-sidebar-btn"></i>
-    </div><!-- End Logo -->
-
-    <nav class="header-nav ms-auto">
-      <ul class="d-flex align-items-center">
-
-        <!-- Notifications -->
-        <li class="nav-item dropdown">
-          <a class="nav-link nav-icon" href="#" data-bs-toggle="dropdown">
-            <i class="bi bi-bell"></i>
-            <span class="badge bg-primary badge-number">0</span>
-          </a><!-- End Notification Icon -->
-
-          <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow notifications">
-            <li class="dropdown-header">
-              You have 0 new notifications
-              <a href="#">
-                <span class="badge rounded-pill bg-primary p-2 ms-2">View all</span>
-              </a>
-            </li>
-
-            <li><hr class="dropdown-divider"></li>
-
-            <li class="notification-item text-center">
-              <div>No notifications available</div>
-            </li>
-
-            <li><hr class="dropdown-divider"></li>
-
-            <li class="dropdown-footer">
-              <a href="#">Show all notifications</a>
-            </li>
-          </ul>
-        </li><!-- End Notifications -->
-
-        <!-- Profile -->
-        <li class="nav-item dropdown pe-3">
-          <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
-            <img src="assets/img/3.png" alt="Profile" class="rounded-circle">
-            <span class="d-none d-md-block dropdown-toggle ps-2">Family Admin</span>
-          </a><!-- End Profile Image Icon -->
-
-          <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
-            <li class="dropdown-header">
-              <h6>Family Admin</h6>
-              <span><b>Family Account</b></span>
-            </li>
-
-            <li><hr class="dropdown-divider"></li>
-
-            <li>
-              <a class="dropdown-item d-flex align-items-center" href="/family_admin/profile">
-                <i class="bi bi-person"></i>
-                <span>My Profile</span>
-              </a>
-            </li>
-
-            <li><hr class="dropdown-divider"></li>
-
-            <li>
-              <a class="dropdown-item d-flex align-items-center" href="/logout">
-                <i class="bi bi-box-arrow-right"></i>
-                <span>Sign Out</span>
-              </a>
-            </li>
-          </ul><!-- End Profile Dropdown Items -->
-        </li><!-- End Profile Nav -->
-
-      </ul>
-    </nav><!-- End Icons Navigation -->
-
-  </header><!-- End Header -->
-
+<%- include('partials/title') %>
 <%- include('partials/header') %>
 
-<!-- the main content start -->
 <main id="main" class="main">
-<div class="pagetitle">
-  <h1>Join Meeting</h1>
-</div>
+  <div class="pagetitle">
+    <h1>Join Meeting</h1>
+  </div>
 
-<section class="section d-flex justify-content-center">
-  <div class="col-lg-6 col-md-8">
-
-    <div class="card shadow-sm">
-      <div class="card-body text-center p-4">
-
-        <h4 class="card-title mb-3">Enter Meeting Link</h4>
-
-        <form id="joinMeetingForm">
-
-          <!-- Paste Link -->
-          <div class="mb-3 text-start">
-            <label class="form-label">
-              Paste Meeting Link <span class="text-danger">*</span>
-            </label>
-            <input 
-              type="text" 
-              id="meetingLink" 
-              class="form-control" 
-              placeholder="https://familymeet.app/meeting/abc123"
-              required
-            >
+  <section class="section d-flex justify-content-center">
+    <div class="col-lg-6 col-md-8">
+      <div class="card shadow-sm border-0">
+        <div class="card-body text-center p-5">
+          <div class="mb-4">
+            <i class="bi bi-camera-video text-success" style="font-size: 3rem;"></i>
+            <h4 class="mt-2">Attending a Meeting</h4>
+            <p class="text-muted">Enter a Google Meet link or code below</p>
           </div>
 
-          <!-- OR Divider -->
-          <div class="my-3">
-            <hr>
-            <p class="text-muted">OR</p>
-          </div>
+          <form id="joinMeetingForm">
+            <div class="mb-3 text-start">
+              <label class="form-label fw-bold">Paste Meeting Link</label>
+              <input 
+                type="url" 
+                id="meetingLink" 
+                class="form-control form-control-lg" 
+                placeholder="https://meet.google.com/abc-defg-hij"
+              >
+            </div>
 
-          <!-- Meeting Code -->
-          <div class="mb-3 text-start">
-            <label class="form-label">
-              Enter Meeting Code
-            </label>
-            <input 
-              type="text" 
-              id="meetingCode" 
-              class="form-control" 
-              placeholder="Enter meeting code"
-            >
-          </div>
+            <div class="d-flex align-items-center my-3">
+              <hr class="flex-grow-1">
+              <span class="mx-2 text-muted fw-bold">OR</span>
+              <hr class="flex-grow-1">
+            </div>
 
-          <!-- Error Message -->
-          <div id="errorMessage" class="alert alert-danger d-none">
-            Invalid meeting link or code.
-          </div>
+            <div class="mb-3 text-start">
+              <label class="form-label fw-bold">Enter Meeting Code</label>
+              <input 
+                type="text" 
+                id="meetingCode" 
+                class="form-control form-control-lg text-center" 
+                placeholder="abc-defg-hij"
+                maxlength="12"
+              >
+            </div>
 
-          <!-- Join Button -->
-          <div class="d-grid mt-4">
-            <button type="submit" class="btn btn-success btn-lg">
-              Join Meeting
-            </button>
-          </div>
+            <div id="errorMessage" class="alert alert-danger d-none">
+              Please provide a valid link or meeting code.
+            </div>
 
-        </form>
-
+            <div class="d-grid mt-4">
+              <button type="submit" class="btn btn-success btn-lg shadow-sm">
+                <i class="bi bi-door-open-fill me-2"></i> Join Now
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
-
-  </div>
-</section>
+  </section>
 </main>
+
+<script>
+document.getElementById('joinMeetingForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  
+  const linkInput = document.getElementById('meetingLink').value.trim();
+  const codeInput = document.getElementById('meetingCode').value.trim();
+  const errorDiv = document.getElementById('errorMessage');
+  
+  errorDiv.classList.add('d-none');
+  let finalURL = "";
+
+  // 1. Kama ameweka Link kamili
+  if (linkInput) {
+    if (linkInput.startsWith('http')) {
+      finalURL = linkInput;
+    } else {
+      errorDiv.textContent = "Please enter a valid URL (starting with http/https)";
+      errorDiv.classList.remove('d-none');
+      return;
+    }
+  } 
+  // 2. Kama ameweka Code pekee (Inasaidia Google Meet Codes)
+  else if (codeInput) {
+    // Ondoa alama za "-" kama zipo ili kusafisha code, kisha Google itazielewa
+    const cleanCode = codeInput.replace(/\s+/g, ''); 
+    finalURL = `https://meet.google.com/${cleanCode}`;
+  } 
+  else {
+    errorDiv.textContent = "Please enter either a link or a code to join.";
+    errorDiv.classList.remove('d-none');
+    return;
+  }
+
+  // Fungua mkutano kwenye tab mpya
+  if (finalURL) {
+    window.open(finalURL, '_blank');
+  }
+});
+</script>
 <!-- Google Translate Element -->
 <div id="google_translate_element" style="visibility: hidden; position: absolute; z-index: -1;"></div>
 

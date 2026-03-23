@@ -255,7 +255,7 @@ app.post('/register-family', async (req, res) => {
 
     if (!adminId) return res.redirect('/index');
 
-    // 1. Hakikisha middle_name imejumuishwa hapa
+    // 1. Kuchukua data kutoka kwenye form
     const { 
         family_name, tribe, region, religion, address, 
         first_name, middle_name, last_name, phone, email, gender 
@@ -278,24 +278,27 @@ app.post('/register-family', async (req, res) => {
         return getCountAndRender('Tafadhali jaza sehemu zote muhimu.', null);
     }
 
-    // 2. Safisha namba ya simu
+    // 2. Safisha namba ya simu (FormattedPhone kwa ajili ya DB na Recipient)
     let formattedPhone = phone.replace(/\D/g, ''); 
     if (formattedPhone.startsWith('0')) {
         formattedPhone = '255' + formattedPhone.substring(1);
     } else if (!formattedPhone.startsWith('255')) {
-        // Kama namba haina 255 mwanzo, ongeza
         formattedPhone = '255' + formattedPhone;
     }
+
+    // Hii itatumika kuonyesha Username kwenye message kwa usahihi
+    const formattedUsername = formattedPhone;
 
     try {
         db.query("SELECT member_id FROM family_member WHERE phone = ? LIMIT 1", [formattedPhone], async (err, result) => {
             if (err) return getCountAndRender('Database error checking phone', null);
             if (result && result.length > 0) return getCountAndRender('Namba hii tayari imesajiliwa.', null);
 
+            // Tengeneza Password ya nasibu (Random)
             const plainPassword = crypto.randomBytes(3).toString('hex'); 
             const hashedPassword = await bcrypt.hash(plainPassword, 10);
 
-            // 3. Save Family
+            // 3. Save Family Data
             const familySql = `INSERT INTO family (family_name, tribe, region, religion, address, phone, registered_by, permissions) VALUES (?, ?, ?, ?, ?, ?, ?, '')`;
             db.query(familySql, [family_name, tribe, region, religion || null, address || null, formattedPhone, adminId], (err2, familyResult) => {
                 if (err2) {
@@ -305,14 +308,13 @@ app.post('/register-family', async (req, res) => {
 
                 const familyId = familyResult.insertId;
 
-                // 4. Save Admin Member - IMEBORESHWA
-                // Nimeongeza ? moja zaidi kwa ajili ya password na kuhakikisha middle_name haileti kosa
+                // 4. Save Admin Member
                 const memberSql = `INSERT INTO family_member (family_id, first_name, middle_name, last_name, gender, phone, email, role, password) VALUES (?, ?, ?, ?, ?, ?, ?, 'family_admin', ?)`;
                 
                 db.query(memberSql, [
                     familyId, 
                     first_name, 
-                    middle_name || '', // Hii inazuia kosa la "Field middle_name doesn't have a default value"
+                    middle_name || '', 
                     last_name, 
                     gender || 'Other', 
                     formattedPhone, 
@@ -324,15 +326,30 @@ app.post('/register-family', async (req, res) => {
                         return getCountAndRender('Error saving admin member.', null);
                     }
 
-                    // 5. TegaSMS 
+                    // 5. TegaSMS Configuration & Message Styling
                     const apiToken = '2|ZDVZgBsVfuBbhCRnFf5N9jmYsG7JLPtoXACoqLQO88f41331';
+                    
+                    // Ujumbe uliopangwa vizuri kwa nafasi (Spacing)
+                    const smsMessage = `Habari ${first_name}, 
+
+                    Hongera! Familia ya ${family_name} imesajiliwa kikamilifu.
+
+                    TAARIFA ZAKO ZA KUINGIA:
+                    Username: ${formattedUsername}
+                    Neno la Siri: ${plainPassword}
+
+                    Ingia hapa: http://localhost:5000/
+
+                    Tafadhali badili neno la siri mara tu utakapoingia kwa usalama wa akaunti yako.`;
+
                     const smsData = {
                         "from": "FamilyHub", 
                         "recipient": formattedPhone,
-                        "message": `Habari ${first_name}, Familia ya ${family_name} imesajiliwa! Neno la siri la kuingia ni: ${plainPassword}`,
+                        "message": smsMessage,
                         "channel": "1010105"
                     };
 
+                    // Tuma SMS kupitia Axios
                     axios.post('https://tegasms.teganas.co.tz/api/v1/send_sms/type/single', smsData, {
                         headers: {
                             'Authorization': `Bearer ${apiToken}`,
@@ -341,7 +358,7 @@ app.post('/register-family', async (req, res) => {
                     }).then(res => console.log("SMS Success:", res.data))
                       .catch(e => console.error("SMS API Error:", e.response ? e.response.data : e.message));
 
-                    // 6. Success Response
+                    // 6. Success Response kwa Admin
                     getCountAndRender(null, `Familia ya ${family_name} imesajiliwa kikamilifu!`);
                 });
             });
@@ -1454,12 +1471,154 @@ app.delete('/delete-meeting/:id', (req, res) => {
 
 // attend meeting
 app.get('/attend_meeting', (req, res) => {
-  res.render('attend_meeting'); // HOF
+    const memberId = req.session.member_id;
+    if (!memberId) return res.redirect('/index');
+
+    const profileQuery = `SELECT first_name, last_name, role FROM family_member WHERE member_id = ? LIMIT 1`;
+    const notificationsQuery = `
+        SELECT 'member' AS type, CONCAT(first_name, ' ', last_name) AS title, created_at FROM family_member WHERE registered_by = ?
+        UNION
+        SELECT 'meeting' AS type, title, created_at FROM meeting WHERE created_by = ?
+        ORDER BY created_at DESC LIMIT 5`;
+
+    db.query(profileQuery, [memberId], (err, profileRes) => {
+        db.query(notificationsQuery, [memberId, memberId], (err2, notifications) => {
+            res.render('attend_meeting', {
+                profile: profileRes[0] || { first_name: 'User' },
+                notifications,
+                totalNotifications: notifications.length
+            });
+        });
+    });
 });
 
 // reminder
+// --- GET: Reminder Page ---
 app.get('/reminder', (req, res) => {
-  res.render('reminder'); // HOF
+  const familyId = req.session.family_id;
+  const memberId = req.session.member_id;
+
+  // ✅ Check session
+  if (!familyId || !memberId) return res.redirect('/index');
+
+  // 🔹 Profile
+  const profileQuery = `
+    SELECT first_name, last_name, role
+    FROM family_member
+    WHERE member_id = ?
+    LIMIT 1
+  `;
+
+  // 🔹 Notifications (same as other pages ✅)
+  const notificationsQuery = `
+    SELECT 'member' AS type, CONCAT(first_name, ' ', last_name) AS title, created_at
+    FROM family_member
+    WHERE registered_by = ?
+    UNION
+    SELECT 'meeting' AS type, title, created_at
+    FROM meeting
+    WHERE created_by = ?
+    ORDER BY created_at DESC
+    LIMIT 5
+  `;
+
+  // 🔹 Meetings (for dropdown)
+  const meetingsQuery = `
+    SELECT meeting_id, title, meeting_date, meeting_time, location
+    FROM meeting
+    WHERE family_id = ?
+    ORDER BY meeting_date DESC
+  `;
+
+  // 🔥 Flash messages (optional but recommended)
+  const success = req.session.success;
+  const error = req.session.error;
+
+  req.session.success = null;
+  req.session.error = null;
+
+  // 🚀 RUN QUERIES
+  db.query(profileQuery, [memberId], (err, profileResult) => {
+    if (err) throw err;
+
+    const profile = profileResult[0] || {
+      first_name: 'User',
+      last_name: '',
+      role: ''
+    };
+
+    db.query(notificationsQuery, [memberId, memberId], (err2, notifications) => {
+      if (err2) notifications = [];
+
+      const totalNotifications = notifications.length;
+
+      db.query(meetingsQuery, [familyId], (err3, meetings) => {
+        if (err3) meetings = [];
+
+        // ✅ SEND TO EJS
+        res.render('reminder', {
+          profile,
+          notifications,
+          totalNotifications,
+          meetings,
+          success,
+          error
+        });
+      });
+    });
+  });
+});
+
+// --- 2. POST: Process & Send Reminder ---
+app.post('/send-reminder', async (req, res) => {
+    const { meeting_id, method, custom_message } = req.body;
+    const familyId = req.session.family_id;
+    const apiToken = '2|ZDVZgBsVfuBbhCRnFf5N9jmYsG7JLPtoXACoqLQO88f41331';
+
+    // 1. Pata taarifa za mkutano
+    db.query("SELECT * FROM meeting WHERE meeting_id = ?", [meeting_id], (err, meetingResult) => {
+        if (err || meetingResult.length === 0) return res.redirect('/reminder');
+        
+        const meeting = meetingResult[0];
+        const finalMessage = custom_message || `UKUMBUSHO: Kikao cha ${meeting.title} kitafanyika tarehe ${meeting.meeting_date.toISOString().split('T')[0]} saa ${meeting.meeting_time}. Mahali: ${meeting.location}. Tafadhali hudhuria.`;
+
+        // 2. Pata namba za simu za wanafamilia wote
+        db.query("SELECT phone, first_name FROM family_member WHERE family_id = ?", [familyId], async (err2, members) => {
+            if (err2) return res.redirect('/reminder');
+
+            // Ikiwa SMS imechaguliwa
+            if (Array.isArray(method) ? method.includes('sms') : method === 'sms') {
+                for (let member of members) {
+                    const smsData = {
+                        "from": "FamilyHub",
+                        "recipient": member.phone,
+                        "message": `Habari ${member.first_name}, ${finalMessage}`,
+                        "channel": "1010105"
+                    };
+
+                    try {
+                        await axios.post('https://tegasms.teganas.co.tz/api/v1/send_sms/type/single', smsData, {
+                            headers: { 'Authorization': `Bearer ${apiToken}`, 'Content-Type': 'application/json' }
+                        });
+                        console.log(`SMS Sent to ${member.phone}`);
+                    } catch (e) {
+                        console.error(`SMS Failed for ${member.phone}:`, e.message);
+                    }
+                }
+            }
+
+            // Ikiwa In-App imechaguliwa (Hapa unaweza ku-insert kwenye table ya notifications)
+            if (Array.isArray(method) ? method.includes('app') : method === 'app') {
+                // Mfano wa ku-insert kwenye database kwa ajili ya kuonekana kwenye "Notifications"
+                const notifSql = "INSERT INTO notifications (member_id, title, message, type) VALUES ?";
+                const values = members.map(m => [m.member_id, 'Meeting Reminder', finalMessage, 'meeting']);
+                // db.query(notifSql, [values], (err) => { ... });
+            }
+
+            req.session.success = "Reminders are being processed and sent!";
+            res.redirect('/reminder');
+        });
+    });
 });
 
 // package
