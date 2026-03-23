@@ -39,20 +39,45 @@
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     animation: slideIn 0.5s ease forwards;
   }
+  
   @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
-  .toast-error { background: #fff1f0; color: #d93025; border-left: 6px solid #d93025; }
-  .toast-success { background: #f6ffed; color: #52c41a; border-left: 6px solid #52c41a; }
+  /* Error Style */
+  .toast-error { background: #fff1f0; border-left: 6px solid #d93025; }
+  .toast-error .toast-message { color: #d93025; }
+  .toast-error .toast-icon { color: #d93025; }
+
+  /* Success Style - Rangi ya kijani kwenye border na icon, nyeusi kwenye maandishi */
+  .toast-success { 
+    background: #f6ffed; 
+    border-left: 6px solid #52c41a; 
+  }
+  .toast-success .toast-message { 
+    color: #000000; /* Maandishi meusi */
+    font-weight: 500;
+  }
+  .toast-success .toast-icon { 
+    color: #52c41a; /* Kide (Tick) bado ni kijani */
+  }
 
   /* SVG Animations */
   .tick-svg, .xmark-svg { width: 35px; height: 35px; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+  
+  /* Inatumia currentColor ili kufuata rangi ya .toast-icon iliyowekwa hapo juu */
   .tick-circle, .xmark-circle { stroke-dasharray: 166; stroke-dashoffset: 166; stroke: currentColor; animation: strokeAnim 0.6s forwards; }
   .tick-check, .xmark-line { stroke-dasharray: 48; stroke-dashoffset: 48; stroke: currentColor; }
+  
   .tick-check { animation: strokeAnim 0.3s 0.6s forwards; }
   .xmark-line.x1 { animation: strokeAnim 0.3s 0.6s forwards; }
   .xmark-line.x2 { animation: strokeAnim 0.3s 0.9s forwards; }
 
   @keyframes strokeAnim { to { stroke-dashoffset: 0; } }
+
+  .toast-message {
+    margin-left: 12px;
+    font-size: 14px;
+    line-height: 1.4;
+  }
 </style>
 
 <script>
@@ -65,5 +90,8 @@
       setTimeout(() => t.remove(), 500);
     });
   }
-  setTimeout(closeToasts, 5000);
+  // Itajifunga baada ya sekunde 5
+  if(document.querySelectorAll('.toast-toast').length > 0) {
+    setTimeout(closeToasts, 5000);
+  }
 </script>

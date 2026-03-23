@@ -249,77 +249,108 @@ app.get('/register', (req, res) => {
 
 });
   // --- POST: Handle Family Registration ---
-  app.post('/register-family', async (req, res) => {
-      const adminId = req.session.adminId;
-      const adminName = req.session.adminName;
+app.post('/register-family', async (req, res) => {
+    const adminId = req.session.adminId;
+    const adminName = req.session.adminName;
 
-      if (!adminId) return res.redirect('/index');
+    if (!adminId) return res.redirect('/index');
 
-      const { 
-          family_name, tribe, region, religion, address, 
-          first_name, last_name, phone, email, gender 
-      } = req.body;
+    // 1. Hakikisha middle_name imejumuishwa hapa
+    const { 
+        family_name, tribe, region, religion, address, 
+        first_name, middle_name, last_name, phone, email, gender 
+    } = req.body;
 
-      // Helper: Attaches familyCount to the current response context
-      const getCountAndRender = (errorMsg, successMsg) => {
-          const countSql = "SELECT COUNT(*) AS totalFamilies FROM family WHERE registered_by = ?";
-          db.query(countSql, [adminId], (err, countResult) => {
-              const familyCount = (!err && countResult.length > 0) ? countResult[0].totalFamilies : 0;
-              
-              res.render('register', { 
-                  adminName,
-                  familyCount, // Passed directly just to be safe
-                  error: errorMsg, 
-                  success: successMsg 
-              });
-          });
-      };
+    const getCountAndRender = (errorMsg, successMsg) => {
+        const countSql = "SELECT COUNT(*) AS totalFamilies FROM family WHERE registered_by = ?";
+        db.query(countSql, [adminId], (err, countResult) => {
+            const familyCount = (!err && countResult.length > 0) ? countResult[0].totalFamilies : 0;
+            res.render('register', { 
+                adminName,
+                familyCount,
+                error: errorMsg, 
+                success: successMsg 
+            });
+        });
+    };
 
-      // 1. Validation
-      if (!family_name || !tribe || !region || !first_name || !last_name || !phone) {
-          return getCountAndRender('Tafadhali jaza sehemu zote zenye nyota (*)', null);
-      }
+    if (!family_name || !first_name || !phone) {
+        return getCountAndRender('Tafadhali jaza sehemu zote muhimu.', null);
+    }
 
-      const formattedPhone = formatPhone(phone);
+    // 2. Safisha namba ya simu
+    let formattedPhone = phone.replace(/\D/g, ''); 
+    if (formattedPhone.startsWith('0')) {
+        formattedPhone = '255' + formattedPhone.substring(1);
+    } else if (!formattedPhone.startsWith('255')) {
+        // Kama namba haina 255 mwanzo, ongeza
+        formattedPhone = '255' + formattedPhone;
+    }
 
-      try {
-          // 2. Check if phone exists
-          db.query("SELECT member_id FROM family_member WHERE phone = ? LIMIT 1", [formattedPhone], async (err, result) => {
-              if (err) return getCountAndRender('Database error checking phone', null);
-              if (result && result.length > 0) return getCountAndRender('Namba hii tayari imesajiliwa.', null);
+    try {
+        db.query("SELECT member_id FROM family_member WHERE phone = ? LIMIT 1", [formattedPhone], async (err, result) => {
+            if (err) return getCountAndRender('Database error checking phone', null);
+            if (result && result.length > 0) return getCountAndRender('Namba hii tayari imesajiliwa.', null);
 
-              const plainPassword = crypto.randomBytes(3).toString('hex'); 
-              const hashedPassword = await bcrypt.hash(plainPassword, 10);
+            const plainPassword = crypto.randomBytes(3).toString('hex'); 
+            const hashedPassword = await bcrypt.hash(plainPassword, 10);
 
-              // 3. Insert Family
-              const familySql = `INSERT INTO family (family_name, tribe, region, religion, address, phone, registered_by, permissions) VALUES (?, ?, ?, ?, ?, ?, ?, '')`;
-              db.query(familySql, [family_name, tribe, region, religion || null, address || null, formattedPhone, adminId], (err2, familyResult) => {
-                  if (err2) return getCountAndRender('Error saving family data.', null);
+            // 3. Save Family
+            const familySql = `INSERT INTO family (family_name, tribe, region, religion, address, phone, registered_by, permissions) VALUES (?, ?, ?, ?, ?, ?, ?, '')`;
+            db.query(familySql, [family_name, tribe, region, religion || null, address || null, formattedPhone, adminId], (err2, familyResult) => {
+                if (err2) {
+                    console.error("Family Insert Error:", err2);
+                    return getCountAndRender('Error saving family data.', null);
+                }
 
-                  const familyId = familyResult.insertId;
+                const familyId = familyResult.insertId;
 
-                  // 4. Insert Member
-                  const memberSql = `INSERT INTO family_member (family_id, first_name, last_name, gender, phone, email, role, password) VALUES (?, ?, ?, ?, ?, ?, 'family_admin', ?)`;
-                  db.query(memberSql, [familyId, first_name, last_name, gender, formattedPhone, email || null, hashedPassword], async (err3) => {
-                      if (err3) return getCountAndRender('Error saving admin member.', null);
+                // 4. Save Admin Member - IMEBORESHWA
+                // Nimeongeza ? moja zaidi kwa ajili ya password na kuhakikisha middle_name haileti kosa
+                const memberSql = `INSERT INTO family_member (family_id, first_name, middle_name, last_name, gender, phone, email, role, password) VALUES (?, ?, ?, ?, ?, ?, ?, 'family_admin', ?)`;
+                
+                db.query(memberSql, [
+                    familyId, 
+                    first_name, 
+                    middle_name || '', // Hii inazuia kosa la "Field middle_name doesn't have a default value"
+                    last_name, 
+                    gender || 'Other', 
+                    formattedPhone, 
+                    email || '', 
+                    hashedPassword
+                ], async (err3) => {
+                    if (err3) {
+                        console.error("Member Insert Error:", err3);
+                        return getCountAndRender('Error saving admin member.', null);
+                    }
 
-                      // 5. SMS (Async - won't wait for response to render)
-                      const auth = Buffer.from('7296068691500366:NmZjN2I0Njg5YTA5YWEyY2E2YmY1ZTZlOTY3ZTM0ZDA4ODgyNjkyYjk2OTdmNjlkMTY1OWZjZTE0MjAwZjRkMg==').toString('base64');
-                      axios.post('https://apisms.beem.africa/v1/send', {
-                          source_addr: 'AFYASTOCK', 
-                          message: `Habari ${first_name}, Familia ya ${family_name} imesajiliwa! Pass: ${plainPassword}`,
-                          recipients: [{ recipient_id: 1, dest_addr: formattedPhone }]
-                      }, { headers: { 'Authorization': `Basic ${auth}` } }).catch(e => console.log("SMS failed"));
+                    // 5. TegaSMS 
+                    const apiToken = '2|ZDVZgBsVfuBbhCRnFf5N9jmYsG7JLPtoXACoqLQO88f41331';
+                    const smsData = {
+                        "from": "FamilyHub", 
+                        "recipient": formattedPhone,
+                        "message": `Habari ${first_name}, Familia ya ${family_name} imesajiliwa! Neno la siri la kuingia ni: ${plainPassword}`,
+                        "channel": "1010105"
+                    };
 
-                      // 6. Final Success
-                      getCountAndRender(null, `Familia ya ${family_name} imesajiliwa kikamilifu!`);
-                  });
-              });
-          });
-      } catch (error) {
-          getCountAndRender('Something went wrong during processing.', null);
-      }
-  });
+                    axios.post('https://tegasms.teganas.co.tz/api/v1/send_sms/type/single', smsData, {
+                        headers: {
+                            'Authorization': `Bearer ${apiToken}`,
+                            'Content-Type': 'application/json'
+                        }
+                    }).then(res => console.log("SMS Success:", res.data))
+                      .catch(e => console.error("SMS API Error:", e.response ? e.response.data : e.message));
+
+                    // 6. Success Response
+                    getCountAndRender(null, `Familia ya ${family_name} imesajiliwa kikamilifu!`);
+                });
+            });
+        });
+    } catch (error) {
+        console.error("General Error:", error);
+        getCountAndRender('Something went wrong during processing.', null);
+    }
+});
 
   // --- GET: List All Families with Live Notification Count ---
   app.get('/lists_family', (req, res) => {
@@ -1148,10 +1179,96 @@ Password: ${plainPassword}
 });
 
 // lists of family member
+// --- GET: Family Members List ---
 app.get('/family_lists', (req, res) => {
-  res.render('family_lists'); // HOF
+    const familyId = req.session.family_id; 
+    const memberId = req.session.member_id;
+
+    if (!familyId || !memberId) return res.redirect('/index');
+
+    // ✅ CHUKUA SUCCESS NA ERROR KUTOKA KWENYE SESSION
+    const success = req.session.success;
+    const error = req.session.error;
+
+    // ❗ FUTA BAADA YA KUSOMA ILI ISITOKEE TENA UKIREFRESH
+    req.session.success = null;
+    req.session.error = null;
+
+    const profileQuery = `SELECT first_name, last_name, role FROM family_member WHERE member_id = ? LIMIT 1`;
+    
+    const notificationsQuery = `
+        SELECT 'member' AS type, CONCAT(first_name, ' ', last_name) AS title, created_at FROM family_member WHERE registered_by = ?
+        UNION
+        SELECT 'meeting' AS type, title, created_at FROM meeting WHERE created_by = ?
+        ORDER BY created_at DESC LIMIT 5`;
+
+    const membersQuery = `
+        SELECT member_id, CONCAT(first_name, ' ', middle_name, ' ', last_name) AS full_name, 
+        gender, relationship, role, phone, branch_type 
+        FROM family_member WHERE family_id = ? ORDER BY created_at DESC`;
+
+    db.query(profileQuery, [memberId], (err, profileResult) => {
+        if (err) throw err;
+        const profile = profileResult[0] || { first_name: 'User', last_name: '', role: '' };
+
+        db.query(notificationsQuery, [memberId, memberId], (err2, notifications) => {
+            const totalNotifications = err2 ? 0 : notifications.length;
+
+            db.query(membersQuery, [familyId], (err3, members) => {
+                res.render('family_lists', {
+                    profile,
+                    notifications,
+                    totalNotifications,
+                    members,
+                    success, // Inatumwa kwenye notifications.ejs
+                    error    // Inatumwa kwenye notifications.ejs
+                });
+            });
+        });
+    });
 });
 
+// --- PUT: Update Member ---
+app.put('/update-member/:id', (req, res) => {
+    const memberId = req.params.id;
+    const { name, phone } = req.body;
+    const familyId = req.session.family_id;
+
+    if (!familyId) return res.json({ success: false });
+
+    const names = name.split(' ');
+    const first_name = names[0] || '';
+    const last_name = names.slice(1).join(' ') || '';
+
+    const sql = `UPDATE family_member SET first_name = ?, last_name = ?, phone = ? WHERE member_id = ? AND family_id = ?`;
+
+    db.query(sql, [first_name, last_name, phone, memberId, familyId], (err) => {
+        if (err) {
+            req.session.error = "Update failed. Please try again.";
+            return res.json({ success: false });
+        }
+        // ✅ SET SESSION SUCCESS
+        req.session.success = "Member details updated successfully!";
+        res.json({ success: true });
+    });
+});
+
+// --- DELETE: Member ---
+app.delete('/delete-member/:id', (req, res) => {
+    const memberId = req.params.id;
+    const familyId = req.session.family_id;
+
+    const sql = "DELETE FROM family_member WHERE member_id = ? AND family_id = ?";
+    db.query(sql, [memberId, familyId], (err) => {
+        if (err) {
+            req.session.error = "Could not delete member.";
+            return res.json({ success: false });
+        }
+        // ✅ SET SESSION SUCCESS
+        req.session.success = "Member has been removed from the list.";
+        res.json({ success: true });
+    });
+});
 // --- GET: Family Tree ---
 app.get('/family_tree', (req, res) => {
   const familyId = req.session.family_id;

@@ -1793,3 +1793,52 @@ body > .skiptranslate { display: none !important; }
 
 /* Force iframe containing Google Translate text to be hidden */
 iframe[src*="translate.google.com"] { display: none !important; }
+
+
+  /* 1. Hakikisha Container ya Jedwali inaruhusu Scroll */
+  .table-responsive {
+    display: block;
+    width: 100%;
+    overflow-x: auto; /* Inaleta scroll bar ya kando */
+    -webkit-overflow-scrolling: touch; /* Scroll laini kwa iPhone/Safari */
+    border: 0;
+  }
+
+  /* 2. Zuia maneno yasivunjike (kujikunja) ili kulazimisha scroll */
+  .table th, .table td {
+    white-space: nowrap; /* Muhimu: Inazuia maandishi yasishuke chini */
+    padding: 12px 15px;
+  }
+
+  /* 3. Style za Buttons ili zisichukue nafasi kubwa */
+  .action-buttons {
+    display: flex;
+    gap: 5px;
+    justify-content: center;
+    min-width: 120px; /* Inahakikisha buttons hazibanani */
+  }
+
+  @media (max-width: 768px) {
+    .main {
+      padding: 15px 10px !important;
+    }
+    
+    .card-title {
+      font-size: 1rem;
+      margin-bottom: 15px;
+    }
+
+    /* Punguza font kidogo kwenye simu ili data nyingi zionekane */
+    .table {
+      font-size: 0.85rem;
+    }
+
+    /* Inapendezesha scrollbar kwa simu (hiari) */
+    .table-responsive::-webkit-scrollbar {
+      height: 5px;
+    }
+    .table-responsive::-webkit-scrollbar-thumb {
+      background: #ccc;
+      border-radius: 10px;
+    }
+  }

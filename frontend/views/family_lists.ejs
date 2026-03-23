@@ -35,91 +35,65 @@
 <body>
 
   <!-- ======= Header ======= -->
-  <header id="header" class="header fixed-top d-flex align-items-center">
+  <%- include('partials/title') %>
+<style>
+  #main.main { padding: 20px; transition: all 0.3s; }
 
-    <div class="d-flex align-items-center justify-content-between">
-      <a href="/" class="logo d-flex align-items-center">
-        <img src="" alt="">
-        <span class="d-none d-lg-block">Family Genealogy</span>
-      </a>
-      <i class="bi bi-list toggle-sidebar-btn"></i>
-    </div><!-- End Logo -->
+  /* Container ya kiscroll */
+  .table-responsive {
+    width: 100%;
+    margin-bottom: 15px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border: 1px solid #dee2e6;
+  }
 
-    <nav class="header-nav ms-auto">
-      <ul class="d-flex align-items-center">
+  /* Force table layout */
+  #familyTable {
+    width: 100% !important;
+    margin: 0 !important;
+    border-collapse: collapse !important;
+  }
 
-        <!-- Notifications -->
-        <li class="nav-item dropdown">
-          <a class="nav-link nav-icon" href="#" data-bs-toggle="dropdown">
-            <i class="bi bi-bell"></i>
-            <span class="badge bg-primary badge-number">0</span>
-          </a><!-- End Notification Icon -->
+  /* Hakikisha maandishi hayashuki chini (Wrap) */
+  #familyTable th, #familyTable td {
+    white-space: nowrap !important;
+    text-align: left;
+    padding: 12px 15px !important;
+  }
 
-          <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow notifications">
-            <li class="dropdown-header">
-              You have 0 new notifications
-              <a href="#">
-                <span class="badge rounded-pill bg-primary p-2 ms-2">View all</span>
-              </a>
-            </li>
+  .table-dark th {
+    background-color: #2b2f33 !important;
+    border-color: #373b3e !important;
+    color: #fff !important;
+  }
 
-            <li><hr class="dropdown-divider"></li>
+  /* Responsive Adjustments */
+  @media (max-width: 768px) {
+    #main.main { padding: 10px !important; }
+    
+    /* Tunalazimisha upana mkubwa kwenye simu ili kiscroll kifanye kazi */
+    #familyTable {
+      min-width: 900px !important; 
+    }
+    
+    .pagetitle h1 { font-size: 1.2rem; }
+  }
 
-            <li class="notification-item text-center">
-              <div>No notifications available</div>
-            </li>
-
-            <li><hr class="dropdown-divider"></li>
-
-            <li class="dropdown-footer">
-              <a href="#">Show all notifications</a>
-            </li>
-          </ul>
-        </li><!-- End Notifications -->
-
-        <!-- Profile -->
-        <li class="nav-item dropdown pe-3">
-          <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
-            <img src="assets/img/3.png" alt="Profile" class="rounded-circle">
-            <span class="d-none d-md-block dropdown-toggle ps-2">Family Admin</span>
-          </a><!-- End Profile Image Icon -->
-
-          <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
-            <li class="dropdown-header">
-              <h6>Family Admin</h6>
-              <span><b>Family Account</b></span>
-            </li>
-
-            <li><hr class="dropdown-divider"></li>
-
-            <li>
-              <a class="dropdown-item d-flex align-items-center" href="/family_admin/profile">
-                <i class="bi bi-person"></i>
-                <span>My Profile</span>
-              </a>
-            </li>
-
-            <li><hr class="dropdown-divider"></li>
-
-            <li>
-              <a class="dropdown-item d-flex align-items-center" href="/logout">
-                <i class="bi bi-box-arrow-right"></i>
-                <span>Sign Out</span>
-              </a>
-            </li>
-          </ul><!-- End Profile Dropdown Items -->
-        </li><!-- End Profile Nav -->
-
-      </ul>
-    </nav><!-- End Icons Navigation -->
+  /* Fix for alignment on large screens */
+  @media (min-width: 992px) {
+    .table-responsive {
+      overflow-x: auto; /* Inaruhusu scroll kama columns ni nyingi */
+    }
+  }
+</style>
 
   </header><!-- End Header -->
 
 <%- include('partials/header') %>
-
-<!-- the main content start -->
-<!-- ======= Main Content ======= -->
 <main id="main" class="main">
+  <%- include('partials/notifications') %>
+
   <div class="pagetitle">
     <h1>Family Members List</h1>
   </div>
@@ -128,56 +102,80 @@
     <div class="row">
       <div class="col-12">
         <div class="card">
-          <div class="card-body">
-
+          <div class="card-body pt-3">
             <h5 class="card-title">Registered Members</h5>
 
             <div class="table-responsive">
-              <table id="familyTable" class="table table-striped table-bordered dt-responsive nowrap" style="width:100%">
-                <thead class="table-dark">
+              <table id="familyTable" class="table table-hover table-bordered align-middle">
+                <thead class="table-dark text-nowrap">
                   <tr>
                     <th>#</th>
                     <th>Full Name</th>
                     <th>Gender</th>
                     <th>Relationship</th>
                     <th>Role</th>
-                    <th>Status</th>
                     <th>Phone</th>
                     <th>Branch</th>
-                    <th>Action</th>
+                    <th class="text-center">Action</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <td>1</td>
-                    <td>John Michael Doe</td>
-                    <td>Male</td>
-                    <td>Spouse</td>
-                    <td>Family Member</td>
-                    <td><span class="badge bg-success">Active</span></td>
-                    <td>+123456789</td>
-                    <td>Original</td>
-                    <td>
-                      <button class="btn btn-sm btn-info">View</button>
-                      <button class="btn btn-sm btn-warning">Edit</button>
-                      <button class="btn btn-sm btn-danger">Delete</button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>2</td>
-                    <td>Sarah Jane Doe</td>
-                    <td>Female</td>
-                    <td>Child</td>
-                    <td>Dependent</td>
-                    <td><span class="badge bg-secondary">Dependent</span></td>
-                    <td>-</td>
-                    <td>Original</td>
-                    <td>
-                      <button class="btn btn-sm btn-info">View</button>
-                      <button class="btn btn-sm btn-warning">Edit</button>
-                      <button class="btn btn-sm btn-danger">Delete</button>
-                    </td>
-                  </tr>
+                  <% if (members && members.length > 0) { %>
+                    <% members.forEach((member, index) => { %>
+                      <tr id="row-<%= member.member_id %>">
+                        <td><%= index + 1 %></td>
+                        <td class="fw-bold"><%= member.full_name %></td>
+                        <td class="text-capitalize"><%= member.gender %></td>
+                        <td><%= member.relationship || 'N/A' %></td>
+                        <td>
+                          <span class="badge <%= member.role === 'family_admin' ? 'bg-primary' : 'bg-secondary' %>">
+                            <%= member.role %>
+                          </span>
+                        </td>
+                        <td><%= member.phone || '-' %></td>
+                        <td><%= member.branch_type || 'Main' %></td>
+                        <td>
+                          <div class="action-buttons d-flex gap-2 justify-content-center">
+
+                            <!-- VIEW BUTTON -->
+                            <button 
+                              class="btn btn-sm btn-outline-info"
+                              onclick="viewMember(this)"
+                              data-name="<%= member.full_name %>"
+                              data-gender="<%= member.gender %>"
+                              data-relationship="<%= member.relationship %>"
+                              data-role="<%= member.role %>"
+                              data-phone="<%= member.phone %>"
+                              data-branch="<%= member.branch_type %>">
+                              <i class="bi bi-eye"></i>
+                            </button>
+
+                            <!-- EDIT BUTTON -->
+                            <button 
+                              class="btn btn-sm btn-outline-warning"
+                              onclick="editMember(this)"
+                              data-id="<%= member.member_id %>"
+                              data-name="<%= member.full_name %>"
+                              data-phone="<%= member.phone %>">
+                              <i class="bi bi-pencil"></i>
+                            </button>
+
+                            <!-- DELETE -->
+                            <button 
+                              class="btn btn-sm btn-outline-danger" 
+                              onclick="deleteMember('<%= member.member_id %>', '<%= member.full_name %>')">
+                              <i class="bi bi-trash"></i>
+                            </button>
+
+                          </div>
+                        </td>
+                      </tr>
+                    <% }); %>
+                  <% } else { %>
+                    <tr>
+                      <td colspan="8" class="text-center py-4">No members found.</td>
+                    </tr>
+                  <% } %>
                 </tbody>
               </table>
             </div>
@@ -189,6 +187,107 @@
   </section>
 </main>
 
+<!-- ✅ MODAL -->
+<div class="modal fade" id="memberModal">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalTitle">Member</h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body" id="modalBody"></div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ✅ SCRIPTS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+const modal = new bootstrap.Modal(document.getElementById('memberModal'));
+
+// VIEW
+function viewMember(btn) {
+  document.getElementById('modalTitle').innerText = "View Member";
+
+  const html = `
+    <div class="row">
+      <div class="col-md-6">
+        <p><strong>Name:</strong> ${btn.dataset.name}</p>
+        <p><strong>Gender:</strong> ${btn.dataset.gender}</p>
+        <p><strong>Relationship:</strong> ${btn.dataset.relationship || 'N/A'}</p>
+      </div>
+      <div class="col-md-6">
+        <p><strong>Role:</strong> ${btn.dataset.role}</p>
+        <p><strong>Phone:</strong> ${btn.dataset.phone || '-'}</p>
+        <p><strong>Branch:</strong> ${btn.dataset.branch || 'Main'}</p>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('modalBody').innerHTML = html;
+  modal.show();
+}
+
+// EDIT
+function editMember(btn) {
+  document.getElementById('modalTitle').innerText = "Edit Member";
+
+  const html = `
+    <form onsubmit="saveEdit(event)">
+      <input type="hidden" id="editId" value="${btn.dataset.id}">
+
+      <div class="mb-3">
+        <label>Name</label>
+        <input type="text" id="editName" class="form-control" value="${btn.dataset.name}">
+      </div>
+
+      <div class="mb-3">
+        <label>Phone</label>
+        <input type="text" id="editPhone" class="form-control" value="${btn.dataset.phone}">
+      </div>
+
+      <button class="btn btn-primary w-100">Save Changes</button>
+    </form>
+  `;
+
+  document.getElementById('modalBody').innerHTML = html;
+  modal.show();
+}
+
+// SAVE (UI ONLY)
+function saveEdit(e) {
+  e.preventDefault();
+
+  const id = document.getElementById('editId').value;
+  const name = document.getElementById('editName').value;
+  const phone = document.getElementById('editPhone').value;
+
+  fetch(`/update-member/${id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ name, phone })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      // 🔥 reload page so notification partial shows
+      window.location.reload();
+    } else {
+      Swal.fire('Error!', 'Failed to update member', 'error');
+    }
+  })
+  .catch(() => {
+    Swal.fire('Error!', 'Server error', 'error');
+  });
+}
+</script>
 <!-- ======= DataTables & Responsive Scripts ======= -->
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
 <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
@@ -201,30 +300,28 @@
 
 <script>
   $(document).ready(function() {
-    $('#familyTable').DataTable({
-      responsive: {
-        details: {
-          type: 'column',    // "+" button to show hidden columns
-          target: 0          // first column shows the "+" icon
-        }
-      },
+    var table = $('#familyTable').DataTable({
+      responsive: false, // Tunatumia scrollX badala ya responsive dots
+      scrollX: true,
+      scrollCollapse: true,
       paging: true,
       searching: true,
       ordering: true,
-      autoWidth: false,
+      autoWidth: false, // Muhimu kuzuia DataTable isivuruge upana wa column
       columnDefs: [
-        { responsivePriority: 1, targets: 1 }, // Full Name highest priority
-        { responsivePriority: 2, targets: 2 }, // Gender next
-        { responsivePriority: 3, targets: 3 }, // Relationship
-        { responsivePriority: 4, targets: 4 }, // Role
-        { responsivePriority: 5, targets: 5 }, // Status
-        { responsivePriority: 1, targets: 0 }, // "#" column always visible
-        { responsivePriority: 1, targets: 8 }, // Action always visible
-        { orderable: false, targets: -1 }      // Disable ordering on "Action"
+        { width: "50px", targets: 0 },  // Width ya #
+        { width: "200px", targets: 1 }, // Width ya Full Name
+        { orderable: false, targets: -1 } 
       ]
+    });
+
+    // Hii inahakikisha Heading na Body zinalingana vizuri
+    $(window).on('resize', function() {
+        table.columns.adjust();
     });
   });
 </script>
+
 <!-- Google Translate Element -->
 <div id="google_translate_element" style="visibility: hidden; position: absolute; z-index: -1;"></div>
 
