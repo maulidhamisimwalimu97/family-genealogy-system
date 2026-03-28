@@ -1842,3 +1842,74 @@ iframe[src*="translate.google.com"] { display: none !important; }
       border-radius: 10px;
     }
   }
+
+.chat-container {
+  height: 65vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  background: #f1f1f1;
+}
+
+.message {
+  display: flex;
+  flex-direction: column;
+  max-width: 70%;
+}
+
+.message.sent {
+  align-self: flex-end;
+  align-items: flex-end;
+}
+
+.message.received {
+  align-self: flex-start;
+  align-items: flex-start;
+}
+
+.msg-text {
+  padding: 10px 14px;
+  border-radius: 18px;
+  font-size: 0.92rem;
+  word-break: break-word;
+}
+
+.message.sent .msg-text {
+  background: #0d6efd;
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+
+.message.received .msg-text {
+  background: #fff;
+  color: #333;
+  border-bottom-left-radius: 4px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+}
+
+.msg-meta {
+  font-size: 0.72rem;
+  color: #888;
+  margin-top: 3px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tick {
+  font-size: 0.75rem;
+  color: #aaa;
+}
+
+.tick.read {
+  color: #0d6efd;
+}
+
+.sender-name {
+  font-size: 0.75rem;
+  color: #555;
+  margin-bottom: 2px;
+  padding-left: 4px;
+}

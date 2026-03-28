@@ -1752,14 +1752,109 @@ app.post('/confirm_future_head', (req, res) => {
   });
 });
 
-// chat list
+// 1. Route ya Chat List (Iliyorekebishwa)
 app.get('/chat_list', (req, res) => {
-  res.render('chat_list'); // HOF
+    const memberId = req.session.member_id;
+    const familyId = req.session.family_id;
+
+    if (!memberId || !familyId) return res.redirect('/index');
+
+    const profileQuery = `SELECT first_name, last_name, role FROM family_member WHERE member_id = ? LIMIT 1`;
+    const notificationsQuery = `SELECT 'meeting' AS type, title, created_at FROM meeting WHERE family_id = ? ORDER BY created_at DESC LIMIT 5`;
+
+    // Vuta wanafamilia wote wa familia hii (isipokuwa aliyelogin)
+    const familyMembersQuery = `
+        SELECT m.member_id, m.first_name, m.last_name, m.role,
+        (SELECT message FROM chat_message WHERE (sender_id = m.member_id OR sender_id = ?) ORDER BY sent_at DESC LIMIT 1) as last_msg,
+        (SELECT sent_at FROM chat_message WHERE (sender_id = m.member_id OR sender_id = ?) ORDER BY sent_at DESC LIMIT 1) as last_time
+        FROM family_member m
+        WHERE m.family_id = ? AND m.member_id != ?
+        ORDER BY last_time DESC`;
+
+    db.query(profileQuery, [memberId], (err, profileRes) => {
+        db.query(notificationsQuery, [familyId], (err2, notifications) => {
+            db.query(familyMembersQuery, [memberId, memberId, familyId, memberId], (err3, familyMembers) => {
+                res.render('chat_list', {
+                    profile: profileRes[0] || { first_name: 'User' },
+                    notifications: notifications || [],
+                    totalNotifications: notifications.length,
+                    familyMembers: familyMembers || []
+                });
+            });
+        });
+    });
 });
 
-// chat room
-app.get('/chat_room', (req, res) => {
-  res.render('chat_room'); // HOF
+// 2. Route ya Chat Room (Mtu mmoja mmoja)
+app.get('/chat_room/:id', (req, res) => {
+    const myId = req.session.member_id;
+    const otherId = req.params.id;
+    const familyId = req.session.family_id;
+
+    if (!myId || !familyId) return res.redirect('/index');
+
+    const otherUserQuery = `
+        SELECT first_name, last_name, role 
+        FROM family_member 
+        WHERE member_id = ? LIMIT 1
+    `;
+
+    const messagesQuery = `
+        SELECT * FROM chat_message 
+        WHERE (sender_id = ? AND receiver_id = ?) 
+        OR (sender_id = ? AND receiver_id = ?)
+        ORDER BY sent_at ASC
+    `;
+
+    const profileQuery = `
+        SELECT first_name, last_name, role 
+        FROM family_member 
+        WHERE member_id = ? LIMIT 1
+    `;
+
+    db.query(otherUserQuery, [otherId], (err, otherRes) => {
+        if (err) throw err;
+
+        const otherUser = otherRes[0];
+
+        db.query(messagesQuery, [myId, otherId, otherId, myId], (err2, messages) => {
+            if (err2) messages = [];
+
+            db.query(profileQuery, [myId], (err3, profileRes) => {
+
+                res.render('chat_room', {
+                    profile: profileRes[0] || {},
+                    otherUser,
+                    myId,
+                    otherId,
+                    messages,
+                    notifications: [],
+                    totalNotifications: 0
+                });
+
+            });
+        });
+    });
+});
+
+app.post('/send-message', (req, res) => {
+    const senderId = req.session.member_id;
+    const { receiver_id, message } = req.body;
+
+    if (!senderId) return res.redirect('/index');
+
+    const sql = `
+        INSERT INTO chat_message (sender_id, receiver_id, message) 
+        VALUES (?, ?, ?)
+    `;
+
+    db.query(sql, [senderId, receiver_id, message], (err) => {
+        if (err) {
+            console.error(err);
+        }
+
+        res.redirect('/chat_room/' + receiver_id);
+    });
 });
 
 // family chat
