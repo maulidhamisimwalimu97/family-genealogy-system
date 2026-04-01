@@ -1942,32 +1942,34 @@ app.get('/drive_files', (req, res) => {
 
 // 2. UPLOAD FILES (multiple)
 app.post('/upload_file', upload.array('familyFile', 10), (req, res) => {
-    const { member_id, family_id } = req.session;
+  const { member_id } = req.session;
+  const { folder_id } = req.body; // optional
 
-    if (!req.files || req.files.length === 0) {
-        req.session.error = "Hakuna faili lililochaguliwa.";
-        return res.redirect('/drive_files');
+  if (!req.files || req.files.length === 0) {
+    req.session.error = "Hakuna faili lililochaguliwa.";
+    return res.redirect('/drive_files');
+  }
+
+  const values = req.files.map(file => [
+    null,          // drive_id auto
+    member_id,
+    file.originalname,
+    '/uploads/drive/' + file.filename,
+    file.mimetype,
+    folder_id || null
+  ]);
+
+  const sql = `INSERT INTO drive_file (drive_id, uploaded_by, file_name, file_path, file_type, folder_id) VALUES ?`;
+
+  db.query(sql, [values], (err) => {
+    if (err) {
+      console.error(err);
+      req.session.error = "Imeshindwa kuhifadhi taarifa.";
+      return res.redirect('/drive_files');
     }
-
-    const values = req.files.map(file => [
-        null, // drive_id auto
-        member_id,
-        file.originalname,
-        '/uploads/drive/' + file.filename,
-        file.mimetype
-    ]);
-
-    const sql = `INSERT INTO drive_file (drive_id, uploaded_by, file_name, file_path, file_type) VALUES ?`;
-
-    db.query(sql, [values], (err) => {
-        if (err) {
-            console.error("Database Error:", err);
-            req.session.error = "Imeshindwa kuhifadhi taarifa.";
-            return res.redirect('/drive_files');
-        }
-        req.session.success = "Files uploaded successfully!";
-        res.redirect('/drive_files');
-    });
+    req.session.success = "Files uploaded successfully!";
+    res.redirect('/drive_files');
+  });
 });
 
 // 3. CREATE FOLDER
@@ -2025,6 +2027,74 @@ app.delete('/delete_folder/:id', (req, res) => {
         req.session.success = "Folder deleted successfully!";
         res.sendStatus(200);
     });
+});
+
+app.get('/drive_files/folder/:id', (req, res) => {
+  const folderId = req.params.id;
+  const { member_id: memberId, family_id: familyId } = req.session;
+
+  if (!memberId || !familyId) return res.redirect('/index');
+
+  const profileQuery = `SELECT first_name, last_name, role FROM family_member WHERE member_id = ? LIMIT 1`;
+  const notificationsQuery = `SELECT 'meeting' AS type, title, created_at FROM meeting WHERE family_id = ? ORDER BY created_at DESC LIMIT 5`;
+  const folderQuery = `SELECT * FROM family_drive WHERE drive_id = ? LIMIT 1`;
+  const filesQuery = `SELECT df.*, fm.first_name AS uploader
+                      FROM drive_file df
+                      JOIN family_member fm ON df.uploaded_by = fm.member_id
+                      WHERE df.folder_id = ? ORDER BY uploaded_at DESC`;
+
+  db.query(profileQuery, [memberId], (err, profile) => {
+    db.query(notificationsQuery, [familyId], (err2, notifications) => {
+      db.query(folderQuery, [folderId], (err3, folder) => {
+        if (!folder || folder.length === 0) return res.redirect('/drive_files');
+
+        db.query(filesQuery, [folderId], (err4, files) => {
+          const success = req.session.success || null;
+          const error = req.session.error || null;
+          req.session.success = null;
+          req.session.error = null;
+
+          res.render('drive_files', {
+            profile: profile[0],
+            notifications,
+            totalNotifications: notifications.length,
+            folders: [],           // hide folders inside folder view
+            files: files || [],
+            memberId,
+            success,
+            error,
+            currentFolder: folder[0] // pass folder info to template
+          });
+        });
+      });
+    });
+  });
+});
+
+// GET folder files as JSON (for modal)
+app.get('/api/folder/:id', (req, res) => {
+  const folderId = req.params.id;
+  const { family_id: familyId } = req.session;
+
+  if (!familyId) return res.status(401).json({ error: "Unauthorized" });
+
+  const sql = `
+    SELECT df.*, fm.first_name AS uploader
+    FROM drive_file df
+    JOIN family_member fm ON df.uploaded_by = fm.member_id
+    WHERE df.folder_id = ? AND fm.family_id = ?
+    ORDER BY df.uploaded_at DESC
+  `;
+
+  db.query(sql, [folderId, familyId], (err, files) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: "Server error" });
+    }
+
+    // send files as JSON
+    res.json({ files });
+  });
 });
 
 // upload files
