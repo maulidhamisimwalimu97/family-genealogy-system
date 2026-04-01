@@ -20,6 +20,17 @@ function formatPhone(phone) {
   return p;
 }
 
+const multer = require('multer');
+
+// Cấu hình storage kwa ajili ya mafaili
+const storage = multer.diskStorage({
+    destination: './public/uploads/drive/',
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + path.extname(file.originalname));
+    }
+});
+const upload = multer({ storage: storage });
+
 // --- 2. SETTINGS & VIEW ENGINE ---
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '../../frontend/views'));
@@ -1882,9 +1893,138 @@ app.get('/direct_messages', (req, res) => {
   res.render('direct_messages'); // HOF
 });
 
-// drive files
+
+const fs = require('fs');
+
+// 1. GET Drive Files & Folders
 app.get('/drive_files', (req, res) => {
-  res.render('drive_files'); // HOF
+    const { member_id: memberId, family_id: familyId } = req.session;
+    if (!memberId || !familyId) return res.redirect('/index');
+
+    const profileQuery = `SELECT first_name, last_name, role FROM family_member WHERE member_id = ? LIMIT 1`;
+    const notificationsQuery = `SELECT 'meeting' AS type, title, created_at FROM meeting WHERE family_id = ? ORDER BY created_at DESC LIMIT 5`;
+    const foldersQuery = `SELECT * FROM family_drive WHERE family_id = ? ORDER BY created_at DESC`;
+    const filesQuery = `SELECT df.*, fm.first_name as uploader 
+                        FROM drive_file df 
+                        JOIN family_member fm ON df.uploaded_by = fm.member_id 
+                        WHERE fm.family_id = ? ORDER BY uploaded_at DESC`;
+
+    db.query(profileQuery, [memberId], (err, profile) => {
+        if (err) console.error(err);
+        db.query(notificationsQuery, [familyId], (err2, notifications) => {
+            if (err2) console.error(err2);
+            db.query(foldersQuery, [familyId], (err3, folders) => {
+                if (err3) console.error(err3);
+                db.query(filesQuery, [familyId], (err4, files) => {
+                    if (err4) console.error(err4);
+                    // Pass success/error messages if set in session
+                    const success = req.session.success || null;
+                    const error = req.session.error || null;
+                    // Clear messages
+                    req.session.success = null;
+                    req.session.error = null;
+
+                    res.render('drive_files', {
+                        profile: profile[0],
+                        notifications,
+                        totalNotifications: notifications.length,
+                        folders: folders || [],
+                        files: files || [],
+                        memberId,
+                        success,
+                        error
+                    });
+                });
+            });
+        });
+    });
+});
+
+// 2. UPLOAD FILES (multiple)
+app.post('/upload_file', upload.array('familyFile', 10), (req, res) => {
+    const { member_id, family_id } = req.session;
+
+    if (!req.files || req.files.length === 0) {
+        req.session.error = "Hakuna faili lililochaguliwa.";
+        return res.redirect('/drive_files');
+    }
+
+    const values = req.files.map(file => [
+        null, // drive_id auto
+        member_id,
+        file.originalname,
+        '/uploads/drive/' + file.filename,
+        file.mimetype
+    ]);
+
+    const sql = `INSERT INTO drive_file (drive_id, uploaded_by, file_name, file_path, file_type) VALUES ?`;
+
+    db.query(sql, [values], (err) => {
+        if (err) {
+            console.error("Database Error:", err);
+            req.session.error = "Imeshindwa kuhifadhi taarifa.";
+            return res.redirect('/drive_files');
+        }
+        req.session.success = "Files uploaded successfully!";
+        res.redirect('/drive_files');
+    });
+});
+
+// 3. CREATE FOLDER
+app.post('/create_folder', (req, res) => {
+    const { family_id } = req.session;
+    const { folder_name } = req.body;
+
+    if (!folder_name || folder_name.trim() === "") {
+        req.session.error = "Tafadhali weka jina la folder.";
+        return res.redirect('/drive_files');
+    }
+
+    const sql = `INSERT INTO family_drive (family_id, folder_name) VALUES (?, ?)`;
+    db.query(sql, [family_id, folder_name], (err) => {
+        if (err) {
+            console.error("Folder Error:", err);
+            req.session.error = "Folder haikuweza kuundwa.";
+        } else {
+            req.session.success = `Folder "${folder_name}" imeundwa.`;
+        }
+        res.redirect('/drive_files');
+    });
+});
+
+// 4. DELETE FILE
+app.delete('/delete_file/:id', (req, res) => {
+    const fileId = req.params.id;
+    db.query('SELECT file_path FROM drive_file WHERE file_id = ?', [fileId], (err, result) => {
+        if (err) return res.sendStatus(500);
+
+        if (result.length > 0) {
+            const fullPath = path.join(__dirname, '../public', result[0].file_path);
+            if (fs.existsSync(fullPath)) fs.unlinkSync(fullPath);
+
+            db.query('DELETE FROM drive_file WHERE file_id = ?', [fileId], (err2) => {
+                if (err2) return res.sendStatus(500);
+                req.session.success = "File deleted successfully!";
+                res.sendStatus(200);
+            });
+        } else {
+            req.session.error = "File haikupatikana!";
+            res.sendStatus(404);
+        }
+    });
+});
+
+// 5. DELETE FOLDER (OPTIONAL)
+app.delete('/delete_folder/:id', (req, res) => {
+    const folderId = req.params.id;
+    db.query('DELETE FROM family_drive WHERE drive_id = ?', [folderId], (err) => {
+        if (err) {
+            req.session.error = "Folder haikuweza kufutwa.";
+            return res.sendStatus(500);
+        }
+        req.session.success = "Folder deleted successfully!";
+        res.sendStatus(200);
+    });
 });
 
 // upload files
