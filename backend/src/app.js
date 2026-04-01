@@ -1785,81 +1785,95 @@ app.get('/chat_list', (req, res) => {
     });
 });
 
-// 2. Route ya Chat Room (Mtu mmoja mmoja)
-app.get('/chat_room/:id', (req, res) => {
-    const myId = req.session.member_id;
-    const otherId = req.params.id;
-    const familyId = req.session.family_id;
 
-    if (!myId || !familyId) return res.redirect('/index');
+app.get('/family_chat', (req, res) => {
+    const { member_id: memberId, family_id: familyId } = req.session;
 
-    const otherUserQuery = `
-        SELECT first_name, last_name, role 
-        FROM family_member 
-        WHERE member_id = ? LIMIT 1
-    `;
-
-    const messagesQuery = `
-        SELECT * FROM chat_message 
-        WHERE (sender_id = ? AND receiver_id = ?) 
-        OR (sender_id = ? AND receiver_id = ?)
-        ORDER BY sent_at ASC
-    `;
+    if (!memberId || !familyId) return res.redirect('/index');
 
     const profileQuery = `
         SELECT first_name, last_name, role 
         FROM family_member 
-        WHERE member_id = ? LIMIT 1
-    `;
+        WHERE member_id = ? LIMIT 1`;
 
-    db.query(otherUserQuery, [otherId], (err, otherRes) => {
-        if (err) throw err;
+    const familySql = `
+        SELECT family_name 
+        FROM family 
+        WHERE family_id = ? LIMIT 1`;
 
-        const otherUser = otherRes[0];
+    const messagesSql = `
+        SELECT cm.*, fm.first_name, fm.last_name, fm.role as sender_role
+        FROM chat_message cm
+        JOIN family_member fm ON cm.sender_id = fm.member_id
+        WHERE fm.family_id = ? AND cm.receiver_id IS NULL
+        ORDER BY cm.sent_at ASC`;
 
-        db.query(messagesQuery, [myId, otherId, otherId, myId], (err2, messages) => {
-            if (err2) messages = [];
+    const membersSql = `
+        SELECT member_id, first_name, last_name, role, relationship 
+        FROM family_member 
+        WHERE family_id = ?`;
 
-            db.query(profileQuery, [myId], (err3, profileRes) => {
+    // 🔔 Notifications kama chat_list
+    const notificationsQuery = `
+        SELECT 'meeting' AS type, title, created_at 
+        FROM meeting 
+        WHERE family_id = ? 
+        ORDER BY created_at DESC LIMIT 5`;
 
-                res.render('chat_room', {
-                    profile: profileRes[0] || {},
-                    otherUser,
-                    myId,
-                    otherId,
-                    messages,
-                    notifications: [],
-                    totalNotifications: 0
+    db.query(profileQuery, [memberId], (err, profileRes) => {
+        if (err) return res.status(500).send("Profile Error");
+
+        db.query(familySql, [familyId], (err2, familyRes) => {
+            if (err2) return res.status(500).send("Family Error");
+
+            db.query(messagesSql, [familyId], (err3, messages) => {
+                if (err3) return res.status(500).send("Messages Error");
+
+                db.query(membersSql, [familyId], (err4, allMembers) => {
+                    if (err4) return res.status(500).send("Members Error");
+
+                    db.query(notificationsQuery, [familyId], (err5, notifications) => {
+                        if (err5) return res.status(500).send("Notifications Error");
+
+                        const renderData = {
+                            family: {
+                                family_name: familyRes[0]?.family_name || 'Family Group',
+                                total_members: allMembers.length
+                            },
+
+                            // ✅ FIX PROFILE
+                            profile: profileRes[0] || {
+                                first_name: 'User',
+                                last_name: '',
+                                role: 'Member'
+                            },
+
+                            messages: messages || [],
+                            allMembers: allMembers || [],
+                            memberId: memberId,
+
+                            // ✅ FIX NOTIFICATIONS
+                            notifications: notifications || [],
+                            totalNotifications: notifications.length
+                        };
+
+                        res.render('family_chat', renderData);
+                    });
                 });
-
             });
         });
     });
 });
-
-app.post('/send-message', (req, res) => {
+// Route ya kupost meseji
+app.post('/send_group_message', (req, res) => {
     const senderId = req.session.member_id;
-    const { receiver_id, message } = req.body;
+    const { message } = req.body;
+    if (!senderId || !message) return res.redirect('back');
 
-    if (!senderId) return res.redirect('/index');
-
-    const sql = `
-        INSERT INTO chat_message (sender_id, receiver_id, message) 
-        VALUES (?, ?, ?)
-    `;
-
-    db.query(sql, [senderId, receiver_id, message], (err) => {
-        if (err) {
-            console.error(err);
-        }
-
-        res.redirect('/chat_room/' + receiver_id);
+    const sql = "INSERT INTO chat_message (sender_id, receiver_id, message) VALUES (?, NULL, ?)";
+    db.query(sql, [senderId, message], (err) => {
+        res.redirect('/family_chat'); // Inarudi hapa hapa kuonyesha meseji mpya
     });
-});
-
-// family chat
-app.get('/family_chat', (req, res) => {
-  res.render('family_chat'); // HOF
 });
 
 // direct chat

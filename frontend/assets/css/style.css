@@ -1913,3 +1913,69 @@ iframe[src*="translate.google.com"] { display: none !important; }
   margin-bottom: 2px;
   padding-left: 4px;
 }
+
+/* Container ya Meseji */
+.chat-body-container {
+  height: 65vh; /* Inachukua 65% ya urefu wa kioo */
+  overflow-y: auto;
+  background-color: #f0f2f5; /* Rangi ya background kama WhatsApp */
+  padding: 20px;
+}
+
+/* Base style ya meseji zote */
+.msg-text {
+  max-width: 85%; /* Inazuia meseji kuwa pana sana kwenye simu */
+  padding: 10px 15px;
+  border-radius: 15px;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  position: relative;
+}
+
+  .message.sent .msg-bubble {
+    background-color: #007bff;
+    color: white;
+    border-bottom-right-radius: 2px !important;
+  }
+
+  .message.received .msg-bubble {
+    background-color: white;
+    color: #333;
+    border-bottom-left-radius: 2px !important;
+    border: 1px solid #eee;
+  }
+
+  .chat-body-scroll::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .chat-body-scroll::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 10px;
+  }
+
+  /* Responsive for mobile */
+  @media (max-width: 576px) {
+    .msg-bubble {
+      max-width: 90% !important;
+    }
+    #main {
+      padding: 20px 10px;
+    }
+  }
+
+  /* Kuzuia kuvurugika kwa layout kwenye simu */
+  .chat-scroll {
+    background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); /* WhatsApp Background pattern */
+    background-repeat: repeat;
+  }
+  
+  .msg-bubble {
+    font-size: 0.95rem;
+  }
+
+  @media (max-width: 576px) {
+    #main { padding: 15px 5px; }
+    .chat-scroll { height: 75vh !important; }
+    .msg-bubble { max-width: 92% !important; }
+  }

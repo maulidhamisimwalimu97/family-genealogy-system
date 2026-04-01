@@ -33,219 +33,113 @@
 <body>
 
   <!-- ======= Header ======= -->
-  <header id="header" class="header fixed-top d-flex align-items-center">
 
-    <div class="d-flex align-items-center justify-content-between">
-      <a href="/" class="logo d-flex align-items-center">
-        <img src="" alt="">
-        <span class="d-none d-lg-block">Family Genealogy</span>
-      </a>
-      <i class="bi bi-list toggle-sidebar-btn"></i>
-    </div><!-- End Logo -->
-
-    <nav class="header-nav ms-auto">
-      <ul class="d-flex align-items-center">
-
-        <!-- Notifications -->
-        <li class="nav-item dropdown">
-          <a class="nav-link nav-icon" href="#" data-bs-toggle="dropdown">
-            <i class="bi bi-bell"></i>
-            <span class="badge bg-primary badge-number">0</span>
-          </a><!-- End Notification Icon -->
-
-          <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow notifications">
-            <li class="dropdown-header">
-              You have 0 new notifications
-              <a href="#">
-                <span class="badge rounded-pill bg-primary p-2 ms-2">View all</span>
-              </a>
-            </li>
-
-            <li><hr class="dropdown-divider"></li>
-
-            <li class="notification-item text-center">
-              <div>No notifications available</div>
-            </li>
-
-            <li><hr class="dropdown-divider"></li>
-
-            <li class="dropdown-footer">
-              <a href="#">Show all notifications</a>
-            </li>
-          </ul>
-        </li><!-- End Notifications -->
-
-        <!-- Profile -->
-        <li class="nav-item dropdown pe-3">
-          <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
-            <img src="assets/img/3.png" alt="Profile" class="rounded-circle">
-            <span class="d-none d-md-block dropdown-toggle ps-2">Family Admin</span>
-          </a><!-- End Profile Image Icon -->
-
-          <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
-            <li class="dropdown-header">
-              <h6>Family Admin</h6>
-              <span><b>Family Account</b></span>
-            </li>
-
-            <li><hr class="dropdown-divider"></li>
-
-            <li>
-              <a class="dropdown-item d-flex align-items-center" href="/family_admin/profile">
-                <i class="bi bi-person"></i>
-                <span>My Profile</span>
-              </a>
-            </li>
-
-            <li><hr class="dropdown-divider"></li>
-
-            <li>
-              <a class="dropdown-item d-flex align-items-center" href="/logout">
-                <i class="bi bi-box-arrow-right"></i>
-                <span>Sign Out</span>
-              </a>
-            </li>
-          </ul><!-- End Profile Dropdown Items -->
-        </li><!-- End Profile Nav -->
-
-      </ul>
-    </nav><!-- End Icons Navigation -->
-
-  </header><!-- End Header -->
-
+<%- include('partials/title') %>
 <%- include('partials/header') %>
+<%- include('partials/notifications.ejs') %>
 
-<!-- the main content start -->
 <main id="main" class="main">
+  <div class="pagetitle"><h1>Family Group</h1></div>
 
-<div class="pagetitle">
-  <h1>Family Group Chat</h1>
-</div>
+  <section class="section">
+    <div class="row justify-content-center">
+      <div class="col-xl-10 col-lg-12">
+        <div class="card shadow-sm border-0">
+          
+          <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center cursor-pointer" data-bs-toggle="modal" data-bs-target="#membersModal" style="cursor: pointer;">
+              <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center me-3 shadow-sm" style="width: 48px; height: 48px; font-weight: bold;">
+                  <%= family.family_name.charAt(0) %>
+              </div>
+              <div>
+                <h6 class="mb-0 fw-bold"><%= family.family_name %> Group</h6>
+                <small class="text-primary text-decoration-underline"><%= family.total_members %> Members (See all)</small>
+              </div>
+            </div>
+          </div>
 
-<section class="section">
+          <div class="card-body bg-light chat-scroll" id="chatContainer" style="height: 60vh; overflow-y: auto; background-image: url('https://www.transparenttextures.com/patterns/cubes.png');">
+            <div class="d-flex flex-column gap-3 p-3">
+              <% messages.forEach(msg => { %>
+                <div class="d-flex flex-column <%= msg.sender_id == memberId ? 'align-items-end' : 'align-items-start' %>">
+                  
+                  <small class="fw-bold mb-1 px-2 <%= msg.sender_id == memberId ? 'text-success' : 'text-primary' %>">
+                   <%= msg.first_name %> (<%= msg.sender_role %>)
+                  </small>
 
-<div class="row">
-<div class="col-lg-12">
+                  <div class="p-3 shadow-sm" style="max-width: 85%; border-radius: 15px; <%= msg.sender_id == memberId ? 'background: #dcf8c6; border-bottom-right-radius: 2px;' : 'background: white; border-bottom-left-radius: 2px;' %>">
+                    <%= msg.message %>
+                    
+                    <div class="d-flex align-items-center justify-content-end mt-1" style="font-size: 0.65rem; opacity: 0.7;">
+                      <span class="me-1"><%= new Date(msg.sent_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) %></span>
+                      
+                      <% if (msg.sender_id == memberId) { %>
+                        <% if (msg.read_count >= family.total_members - 1) { %>
+                           <i class="bi bi-check2-all text-primary"></i>
+                        <% } else if (msg.read_count > 0) { %>
+                           <i class="bi bi-check2-all text-muted"></i>
+                        <% } else { %>
+                           <i class="bi bi-check2 text-muted"></i>
+                        <% } %>
+                      <% } %>
+                    </div>
+                  </div>
+                </div>
+              <% }); %>
+            </div>
+          </div>
 
-<div class="card">
+          <div class="card-footer bg-white py-3">
+            <form action="/send_group_message" method="POST" class="d-flex gap-2">
+              <input type="text" name="message" class="form-control rounded-pill border-0 bg-light px-4" placeholder="Andika ujumbe..." required autocomplete="off">
+              <button type="submit" class="btn btn-success rounded-circle px-3"><i class="bi bi-send-fill"></i></button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-<!-- Chat Header -->
-<div class="card-header d-flex justify-content-between align-items-center">
-
-<div class="d-flex align-items-center">
-
-<img src="https://i.pravatar.cc/45?img=10"
-class="rounded-circle me-3"
-width="45">
-
-<div>
-<strong>Shayo Family Group</strong><br>
-<small class="text-muted">23 Members</small>
-</div>
-
-</div>
-
-<div>
-<i class="bi bi-three-dots fs-5"></i>
-</div>
-
-</div>
-
-
-<!-- Chat Body -->
-<div class="card-body chat-body">
-
-<div class="chat-messages">
-
-<!-- message received -->
-<div class="message received">
-
-<div class="msg-name">John</div>
-
-<div class="msg-text">
-Hello family, remember the meeting tonight.
-</div>
-
-<div class="msg-time">09:20 AM</div>
-
-</div>
-
-
-<!-- message sent -->
-<div class="message sent">
-
-<div class="msg-text">
-Yes I will attend 👍
-</div>
-
-<div class="msg-time">09:22 AM</div>
-
-</div>
-
-
-<div class="message received">
-
-<div class="msg-name">Amina</div>
-
-<div class="msg-text">
-Don't forget to share the meeting link.
-</div>
-
-<div class="msg-time">09:24 AM</div>
-
-</div>
-
-
-<div class="message sent">
-
-<div class="msg-text">
-Sure, I will send it soon.
-</div>
-
-<div class="msg-time">09:25 AM</div>
-
-</div>
-
-</div>
-
-</div>
-
-
-<!-- Chat Input -->
-<div class="card-footer">
-
-<form class="chat-input d-flex align-items-center gap-2">
-
-<button type="button" class="btn btn-light">
-<i class="bi bi-emoji-smile"></i>
-</button>
-
-<button type="button" class="btn btn-light">
-<i class="bi bi-paperclip"></i>
-</button>
-
-<input
-type="text"
-class="form-control"
-placeholder="Type a message..."
->
-
-<button class="btn btn-primary">
-<i class="bi bi-send"></i>
-</button>
-
-</form>
-
-</div>
-
-</div>
-
-</div>
-</div>
-
-</section>
-
+  <div class="modal fade" id="membersModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-md">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header bg-light">
+          <h5 class="modal-title fw-bold">Family Members</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-0" style="max-height: 400px; overflow-y: auto;">
+          <div class="list-group list-group-flush">
+            <% allMembers.forEach(member => { %>
+              <a href="/member_profile/<%= member.member_id %>" class="list-group-item list-group-item-action d-flex align-items-center py-3">
+                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                  <%= member.first_name.charAt(0) %>
+                </div>
+                <div class="flex-grow-1">
+                  <h6 class="mb-0 fw-bold text-dark"><%= member.first_name %> <%= member.last_name %></h6>
+                  <small class="text-muted"><%= member.relationship %> | <%= member.role %></small>
+                </div>
+                <i class="bi bi-chevron-right text-muted"></i>
+              </a>
+            <% }); %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </main>
+
+<style>
+  .chat-scroll { scroll-behavior: smooth; }
+  .cursor-pointer:hover { background-color: #f8f9fa; }
+</style>
+
+<script>
+  // Auto-scroll kwenda chini
+  document.addEventListener("DOMContentLoaded", function() {
+    const chatBox = document.getElementById('chatContainer');
+    chatBox.scrollTop = chatBox.scrollHeight;
+  });
+</script>
 
 <!-- Google Translate Element -->
 <div id="google_translate_element" style="visibility: hidden; position: absolute; z-index: -1;"></div>
