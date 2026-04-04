@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+
+  <title>Events Contributions</title>
+  <meta content="Family Admin Panel for managing family genealogy records" name="description">
+  <meta content="family, genealogy, admin, lineage" name="keywords">
+
+  <!-- Favicons -->
+
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.gstatic.com" rel="preconnect">
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Nunito:300,300i,400,400i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
+
+  <!-- Vendor CSS Files -->
+  <link href="/assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+  <link href="/assets/vendor/boxicons/css/boxicons.min.css" rel="stylesheet">
+  <link href="/assets/vendor/quill/quill.snow.css" rel="stylesheet">
+  <link href="/assets/vendor/quill/quill.bubble.css" rel="stylesheet">
+  <link href="/assets/vendor/remixicon/remixicon.css" rel="stylesheet">
+  <link href="/assets/vendor/simple-datatables/style.css" rel="stylesheet">
+
+  <!-- Main CSS File -->
+  <link href="assets/css/style.css" rel="stylesheet">
+  <link href="/assets/css/dark.css" rel="stylesheet">
+</head>
+
+<body>
+
+  <!-- ======= Header ======= -->
+<%- include('partials/title') %>
+
+<%- include('partials/header') %>
+
+<main id="main" class="main">
+  <div class="pagetitle">
+    <h1>Event Contributions & Pledges</h1>
+    <p class="text-muted">Changia au weka ahadi kwa ajili ya matukio ya familia (Misiba, Sherehe, nk.)</p>
+  </div>
+
+  <section class="section">
+    <%- include('partials/notifications') %>
+    
+    <div class="row">
+      <% contributions.forEach(event => { %>
+        <div class="col-lg-6">
+          <div class="card shadow-sm border-0 mb-4">
+            <div class="card-body p-4">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="card-title p-0 m-0 text-primary"><%= event.title %></h5>
+                <span class="badge bg-<%= event.event_type === 'msiba' ? 'danger' : 'success' %>">
+                  <%= event.event_type === 'msiba' ? 'Rambi Rambi' : 'Mchango' %>
+                </span>
+              </div>
+
+              <div class="row mb-3">
+                <div class="col-6">
+                  <small class="text-muted d-block">Lengo la Familia</small>
+                  <strong><%= (event.target_amount || 0).toLocaleString() %> TZS</strong>
+                </div>
+                <div class="col-6 text-end">
+                  <small class="text-muted d-block">Zilizopatikana</small>
+                  <strong class="text-success"><%= (event.collected_amount || 0).toLocaleString() %> TZS</strong>
+                </div>
+              </div>
+
+              <div class="alert alert-light border mb-4 p-2 small">
+                <% if (event.my_paid_amount) { %>
+                  <i class="bi bi-check-circle-fill text-success"></i> Tayari umetoa: <strong><%= event.my_paid_amount.toLocaleString() %> TZS</strong>
+                <% } else if (event.my_pledge_amount) { %>
+                  <i class="bi bi-clock-history text-warning"></i> Una Ahadi ya: <strong><%= event.my_pledge_amount.toLocaleString() %> TZS</strong>
+                <% } else { %>
+                  <i class="bi bi-info-circle text-muted"></i> Bado haujachangia tukio hili.
+                <% } %>
+              </div>
+
+              <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                <button class="btn btn-primary btn-sm px-4" data-bs-toggle="modal" data-bs-target="#payModal<%= event.event_id %>">
+                  <i class="bi bi-cash"></i> Weka Muamala
+                </button>
+                <button class="btn btn-outline-warning btn-sm px-4" data-bs-toggle="modal" data-bs-target="#pledgeModal<%= event.event_id %>">
+                  <i class="bi bi-calendar-check"></i> Weka Ahadi
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal fade" id="payModal<%= event.event_id %>" tabindex="-1">
+          <div class="modal-dialog">
+            <form action="/submit_contribution" method="POST" class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title text-primary">Ingiza Taarifa za Malipo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+              </div>
+              <div class="modal-body">
+                <input type="hidden" name="event_id" value="<%= event.event_id %>">
+                <input type="hidden" name="status" value="paid">
+                
+                <div class="mb-3">
+                  <label class="form-label">Kiasi ulichotuma (TZS)</label>
+                  <input type="number" name="amount" class="form-control" placeholder="10000" required>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Namba ya Muamala (Reference No.)</label>
+                  <input type="text" name="reference_number" class="form-control" placeholder="PP230404..." required>
+                  <small class="text-muted">Ingiza namba ya muamala ya M-Pesa, Tigo-Pesa, nk.</small>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="submit" class="btn btn-success w-100">Hifadhi Malipo</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="modal fade" id="pledgeModal<%= event.event_id %>" tabindex="-1">
+          <div class="modal-dialog">
+            <form action="/submit_contribution" method="POST" class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title text-warning">Weka Ahadi ya Mchango</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+              </div>
+              <div class="modal-body">
+                <input type="hidden" name="event_id" value="<%= event.event_id %>">
+                <input type="hidden" name="status" value="pledge">
+                
+                <div class="mb-3">
+                  <label class="form-label">Kiasi cha Ahadi (TZS)</label>
+                  <input type="number" name="amount" class="form-control" placeholder="50000" required>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Lini utalipa?</label>
+                  <input type="date" name="pledge_date" class="form-control" required>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="submit" class="btn btn-warning w-100">Weka Ahadi Yangu</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  </section>
+</main>
+
+<script>
+  // Function ya kuonyesha/kuficha field ya mchango
+  function toggleContributionField() {
+    const isChecked = document.getElementById('hasContribution').checked;
+    const field = document.getElementById('contributionField');
+    field.style.display = isChecked ? 'block' : 'none';
+  }
+
+  // Function ya kubadilisha rangi kulingana na aina ya tukio
+  function updateEventTheme() {
+    const type = document.getElementById('eventType').value;
+    const submitBtn = document.getElementById('submitBtn');
+    
+    if (type === 'msiba') {
+      submitBtn.className = 'btn btn-danger px-5 shadow';
+      alert("Tahadhari: Ukichagua MSIBA, mfumo utatuma SMS ya dharura kwa familia nzima baada ya kusave.");
+    } else if (type === 'sherehe') {
+      submitBtn.className = 'btn btn-success px-5 shadow';
+    } else {
+      submitBtn.className = 'btn btn-primary px-5 shadow';
+    }
+  }
+</script>
+
+<style>
+  .form-control:focus, .form-select:focus {
+    border-color: #4154f1;
+    box-shadow: 0 0 0 0.2rem rgba(65, 84, 241, 0.1);
+  }
+  .form-label {
+    font-size: 0.9rem;
+    color: #444;
+  }
+</style>
+
+<style>
+  /* CSS kwa ajili ya Muonekano Bora */
+  .event-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .event-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+  }
+  .text-truncate-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;  
+    overflow: hidden;
+  }
+  .x-small {
+    font-size: 0.75rem;
+  }
+  .progress {
+    border-radius: 10px;
+    background-color: #f0f0f0;
+  }
+</style>
+
+<!-- Google Translate Element -->
+<div id="google_translate_element" style="visibility: hidden; position: absolute; z-index: -1;"></div>
+
+<script>
+function googleTranslateElementInit() {
+  new google.translate.TranslateElement({
+    pageLanguage: 'en',
+    includedLanguages: 'en,sw',
+    autoDisplay: false
+  }, 'google_translate_element');
+
+  var savedLang = localStorage.getItem("selectedLanguage");
+  if (savedLang) {
+    setTimeout(function () {
+      setLanguage(savedLang);
+    }, 800);
+  }
+}
+
+function changeLanguage(lang) {
+  localStorage.setItem("selectedLanguage", lang);
+  setLanguage(lang);
+}
+
+function setLanguage(lang) {
+  var select = document.querySelector(".goog-te-combo");
+  if (select) {
+    select.value = lang;
+    select.dispatchEvent(new Event("change"));
+  } else {
+    setTimeout(function () {
+      setLanguage(lang);
+    }, 300);
+  }
+}
+</script>
+
+
+<!-- ===== Chart JS ===== -->
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+
+const ageCtx = document.getElementById('ageReportChart').getContext('2d');
+
+new Chart(ageCtx,{
+type:'pie',
+
+data:{
+labels:['0-10 yrs','11-20 yrs','21-40 yrs','41-60 yrs','60+ yrs'],
+
+datasets:[{
+label:'Members',
+data:[5,10,15,7,3],
+
+backgroundColor:[
+'rgba(75,192,192,0.7)',
+'rgba(54,162,235,0.7)',
+'rgba(255,206,86,0.7)',
+'rgba(255,99,132,0.7)',
+'rgba(153,102,255,0.7)'
+]
+}]
+},
+
+options:{
+responsive:true,
+plugins:{
+legend:{position:'bottom'}
+}
+}
+
+})
+
+const paymentCtx = document.getElementById('paymentReportChart').getContext('2d');
+
+new Chart(paymentCtx,{
+type:'doughnut',
+
+data:{
+labels:['Paid','Pending','Failed'],
+
+datasets:[{
+data:[20,5,2],
+
+backgroundColor:[
+'rgba(75,192,192,0.7)',
+'rgba(255,206,86,0.7)',
+'rgba(255,99,132,0.7)'
+]
+}]
+},
+
+options:{
+responsive:true,
+plugins:{
+legend:{position:'bottom'}
+}
+}
+
+})
+
+</script>
+
+<!-- ===== DataTable ===== -->
+
+<script>
+
+document.addEventListener("DOMContentLoaded",function(){
+
+new simpleDatatables.DataTable("#familyReportTable",{
+searchable:true,
+perPage:10,
+responsive:true
+})
+
+})
+
+</script>
+
+<!-- ===== Print Function ===== -->
+
+<script>
+
+function printReport(){
+window.print();
+}
+
+</script>
+
+  <!-- ======= Footer ======= -->
+    <footer id="footer" class="footer">
+    <div class="copyright">
+        &copy; Copyright <strong><span>Family Genealogy System</span></strong>. All Rights Reserved
+    </div>
+    <div class="credits">
+        Developed by <strong>Maulid Mwalimu</strong>
+    </div>
+    </footer>
+    <!-- End Footer -->
+
+  <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+
+  <!-- Vendor JS Files -->
+  <script src="/assets/vendor/apexcharts/apexcharts.min.js"></script>
+  <script src="/assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="/assets/vendor/chart.js/chart.umd.js"></script>
+  <script src="/assets/vendor/echarts/echarts.min.js"></script>
+  <script src="/assets/vendor/quill/quill.js"></script>
+  <script src="/assets/vendor/simple-datatables/simple-datatables.js"></script>
+  <script src="/assets/vendor/tinymce/tinymce.min.js"></script>
+  <script src="/assets/vendor/php-email-form/validate.js"></script>
+  <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+  <!-- Main JS File -->
+  <script src="/assets/js/main.js"></script>
+
+</body>
+
+</html>

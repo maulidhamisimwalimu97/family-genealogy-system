@@ -33,215 +33,95 @@
 <body>
 
   <!-- ======= Header ======= -->
-  <header id="header" class="header fixed-top d-flex align-items-center">
-
-    <div class="d-flex align-items-center justify-content-between">
-      <a href="/" class="logo d-flex align-items-center">
-        <img src="" alt="">
-        <span class="d-none d-lg-block">Family Genealogy</span>
-      </a>
-      <i class="bi bi-list toggle-sidebar-btn"></i>
-    </div><!-- End Logo -->
-
-    <nav class="header-nav ms-auto">
-      <ul class="d-flex align-items-center">
-
-        <!-- Notifications -->
-        <li class="nav-item dropdown">
-          <a class="nav-link nav-icon" href="#" data-bs-toggle="dropdown">
-            <i class="bi bi-bell"></i>
-            <span class="badge bg-primary badge-number">0</span>
-          </a><!-- End Notification Icon -->
-
-          <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow notifications">
-            <li class="dropdown-header">
-              You have 0 new notifications
-              <a href="#">
-                <span class="badge rounded-pill bg-primary p-2 ms-2">View all</span>
-              </a>
-            </li>
-
-            <li><hr class="dropdown-divider"></li>
-
-            <li class="notification-item text-center">
-              <div>No notifications available</div>
-            </li>
-
-            <li><hr class="dropdown-divider"></li>
-
-            <li class="dropdown-footer">
-              <a href="#">Show all notifications</a>
-            </li>
-          </ul>
-        </li><!-- End Notifications -->
-
-        <!-- Profile -->
-        <li class="nav-item dropdown pe-3">
-          <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
-            <img src="assets/img/3.png" alt="Profile" class="rounded-circle">
-            <span class="d-none d-md-block dropdown-toggle ps-2">Family Admin</span>
-          </a><!-- End Profile Image Icon -->
-
-          <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
-            <li class="dropdown-header">
-              <h6>Family Admin</h6>
-              <span><b>Family Account</b></span>
-            </li>
-
-            <li><hr class="dropdown-divider"></li>
-
-            <li>
-              <a class="dropdown-item d-flex align-items-center" href="/family_admin/profile">
-                <i class="bi bi-person"></i>
-                <span>My Profile</span>
-              </a>
-            </li>
-
-            <li><hr class="dropdown-divider"></li>
-
-            <li>
-              <a class="dropdown-item d-flex align-items-center" href="/logout">
-                <i class="bi bi-box-arrow-right"></i>
-                <span>Sign Out</span>
-              </a>
-            </li>
-          </ul><!-- End Profile Dropdown Items -->
-        </li><!-- End Profile Nav -->
-
-      </ul>
-    </nav><!-- End Icons Navigation -->
-
-  </header><!-- End Header -->
-
+<%- include('partials/title') %>
+  
 <%- include('partials/header') %>
 
-<!-- the main content start -->
 <main id="main" class="main">
-<div class="pagetitle">
-  <h1>Family Package</h1>
-</div>
-
-<section class="section">
-
-  <!-- Current Package -->
-  <div class="card border-primary">
-    <div class="card-body">
-
-      <h5 class="card-title text-primary">Current Active Package</h5>
-
-      <div class="row align-items-center">
-
-        <div class="col-md-8">
-          <h4>Standard Family Plan</h4>
-          <p class="text-muted">
-            Suitable for medium-sized families.
-          </p>
-
-          <ul>
-            <li>✔ Up to 50 Members</li>
-            <li>✔ Family Tree Management</li>
-            <li>✔ Meeting Scheduling</li>
-            <li>✔ SMS & Email Reminders</li>
-            <li>✔ Basic Reports</li>
-          </ul>
-
-          <p>
-            <strong>Billing Cycle:</strong> Monthly <br>
-            <strong>Next Renewal:</strong> 15 March 2026
-          </p>
-        </div>
-
-        <div class="col-md-4 text-center">
-          <h2 class="text-primary">$29</h2>
-          <p class="text-muted">/ month</p>
-          <span class="badge bg-success">Active</span>
-        </div>
-
-      </div>
-
-    </div>
+  <div class="pagetitle">
+    <h1>System Subscription</h1>
   </div>
 
-  <!-- Other Packages -->
-  <div class="row mt-4">
+  <section class="section">
+    <%- include('partials/notifications') %>
 
-    <!-- Basic Plan -->
-    <div class="col-lg-4">
-      <div class="card h-100">
-        <div class="card-body text-center">
-
-          <h5 class="card-title">Basic Plan</h5>
-          <h3>$10</h3>
-          <p class="text-muted">/ month</p>
-
-          <ul class="list-unstyled mt-3 mb-4">
-            <li>Up to 20 Members</li>
-            <li>Family Tree</li>
-            <li>Meeting Scheduling</li>
-            <li>No SMS Reminder</li>
-          </ul>
-
-          <button class="btn btn-outline-primary">
-            Downgrade
-          </button>
-
-        </div>
+    <div class="row">
+      <div class="col-12">
+        <% if (family.package_status === 'trial' && !isTrialExpired) { %>
+          <div class="alert alert-info border-0 shadow-sm">
+            <i class="bi bi-clock-history me-2"></i> Unatumia **Trial Package**. Itaisha tarehe: <strong><%= new Date(family.expiry_date).toLocaleString() %></strong>
+          </div>
+        <% } else if (isTrialExpired || family.package_status === 'expired') { %>
+          <div class="alert alert-danger border-0 shadow-sm">
+            <i class="bi bi-exclamation-triangle me-2"></i> Muda wako wa majaribio umeisha! Tafadhali lipia kifurushi kuendelea.
+          </div>
+        <% } else if (family.package_status === 'pending') { %>
+          <div class="alert alert-warning border-0 shadow-sm">
+            <i class="bi bi-hourglass-split me-2"></i> Malipo yako yanahakikiwa na Admin. Akaunti itakuwa 'Active' hivi punde.
+          </div>
+        <% } %>
       </div>
     </div>
 
-    <!-- Premium Plan -->
-    <div class="col-lg-4">
-      <div class="card h-100 border-warning">
-        <div class="card-body text-center">
+    <div class="row mt-4">
+      <% packages.forEach(pkg => { %>
+        <div class="col-lg-4">
+          <div class="card pricing-card shadow-sm border-0 <%= family.package_id == pkg.id ? 'border-primary border-2' : '' %>">
+            <div class="card-body p-4 text-center">
+              <h5 class="card-title text-uppercase fw-bold"><%= pkg.name %></h5>
+              <div class="display-5 my-3 text-primary"><%= (pkg.price).toLocaleString() %> <span class="fs-6 text-muted">TZS</span></div>
+              <p class="text-muted small">Muda: <%= pkg.duration_days %> Siku</p>
+              
+              <ul class="list-unstyled my-4 text-start">
+                <% const features = pkg.features.split(','); %>
+                <% features.forEach(f => { %>
+                  <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i> <%= f %></li>
+                <% }) %>
+              </ul>
 
-          <h5 class="card-title text-warning">Premium Plan</h5>
-          <h3>$59</h3>
-          <p class="text-muted">/ month</p>
-
-          <ul class="list-unstyled mt-3 mb-4">
-            <li>Unlimited Members</li>
-            <li>Advanced Family Tree</li>
-            <li>Meetings + Video</li>
-            <li>Unlimited SMS & Email</li>
-            <li>Analytics Dashboard</li>
-          </ul>
-
-          <button class="btn btn-warning">
-            Upgrade
-          </button>
-
+              <button class="btn btn-primary w-100 rounded-pill" data-bs-toggle="modal" data-bs-target="#payModal<%= pkg.id %>">
+                <%= family.package_id == pkg.id ? 'Renew Package' : 'Select Package' %>
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
 
-    <!-- Enterprise Plan -->
-    <div class="col-lg-4">
-      <div class="card h-100">
-        <div class="card-body text-center">
-
-          <h5 class="card-title">Enterprise Plan</h5>
-          <h3>$120</h3>
-          <p class="text-muted">/ month</p>
-
-          <ul class="list-unstyled mt-3 mb-4">
-            <li>Everything in Premium</li>
-            <li>Dedicated Support</li>
-            <li>Custom Reports</li>
-            <li>API Access</li>
-          </ul>
-
-          <button class="btn btn-dark">
-            Contact Admin
-          </button>
-
+        <div class="modal fade" id="payModal<%= pkg.id %>" tabindex="-1">
+          <div class="modal-dialog">
+            <form action="/subscribe" method="POST" class="modal-content">
+              <div class="modal-header border-0">
+                <h5 class="modal-title">Lipia Kifurushi: <%= pkg.name %></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+              </div>
+              <div class="modal-body text-center">
+                <p class="mb-4">Tafadhali tuma kiasi cha **<%= pkg.price.toLocaleString() %> TZS** kwenda:</p>
+                <div class="bg-light p-3 rounded mb-4">
+                  <strong>M-PESA: 07XX XXX XXX (JINA)</strong><br>
+                  <strong>TIGO-PESA: 06XX XXX XXX (JINA)</strong>
+                </div>
+                
+                <input type="hidden" name="package_id" value="<%= pkg.id %>">
+                <div class="text-start">
+                  <label class="form-label fw-bold">Namba ya Muamala (Ref Number)</label>
+                  <input type="text" name="ref_number" class="form-control" placeholder="Mfano: RYH67GTR" required>
+                </div>
+              </div>
+              <div class="modal-footer border-0">
+                <button type="submit" class="btn btn-success w-100">Tuma Maombi ya Activation</button>
+              </div>
+            </form>
+          </div>
         </div>
-      </div>
+      <% }) %>
     </div>
-
-  </div>
-
-</section>
+  </section>
 </main>
+
+<style>
+  .pricing-card { transition: 0.3s; }
+  .pricing-card:hover { transform: translateY(-10px); }
+</style>
+
 <!-- Google Translate Element -->
 <div id="google_translate_element" style="visibility: hidden; position: absolute; z-index: -1;"></div>
 

@@ -39,6 +39,9 @@
 
 <main id="main" class="main">
 
+  <% const safeEvents = Array.isArray(events) ? events : []; %>
+  <% const emergencyEvents = safeEvents.filter(e => e && e.event_type === 'msiba'); %>
+
   <div class="pagetitle d-flex justify-content-between align-items-center flex-wrap gap-3">
     <div>
       <h1>Family Events</h1>
@@ -49,82 +52,103 @@
         </ol>
       </nav>
     </div>
-    
-    <% if (profile.role === 'family_admin') { %>
-    <a href="/create_event" class="btn btn-primary shadow-sm">
-      <i class="bi bi-plus-lg"></i> Post New Event
-    </a>
+
+    <% if (profile && profile.role === 'family_admin') { %>
+      <a href="/create_event" class="btn btn-primary shadow-sm">
+        <i class="bi bi-plus-lg"></i> Post New Event
+      </a>
     <% } %>
-  </div><section class="section">
+  </div>
+
+  <section class="section">
     <div class="row">
-      
-      <% const emergencyEvents = events.filter(e => e.event_type === 'msiba'); %>
+
       <% if (emergencyEvents.length > 0) { %>
         <div class="col-12 mb-4">
-          <div class="alert alert-danger border-0 shadow-sm d-flex align-items-center" role="alert">
+          <div class="alert alert-danger border-0 shadow-sm d-flex align-items-center">
             <i class="bi bi-exclamation-octagon-fill fs-4 me-3"></i>
             <div>
-              <strong>Emergency Alert:</strong> Kuna taarifa za msiba kwenye familia. Tafadhali pitia maelezo hapa chini.
+              <strong>Emergency Alert:</strong> Kuna taarifa za msiba kwenye familia.
             </div>
           </div>
         </div>
       <% } %>
 
-      <% if (events && events.length > 0) { %>
-        <% events.forEach(event => { %>
+      <% if (safeEvents.length > 0) { %>
+
+        <% safeEvents.forEach(event => { if (!event) return; %>
+
+          <% 
+            let badgeClass = 'bg-primary';
+            let icon = 'bi-calendar-event';
+
+            if(event.event_type === 'msiba') {
+              badgeClass = 'bg-danger'; icon = 'bi-heart-fill';
+            } else if(event.event_type === 'sherehe') {
+              badgeClass = 'bg-success'; icon = 'bi-balloon-heart-fill';
+            } else if(event.event_type === 'mkutano') {
+              badgeClass = 'bg-info'; icon = 'bi-people-fill';
+            }
+
+            const percent = (event.target_amount && event.target_amount > 0) 
+              ? Math.round(((event.collected_amount || 0) / event.target_amount) * 100)
+              : 0;
+          %>
+
           <div class="col-lg-4 col-md-6 mb-4">
             <div class="card h-100 shadow-sm border-0 event-card">
-              
+
               <div class="card-header border-0 bg-transparent d-flex justify-content-between align-items-center pt-3">
-                <% 
-                  let badgeClass = 'bg-primary';
-                  let icon = 'bi-calendar-event';
-                  if(event.event_type === 'msiba') { badgeClass = 'bg-danger'; icon = 'bi-heart-fill'; }
-                  else if(event.event_type === 'sherehe') { badgeClass = 'bg-success'; icon = 'bi-balloon-heart-fill'; }
-                  else if(event.event_type === 'mkutano') { badgeClass = 'bg-info'; icon = 'bi-people-fill'; }
-                %>
                 <span class="badge <%= badgeClass %> rounded-pill px-3 py-2 text-capitalize">
-                  <i class="bi <%= icon %> me-1"></i> <%= event.event_type %>
+                  <i class="bi <%= icon %> me-1"></i> <%= event.event_type || '' %>
                 </span>
-                <small class="text-muted"><%= new Date(event.event_date).toLocaleDateString('en-GB') %></small>
+                <small class="text-muted">
+                  <%= event.event_date ? new Date(event.event_date).toLocaleDateString('en-GB') : '' %>
+                </small>
               </div>
 
               <div class="card-body">
-                <h5 class="card-title pb-0 mb-2"><%= event.title %></h5>
-                <p class="card-text text-muted small mb-3 text-truncate-2">
-                  <%= event.description %>
+                <h5 class="card-title mb-2"><%= event.title || '' %></h5>
+
+                <p class="card-text text-muted small mb-3">
+                  <%= event.description || '' %>
                 </p>
 
                 <div class="event-info mb-3">
-                  <div class="d-flex align-items-center mb-1 small text-secondary">
-                    <i class="bi bi-geo-alt me-2 text-danger"></i> <%= event.location %>
+                  <div class="small text-secondary mb-1">
+                    <i class="bi bi-geo-alt me-2 text-danger"></i> <%= event.location || '' %>
                   </div>
-                  <div class="d-flex align-items-center small text-secondary">
-                    <i class="bi bi-clock me-2 text-primary"></i> <%= event.event_time %>
+                  <div class="small text-secondary">
+                    <i class="bi bi-clock me-2 text-primary"></i> <%= event.event_time || '' %>
                   </div>
                 </div>
 
                 <% if (event.has_contribution) { %>
-                  <hr class="my-3 opacity-25">
-                  <div class="contribution-section">
-                    <div class="d-flex justify-content-between mb-1 small">
-                      <span>Contribution Progress</span>
-                      <strong><%= Math.round((event.collected_amount || 0) / event.target_amount * 100) %>%</strong>
+                  <hr>
+
+                  <div>
+                    <div class="d-flex justify-content-between small">
+                      <span>Progress</span>
+                      <strong><%= percent %>%</strong>
                     </div>
-                    <div class="progress mb-2" style="height: 8px;">
-                      <div class="progress-bar <%= badgeClass %>" role="progressbar" 
-                           style="width: <%= (event.collected_amount / event.target_amount * 100) %>%"></div>
+
+                    <div class="progress mb-2" style="height:8px;">
+                      <div class="progress-bar <%= badgeClass %>" style="width:<%= percent %>%"></div>
                     </div>
-                    <div class="d-flex justify-content-between x-small fw-bold">
-                      <span class="text-success"><%= (event.collected_amount || 0).toLocaleString() %> TZS</span>
-                      <span class="text-muted">Target: <%= event.target_amount.toLocaleString() %> TZS</span>
+
+                    <div class="d-flex justify-content-between small">
+                      <span><%= (event.collected_amount || 0).toLocaleString() %> TZS</span>
+                      <span>Target: <%= (event.target_amount || 0).toLocaleString() %></span>
                     </div>
                   </div>
                 <% } %>
+
               </div>
 
-              <div class="card-footer bg-transparent border-0 pb-3 text-center">
-                <button class="btn btn-outline-secondary btn-sm w-100 rounded-pill" data-bs-toggle="modal" data-bs-target="#eventModal<%= event.event_id %>">
+              <div class="card-footer bg-transparent border-0 text-center">
+                <button class="btn btn-outline-secondary btn-sm w-100"
+                        data-bs-toggle="modal"
+                        data-bs-target="#eventModal<%= event.event_id %>">
                   View Details
                 </button>
               </div>
@@ -132,48 +156,61 @@
             </div>
           </div>
 
-          <div class="modal fade" id="eventModal<%= event.event_id %>" tabindex="-1">
+          <!-- MODAL -->
+          <div class="modal fade" id="eventModal<%= event.event_id %>">
             <div class="modal-dialog modal-dialog-centered">
               <div class="modal-content border-0">
-                <div class="modal-header border-0 shadow-sm">
-                  <h5 class="modal-title"><%= event.title %></h5>
+
+                <div class="modal-header">
+                  <h5 class="modal-title"><%= event.title || '' %></h5>
                   <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body p-4">
-                  <p class="text-muted"><%= event.description %></p>
-                  <ul class="list-group list-group-flush rounded">
-                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
-                      <span><i class="bi bi-calendar me-2 text-primary"></i> Date</span>
-                      <strong><%= new Date(event.event_date).toDateString() %></strong>
+
+                <div class="modal-body">
+                  <p class="text-muted"><%= event.description || '' %></p>
+
+                  <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between">
+                      <span>Date</span>
+                      <strong>
+                        <%= event.event_date ? new Date(event.event_date).toDateString() : '' %>
+                      </strong>
                     </li>
-                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
-                      <span><i class="bi bi-geo-alt me-2 text-danger"></i> Location</span>
-                      <strong><%= event.location %></strong>
+
+                    <li class="list-group-item d-flex justify-content-between">
+                      <span>Location</span>
+                      <strong><%= event.location || '' %></strong>
                     </li>
-                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
-                      <span><i class="bi bi-person me-2 text-info"></i> Posted By</span>
-                      <strong><%= event.creator_name %></strong>
+
+                    <li class="list-group-item d-flex justify-content-between">
+                      <span>Posted By</span>
+                      <strong><%= event.creator_name || '' %></strong>
                     </li>
                   </ul>
-                  
+
                   <% if (event.has_contribution) { %>
-                    <div class="mt-4 text-center">
-                      <p class="mb-2 text-muted small italic">Je, unataka kuchangia kwenye tukio hili?</p>
-                      <a href="/event_contributions" class="btn btn-warning w-100 fw-bold">
-                        <i class="bi bi-cash-stack"></i> Contribute Now
+                    <div class="mt-3 text-center">
+                      <a href="/event_contributions" class="btn btn-warning w-100">
+                        Contribute Now
                       </a>
                     </div>
                   <% } %>
+
                 </div>
+
               </div>
             </div>
           </div>
+
         <% }) %>
+
       <% } else { %>
+
         <div class="col-12 text-center py-5">
-          <i class="bi bi-calendar-x fs-1 text-muted opacity-50"></i>
-          <p class="mt-3 text-muted">Hakuna matukio yaliyopangwa kwa sasa.</p>
+          <i class="bi bi-calendar-x fs-1 text-muted"></i>
+          <p class="mt-3 text-muted">Hakuna matukio yaliyopo.</p>
         </div>
+
       <% } %>
 
     </div>

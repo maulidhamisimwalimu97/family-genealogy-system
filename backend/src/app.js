@@ -1727,64 +1727,285 @@ app.get('/create_event', (req, res) => {
     });
 });
 
-// B. POST: Hifadhi Event Mpya na Tuma SMS kama ni ya Dharura
+// B. POST: Hifadhi Event Mpya na Tuma SMS kupitia TegaSMS kama ni ya Dharura (Msiba)
 app.post('/save_event', (req, res) => {
     const { title, description, event_type, event_date, event_time, location, has_contribution, target_amount } = req.body;
     const familyId = req.session.family_id;
     const memberId = req.session.member_id;
 
+    if (!familyId || !memberId) return res.redirect('/index');
+
     const sql = `INSERT INTO family_event (family_id, title, description, event_type, event_date, event_time, location, has_contribution, target_amount, created_by) 
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
-    db.query(sql, [familyId, title, description, event_type, event_date, event_time, location, has_contribution || 0, target_amount || 0, memberId], (err, result) => {
-        if (err) return res.status(500).send(err);
+    db.query(sql, [
+        familyId, 
+        title, 
+        description, 
+        event_type, 
+        event_date, 
+        event_time || null, 
+        location, 
+        has_contribution || 0, 
+        target_amount || 0, 
+        memberId
+    ], (err, result) => {
+        if (err) {
+            console.error("Save Event Error:", err);
+            return res.status(500).send("Database error occurred.");
+        }
 
-        // SMART LOGIC: Kama ni MSiba, tuma SMS kwa familia nzima mara moja
+        // --- SMART LOGIC: TegaSMS Integration ---
+        // Ikiwa ni MSIBA, tuma taarifa kwa wanafamilia wote
         if (event_type === 'msiba') {
-            const getFamilyPhones = `SELECT phone FROM family_member WHERE family_id = ?`;
+            const getFamilyPhones = `SELECT phone, first_name FROM family_member WHERE family_id = ?`;
+            
             db.query(getFamilyPhones, [familyId], (err2, members) => {
-                if (!err2) {
-                    const message = `TAARIFA YA MSIBA: ${title}. Utakaofanyika tarehe ${event_date} sehemu ya ${location}. Tafadhali login kwenye mfumo kwa maelezo zaidi.`;
-                    // Hapa utaita function yako ya Beem SMS uliyonayo awali
-                    // sendBeemSMS(members.map(m => m.phone), message);
+                if (!err2 && members.length > 0) {
+                    const apiToken = '2|ZDVZgBsVfuBbhCRnFf5N9jmYsG7JLPtoXACoqLQO88f41331';
+                    
+                    // Tunatuma SMS kwa kila mwanafamilia
+                    members.forEach(member => {
+                        const smsMessage = `TAARIFA YA MSIBA:
+Habari ${member.first_name}, tuna dharura kwenye familia. 
+
+Tukio: ${title}
+Sehemu: ${location}
+Tarehe: ${event_date}
+Muda: ${event_time || 'Haukupangwa'}
+
+Tafadhali ingia kwenye mfumo kwa maelezo zaidi na kutoa mchango wako.
+Umoja ni Nguvu.`;
+
+                        const smsData = {
+                            "from": "FamilyHub", 
+                            "recipient": member.phone, // Namba iliyopo kwenye DB (mfano: 255...)
+                            "message": smsMessage,
+                            "channel": "1010105"
+                        };
+
+                        // Tuma SMS kupitia Axios
+                        axios.post('https://tegasms.teganas.co.tz/api/v1/send_sms/type/single', smsData, {
+                            headers: {
+                                'Authorization': `Bearer ${apiToken}`,
+                                'Content-Type': 'application/json'
+                            }
+                        }).then(response => {
+                            console.log(`SMS sent to ${member.phone}:`, response.data);
+                        }).catch(e => {
+                            console.error(`SMS Error for ${member.phone}:`, e.response ? e.response.data : e.message);
+                        });
+                    });
                 }
             });
         }
 
-        req.session.success = "Event posted successfully!";
+        req.session.success = "Event posted successfully and alerts sent!";
         res.redirect('/events');
     });
 });
 
 app.get('/event_contributions', (req, res) => {
-    const familyId = req.session.family_id;
     const memberId = req.session.member_id;
+    const familyId = req.session.family_id;
 
-    const query = `
-        SELECT e.title, e.target_amount, e.event_type,
-        (SELECT SUM(amount) FROM payment WHERE payment_type = 'event' AND family_id = e.family_id) as total_collected
+    if (!memberId || !familyId) return res.redirect('/index');
+
+    // 1. Query ya Profile ya mtumiaji
+    const profileQuery = `SELECT first_name, last_name, role FROM family_member WHERE member_id = ? LIMIT 1`;
+    
+    // 2. Query ya Notifications (kama unavyotumia kwenye kurasa zingine)
+    const notificationsQuery = `SELECT 'meeting' AS type, title, created_at FROM meeting WHERE family_id = ? ORDER BY created_at DESC LIMIT 5`;
+
+    // 3. Query ya Michango (Pamoja na Logic ya Paid/Pledge)
+    // Hakikisha umeongeza column ya 'status' kwenye table ya payment kwanza!
+    const eventQuery = `
+        SELECT e.*, 
+        (SELECT SUM(amount) FROM payment WHERE event_id = e.event_id AND status = 'paid') as collected_amount,
+        (SELECT amount FROM payment WHERE event_id = e.event_id AND recorded_by = ? AND status = 'paid' LIMIT 1) as my_paid_amount,
+        (SELECT amount FROM payment WHERE event_id = e.event_id AND recorded_by = ? AND status = 'pledge' LIMIT 1) as my_pledge_amount
         FROM family_event e 
-        WHERE e.family_id = ? AND e.has_contribution = 1`;
+        WHERE e.family_id = ? AND e.has_contribution = 1 
+        ORDER BY e.event_date DESC`;
 
-    db.query(query, [familyId], (err, contributions) => {
-        // Hapa render ukurasa wako wa michango
-        res.render('event_contributions', {
-            contributions: contributions || [],
-            profile: {}, // Ongeza profile hapa
-            activeEventsCount: 0,
-            pendingPayments: 0
+    db.query(profileQuery, [memberId], (err, profile) => {
+        if (err) return res.status(500).send("Database Error (Profile)");
+
+        db.query(notificationsQuery, [familyId], (err2, notifications) => {
+            if (err2) console.error("Notification Error:", err2);
+
+            db.query(eventQuery, [memberId, memberId, familyId], (err3, contributions) => {
+                if (err3) {
+                    console.error("Event Query Error:", err3);
+                    // Kama bado hujaongeza column ya 'status', hapa ndipo itafeli
+                }
+
+                // Vuta counts kwa ajili ya sidebar badges (Smart Logic)
+                const badgeQuery = `
+                    SELECT 
+                    (SELECT COUNT(*) FROM family_event WHERE family_id = ? AND event_date >= CURDATE()) as activeEventsCount,
+                    (SELECT COUNT(*) FROM family_event WHERE family_id = ? AND has_contribution = 1 AND event_id NOT IN (
+                        SELECT event_id FROM payment WHERE recorded_by = ? AND status = 'paid'
+                    )) as pendingPaymentsCount`;
+
+                db.query(badgeQuery, [familyId, familyId, memberId], (err4, badgeData) => {
+                    const badges = badgeData ? badgeData[0] : { activeEventsCount: 0, pendingPaymentsCount: 0 };
+
+                    res.render('event_contributions', {
+                        profile: profile[0] || { first_name: 'User', role: 'member' },
+                        notifications: notifications || [],
+                        totalNotifications: notifications ? notifications.length : 0,
+                        contributions: contributions || [],
+                        activeEventsCount: badges.activeEventsCount,
+                        pendingPayments: badges.pendingPaymentsCount,
+                        memberId
+                    });
+                });
+            });
         });
     });
 });
 
-// package
-app.get('/package', (req, res) => {
-  res.render('package'); // HOF
+// POST: Hifadhi Muamala au Ahadi
+app.post('/submit_contribution', (req, res) => {
+    const { event_id, amount, reference_number, status, pledge_date } = req.body;
+    const familyId = req.session.family_id;
+    const memberId = req.session.member_id;
+
+    const sql = `INSERT INTO payment (family_id, recorded_by, event_id, amount, reference_number, status, payment_type, note, payment_date) 
+                 VALUES (?, ?, ?, ?, ?, ?, 'event', ?, CURDATE())`;
+
+    const note = status === 'pledge' ? `Ahadi ya kulipa tarehe ${pledge_date}` : 'Mchango wa tukio';
+
+    db.query(sql, [familyId, memberId, event_id, amount, reference_number || null, status, note], (err, result) => {
+        if (err) {
+            console.error(err);
+            req.session.error = "Imeshindikana kuhifadhi taarifa.";
+        } else {
+            req.session.success = status === 'paid' ? "Muamala umehifadhiwa! Admin atahakiki." : "Ahadi yako imerekodiwa. Ahsante!";
+        }
+        res.redirect('/event_contributions');
+    });
 });
 
-// payment history
+app.get('/package', (req, res) => {
+    const familyId = req.session.family_id;
+    const memberId = req.session.member_id;
+
+    if (!familyId || !memberId) return res.redirect('/index');
+
+    // 1. Query ya Profile ya mtumiaji aliyelogin
+    const profileQuery = `SELECT first_name, last_name, role FROM family_member WHERE member_id = ? LIMIT 1`;
+
+    // 2. Query ya Notifications (Arifa za mikutano/events hivi karibuni)
+    const notificationsQuery = `SELECT 'meeting' AS type, title, created_at FROM meeting WHERE family_id = ? ORDER BY created_at DESC LIMIT 5`;
+
+    // 3. Query ya taarifa za familia na kifurushi chao
+    const familyQuery = `
+        SELECT f.*, p.name as current_package_name 
+        FROM family f 
+        LEFT JOIN packages p ON f.package_id = p.id 
+        WHERE f.family_id = ?`;
+
+    // 4. Query ya vifurushi vinavyouzwa (Vingine mbali na Trial)
+    const allPackagesQuery = `SELECT * FROM packages WHERE name != 'Trial'`;
+
+    // 5. Query ya Smart Sidebar (Matukio yanayokuja)
+    const badgeQuery = `SELECT COUNT(*) as activeEventsCount FROM family_event WHERE family_id = ? AND event_date >= CURDATE()`;
+
+    db.query(profileQuery, [memberId], (err, profile) => {
+        db.query(notificationsQuery, [familyId], (err2, notifications) => {
+            db.query(familyQuery, [familyId], (err3, familyData) => {
+                db.query(allPackagesQuery, (err4, availablePackages) => {
+                    db.query(badgeQuery, [familyId], (err5, badgeData) => {
+
+                        const family = familyData[0] || {};
+                        const badges = badgeData[0] || { activeEventsCount: 0 };
+                        
+                        // Logic ya Trial ya saa 24
+                        let isTrialExpired = false;
+                        if (family.package_status === 'trial' && family.expiry_date) {
+                            const now = new Date();
+                            const expiry = new Date(family.expiry_date);
+                            if (now > expiry) isTrialExpired = true;
+                        }
+
+                        res.render('package', {
+                            profile: profile[0] || { first_name: 'User' },
+                            notifications: notifications || [],
+                            totalNotifications: notifications ? notifications.length : 0,
+                            family: family,
+                            packages: availablePackages || [],
+                            isTrialExpired,
+                            activeEventsCount: badges.activeEventsCount,
+                            pendingPayments: 0 // Unaweza kuongeza query hapa pia kama ukipenda
+                        });
+                    });
+                });
+            });
+        });
+    });
+});
+
+// Route ya kutuma Ombi la Malipo (Reference Number)
+app.post('/subscribe', (req, res) => {
+    const { package_id, ref_number } = req.body;
+    const familyId = req.session.family_id;
+
+    // Badilisha status kuwa 'pending' hadi admin akubali
+    const sql = `UPDATE family SET package_status = 'pending', package_id = ? WHERE family_id = ?`;
+    
+    // Unaweza pia kusave ref_number kwenye table mpya ya 'subscriptions' kwa rekodi zaidi
+    db.query(sql, [package_id, familyId], (err) => {
+        if (err) return res.status(500).send("Error");
+        req.session.success = "Malipo yako yamepokelewa! Admin atahakiki Reference Number: " + ref_number;
+        res.redirect('/package');
+    });
+});
+
 app.get('/payment_history', (req, res) => {
-  res.render('payment_history'); // HOF
+    const memberId = req.session.member_id;
+    const familyId = req.session.family_id;
+
+    if (!memberId || !familyId) return res.redirect('/index');
+
+    // 1. Profile & Notifications
+    const profileQuery = `SELECT first_name, last_name, role FROM family_member WHERE member_id = ? LIMIT 1`;
+    const notificationsQuery = `SELECT 'meeting' AS type, title, created_at FROM meeting WHERE family_id = ? ORDER BY created_at DESC LIMIT 5`;
+
+    // 2. Historia ya Malipo ya Package
+    // Tunajiunga (JOIN) na table ya packages ili kupata jina la plan
+    const historyQuery = `
+        SELECT p.*, pk.name as package_name, m.first_name, m.last_name 
+        FROM payment p
+        LEFT JOIN packages pk ON p.package_id = pk.id
+        LEFT JOIN family_member m ON p.recorded_by = m.member_id
+        WHERE p.family_id = ? AND p.payment_type = 'package'
+        ORDER BY p.payment_date DESC`;
+
+    // 3. Sidebar Badge (Smart Logic)
+    const badgeQuery = `SELECT COUNT(*) as activeEventsCount FROM family_event WHERE family_id = ? AND event_date >= CURDATE()`;
+
+    db.query(profileQuery, [memberId], (err, profile) => {
+        db.query(notificationsQuery, [familyId], (err2, notifications) => {
+            db.query(historyQuery, [familyId], (err3, history) => {
+                db.query(badgeQuery, [familyId], (err4, badgeData) => {
+                    
+                    const badges = badgeData ? badgeData[0] : { activeEventsCount: 0 };
+
+                    res.render('payment_history', {
+                        profile: profile[0] || { first_name: 'User' },
+                        notifications: notifications || [],
+                        totalNotifications: notifications ? notifications.length : 0,
+                        history: history || [], // Hii ndio itajaza table yako
+                        activeEventsCount: badges.activeEventsCount,
+                        pendingPayments: 0,
+                        memberId
+                    });
+                });
+            });
+        });
+    });
 });
 
 // family report
@@ -2291,10 +2512,136 @@ app.get('/api/folder/:id', (req, res) => {
   });
 });
 
-// upload files
-app.get('/upload_file', (req, res) => {
-  res.render('upload_file'); // HOF
+app.get('/profile', (req, res) => {
+    const memberId = req.session.member_id;
+    const familyId = req.session.family_id;
+
+    if (!memberId || !familyId) return res.redirect('/index');
+
+    // 1. Query ya Profile, Notifications na Sidebar Badges
+    const profileQuery = `SELECT * FROM family_member WHERE member_id = ? LIMIT 1`;
+    const notificationsQuery = `SELECT 'meeting' AS type, title, created_at FROM meeting WHERE family_id = ? ORDER BY created_at DESC LIMIT 5`;
+    const badgeQuery = `
+        SELECT 
+            (SELECT COUNT(*) FROM family_event WHERE family_id = ? AND event_date >= CURDATE()) as activeEventsCount,
+            (SELECT COUNT(*) FROM family_event WHERE family_id = ? AND has_contribution = 1 AND event_id NOT IN (
+                SELECT event_id FROM payment WHERE recorded_by = ? AND status = 'paid'
+            )) as pendingPaymentsCount`;
+
+    db.query(profileQuery, [memberId], (err, profileData) => {
+        if (err || profileData.length === 0) return res.redirect('/dashboard');
+
+        const user = profileData[0];
+
+        db.query(notificationsQuery, [familyId], (err2, notifications) => {
+            db.query(badgeQuery, [familyId, familyId, memberId], (err3, badgeData) => {
+                
+                const badges = badgeData ? badgeData[0] : { activeEventsCount: 0, pendingPaymentsCount: 0 };
+                const status = req.query.status;
+                const message = req.query.message;
+
+                res.render('profile', {
+                    profile: user,
+                    adminName: user.first_name + " " + user.last_name,
+                    adminPhone: user.phone || 'N/A',
+                    adminEmail: user.email || 'N/A',
+                    adminRole: user.role,
+                    notifications: notifications || [],
+                    totalNotifications: notifications ? notifications.length : 0,
+                    activeEventsCount: badges.activeEventsCount,
+                    pendingPayments: badges.pendingPaymentsCount,
+                    systemTitle: "Family Genealogy System",
+                    success: status === 'success' ? message : null,
+                    error: status === 'error' ? message : null
+                });
+            });
+        });
+    });
 });
 
+// --- 1. UPDATE PROFILE IMAGE ---
+app.post('/update-profile-image', upload.single('profileImage'), (req, res) => {
+    const memberId = req.session.member_id;
+    if (!req.file) return res.redirect('/profile?status=error&message=Tafadhali chagua picha');
+
+    // Njia inayohifadhiwa kwenye database (Inaendana na static folder la public)
+    const dbImagePath = '/uploads/drives/' + req.file.filename;
+
+    const sql = "UPDATE family_member SET profile_image = ? WHERE member_id = ?";
+    db.query(sql, [dbImagePath, memberId], (err) => {
+        if (err) {
+            console.error(err);
+            return res.redirect('/profile?status=error&message=Imeshindikana kusasisha picha');
+        }
+        res.redirect('/profile?status=success&message=Picha imebadilishwa kikamilifu');
+    });
+});
+
+app.post('/update-profile', (req, res) => {
+    // 1. Debugging: Angalia nini kinakuja kutoka kwenye Form
+    console.log("Form Data:", req.body);
+    console.log("Session Data:", req.session);
+
+    const { firstName, lastName, email, phone, gender } = req.body;
+    
+    // 2. Chagua jina sahihi la session unalotumia kwenye mfumo wako
+    const memberId = req.session.member_id; 
+
+    if (!memberId) {
+        console.log("KOSA: Session haikuonekana, ninarudisha Index...");
+        return res.redirect('/index');
+    }
+
+    // 3. Hakikisha SQL inalingana na majina ya Column kwenye DB
+    const sql = "UPDATE family_member SET first_name = ?, last_name = ?, email = ?, phone = ?, gender = ? WHERE member_id = ?";
+    
+    db.query(sql, [firstName, lastName, email, phone, gender, memberId], (err, result) => {
+        if (err) {
+            console.error("Database Error Wakati wa Update:", err);
+            // Ikishindwa kwenye DB, rudi kwenye profile uonyeshe error
+            return res.redirect('/profile?status=error&message=Hitilafu kwenye database');
+        }
+        
+        console.log("Update Imefanikiwa kwa ID:", memberId);
+        res.redirect('/profile?status=success&message=Taarifa zimesasishwa kikamilifu');
+    });
+});
+// --- 3. UPDATE PASSWORD ---
+app.post('/update-password', async (req, res) => {
+    const { currentPassword, newPassword, confirmNewPassword } = req.body;
+    const memberId = req.session.member_id;
+
+    if (newPassword !== confirmNewPassword) {
+        return res.redirect('/profile?status=error&message=Password mpya hazilingani');
+    }
+
+    db.query("SELECT password FROM family_member WHERE member_id = ?", [memberId], async (err, results) => {
+        if (err || results.length === 0) return res.redirect('/profile?status=error&message=Mtumiaji hajapatikana');
+
+        const isMatch = await bcrypt.compare(currentPassword, results[0].password);
+        if (!isMatch) return res.redirect('/profile?status=error&message=Password ya sasa siyo sahihi');
+
+        const hashed = await bcrypt.hash(newPassword, 10);
+        db.query("UPDATE family_member SET password = ? WHERE member_id = ?", [hashed, memberId], (err) => {
+            res.redirect('/profile?status=success&message=Password imebadilishwa');
+        });
+    });
+});
+
+
+app.get('/title', (req, res) => {
+    const memberId = req.session.member_id;
+    if (!memberId) return res.redirect('/index');
+
+    const sql = "SELECT * FROM family_member WHERE member_id = ?";
+    db.query(sql, [memberId], (err, results) => {
+        const user = results[0];
+        res.render('title', { 
+            profile: user, // Hii itaruhusu title.ejs kuona picha
+            adminName: user.first_name + " " + user.last_name,
+            // ... data zingine
+        });
+    });
+});
 
 module.exports = app;
