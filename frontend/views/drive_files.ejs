@@ -186,16 +186,58 @@
 
 <!-- PASS USER INFO -->
 <script>
-const memberId = "<%= memberId %>";
-const profileRole = "<%= profile.role %>";
+const memberId = "<%= memberId ? memberId : '' %>";
+const profileRole = "<%= profile && profile.role ? profile.role : '' %>";
 </script>
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
 
-  // Folder click -> modal
+  let deleteFileId = null;
+  let deleteElement = null;
+
+  // ===== OPEN DELETE MODAL =====
+  function openDeleteModal(fileId, element) {
+    deleteFileId = fileId;
+    deleteElement = element;
+
+    const modal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+    modal.show();
+  }
+
+  // ===== CONFIRM DELETE BUTTON =====
+  const confirmBtn = document.getElementById('confirmDeleteBtn');
+
+  if (confirmBtn) {
+    confirmBtn.addEventListener('click', () => {
+      if (!deleteFileId) return;
+
+      fetch(`/delete_file/${deleteFileId}`, { method: 'DELETE' })
+        .then(res => {
+          if (res.ok) {
+
+            // remove from UI
+            if (deleteElement) deleteElement.remove();
+
+            // close modal
+            const modalEl = document.getElementById('deleteConfirmModal');
+            const modalInstance = bootstrap.Modal.getInstance(modalEl);
+            if (modalInstance) modalInstance.hide();
+
+            // reload for notification
+            location.reload();
+
+          } else {
+            alert("Error deleting file");
+          }
+        });
+    });
+  }
+
+  // ===== FOLDER CLICK =====
   document.querySelectorAll('.folder-card').forEach(card => {
     card.addEventListener('click', () => {
+
       const folderId = card.dataset.folderId;
       const modalTitle = document.getElementById('folderContentTitle');
       const modalBody = document.getElementById('folderContentFiles');
@@ -206,13 +248,16 @@ document.addEventListener("DOMContentLoaded", () => {
       fetch(`/api/folder/${folderId}`)
         .then(res => res.json())
         .then(data => {
+
           modalBody.innerHTML = '';
+
           if (!data.files.length) {
             modalBody.innerHTML = '<p class="text-center text-muted w-100">No files in this folder.</p>';
             return;
           }
 
           data.files.forEach(file => {
+
             const icon = file.file_type.includes('image') ? 'bi-file-earmark-image text-success' :
                          file.file_type.includes('pdf') ? 'bi-file-earmark-pdf text-danger' :
                          'bi-file-earmark-text text-primary';
@@ -223,17 +268,28 @@ document.addEventListener("DOMContentLoaded", () => {
                   <i class="bi ${icon} fs-1"></i>
                   <h6 title="${file.file_name}">${file.file_name}</h6>
                   <small class="text-muted d-block">By: ${file.uploader}</small>
+
                   <div class="file-actions mt-3 d-flex justify-content-center gap-2">
-                    <a href="${file.file_path}" download class="btn btn-sm btn-light border"><i class="bi bi-download"></i></a>
-                    ${file.uploaded_by == memberId || profileRole === 'Admin' ? `<button class="btn btn-sm btn-outline-danger delete-file" data-id="${file.file_id}"><i class="bi bi-trash"></i></button>` : ''}
-                    ${file.file_type.includes('image') ? `<button class="btn btn-sm btn-outline-secondary preview-btn" data-path="${file.file_path}"><i class="bi bi-eye"></i></button>` : ''}
+                    <a href="${file.file_path}" download class="btn btn-sm btn-light border">
+                      <i class="bi bi-download"></i>
+                    </a>
+
+                    ${file.uploaded_by == memberId || profileRole === 'Admin'
+                      ? `<button class="btn btn-sm btn-outline-danger delete-file" data-id="${file.file_id}">
+                          <i class="bi bi-trash"></i>
+                        </button>` : ''}
+
+                    ${file.file_type.includes('image')
+                      ? `<button class="btn btn-sm btn-outline-secondary preview-btn" data-path="${file.file_path}">
+                          <i class="bi bi-eye"></i>
+                        </button>` : ''}
                   </div>
                 </div>
               </div>
             `);
           });
 
-          // Preview inside folder
+          // ===== PREVIEW (inside folder) =====
           modalBody.querySelectorAll('.preview-btn').forEach(btn =>
             btn.addEventListener('click', () => {
               document.getElementById('previewImage').src = btn.dataset.path;
@@ -241,13 +297,10 @@ document.addEventListener("DOMContentLoaded", () => {
             })
           );
 
-          // Delete inside folder
+          // ===== DELETE (inside folder) =====
           modalBody.querySelectorAll('.delete-file').forEach(btn =>
             btn.addEventListener('click', () => {
-              if(confirm("Do you want to delete this file?")) {
-                fetch(`/delete_file/${btn.dataset.id}`, { method: 'DELETE' })
-                  .then(res => res.ok && btn.closest('.col-lg-3').remove());
-              }
+              openDeleteModal(btn.dataset.id, btn.closest('.col-lg-3'));
             })
           );
 
@@ -257,7 +310,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // Preview buttons outside folder
+  // ===== PREVIEW (outside folder) =====
   document.querySelectorAll('.preview-btn').forEach(btn =>
     btn.addEventListener('click', () => {
       document.getElementById('previewImage').src = btn.dataset.path;
@@ -265,19 +318,17 @@ document.addEventListener("DOMContentLoaded", () => {
     })
   );
 
-  // Delete buttons outside folder
+  // ===== DELETE (outside folder) =====
   document.querySelectorAll('.delete-file').forEach(btn =>
     btn.addEventListener('click', () => {
-      if(confirm("Do you want to delete this file?")) {
-        fetch(`/delete_file/${btn.dataset.id}`, { method: 'DELETE' })
-          .then(res => res.ok && btn.closest('.col-lg-3').remove());
-      }
+      openDeleteModal(btn.dataset.id, btn.closest('.col-lg-3'));
     })
   );
 
-  // Search
+  // ===== SEARCH =====
   document.getElementById('searchInput').addEventListener('input', e => {
     const val = e.target.value.toLowerCase();
+
     document.querySelectorAll('#fileContainer .file-card').forEach(card => {
       const name = card.querySelector('h6').innerText.toLowerCase();
       card.style.display = name.includes(val) ? 'block' : 'none';

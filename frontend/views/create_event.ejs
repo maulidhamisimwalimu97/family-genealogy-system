@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+
+  <title>Create New Events</title>
+  <meta content="Family Admin Panel for managing family genealogy records" name="description">
+  <meta content="family, genealogy, admin, lineage" name="keywords">
+
+  <!-- Favicons -->
+
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.gstatic.com" rel="preconnect">
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Nunito:300,300i,400,400i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
+
+  <!-- Vendor CSS Files -->
+  <link href="/assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+  <link href="/assets/vendor/boxicons/css/boxicons.min.css" rel="stylesheet">
+  <link href="/assets/vendor/quill/quill.snow.css" rel="stylesheet">
+  <link href="/assets/vendor/quill/quill.bubble.css" rel="stylesheet">
+  <link href="/assets/vendor/remixicon/remixicon.css" rel="stylesheet">
+  <link href="/assets/vendor/simple-datatables/style.css" rel="stylesheet">
+
+  <!-- Main CSS File -->
+  <link href="assets/css/style.css" rel="stylesheet">
+  <link href="/assets/css/dark.css" rel="stylesheet">
+</head>
+
+<body>
+
+  <!-- ======= Header ======= -->
+<%- include('partials/title') %>
+
+<%- include('partials/header') %>
+
+<main id="main" class="main">
+
+  <div class="pagetitle">
+    <h1>Post New Event</h1>
+    <nav>
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/dashboard">Home</a></li>
+        <li class="breadcrumb-item"><a href="/events">Events</a></li>
+        <li class="breadcrumb-item active">Create</li>
+      </ol>
+    </nav>
+  </div><section class="section">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+
+        <%- include('partials/notifications') %>
+
+        <div class="card shadow-sm border-0">
+          <div class="card-body p-4">
+            <h5 class="card-title mb-4"><i class="bi bi-pencil-square me-2"></i> Event Information</h5>
+
+            <form action="/save_event" method="POST" class="row g-3">
+              
+              <div class="col-md-12">
+                <label class="form-label fw-bold">Event Title</label>
+                <input type="text" name="title" class="form-control" placeholder="Mfano: Arusi ya Juma au Msiba wa Babu" required>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label fw-bold">Event Type</label>
+                <select name="event_type" id="eventType" class="form-select" required onchange="updateEventTheme()">
+                  <option value="mkutano">Mkutano (Meeting)</option>
+                  <option value="sherehe">Sherehe (Celebration)</option>
+                  <option value="msiba">Msiba (Funeral/Emergency)</option>
+                  <option value="nyingine">Nyingine (Other)</option>
+                </select>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label fw-bold">Event Date</label>
+                <input type="date" name="event_date" class="form-control" required>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label fw-bold">Time</label>
+                <input type="time" name="event_time" class="form-control">
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label fw-bold">Location / Venue</label>
+                <input type="text" name="location" class="form-control" placeholder="Wapi yatafanyika?" required>
+              </div>
+
+              <div class="col-12">
+                <label class="form-label fw-bold">Description / Details</label>
+                <textarea name="description" class="form-control" rows="4" placeholder="Maelezo zaidi kuhusu tukio hili..." required></textarea>
+              </div>
+
+              <div class="col-12 mt-4">
+                <div class="form-check form-switch p-3 bg-light rounded border">
+                  <input class="form-check-input ms-0 me-3" type="checkbox" name="has_contribution" id="hasContribution" value="1" onchange="toggleContributionField()">
+                  <label class="form-check-label fw-bold" for="hasContribution">
+                    Je, tukio hili linahitaji michango ya pesa?
+                  </label>
+                </div>
+              </div>
+
+              <div class="col-md-12 mt-3" id="contributionField" style="display: none;">
+                <label class="form-label fw-bold text-success">Target Amount (TZS)</label>
+                <div class="input-group">
+                  <span class="input-group-text bg-success text-white">TZS</span>
+                  <input type="number" name="target_amount" class="form-control" placeholder="Lengo la kiasi kinachohitajika">
+                </div>
+                <small class="text-muted italic">Mfumo utaonyesha progress bar kulingana na kiasi hiki.</small>
+              </div>
+
+              <div class="col-12 text-end mt-5">
+                <hr>
+                <button type="reset" class="btn btn-light px-4 me-2 border">Clear</button>
+                <button type="submit" id="submitBtn" class="btn btn-primary px-5 shadow">
+                  <i class="bi bi-send-fill me-1"></i> Post Event
+                </button>
+              </div>
+
+            </form>
+            </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+  // Function ya kuonyesha/kuficha field ya mchango
+  function toggleContributionField() {
+    const isChecked = document.getElementById('hasContribution').checked;
+    const field = document.getElementById('contributionField');
+    field.style.display = isChecked ? 'block' : 'none';
+  }
+
+  // Function ya kubadilisha rangi kulingana na aina ya tukio
+  function updateEventTheme() {
+    const type = document.getElementById('eventType').value;
+    const submitBtn = document.getElementById('submitBtn');
+    
+    if (type === 'msiba') {
+      submitBtn.className = 'btn btn-danger px-5 shadow';
+      alert("Tahadhari: Ukichagua MSIBA, mfumo utatuma SMS ya dharura kwa familia nzima baada ya kusave.");
+    } else if (type === 'sherehe') {
+      submitBtn.className = 'btn btn-success px-5 shadow';
+    } else {
+      submitBtn.className = 'btn btn-primary px-5 shadow';
+    }
+  }
+</script>
+
+<style>
+  .form-control:focus, .form-select:focus {
+    border-color: #4154f1;
+    box-shadow: 0 0 0 0.2rem rgba(65, 84, 241, 0.1);
+  }
+  .form-label {
+    font-size: 0.9rem;
+    color: #444;
+  }
+</style>
+
+<style>
+  /* CSS kwa ajili ya Muonekano Bora */
+  .event-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .event-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+  }
+  .text-truncate-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;  
+    overflow: hidden;
+  }
+  .x-small {
+    font-size: 0.75rem;
+  }
+  .progress {
+    border-radius: 10px;
+    background-color: #f0f0f0;
+  }
+</style>
+
+<!-- Google Translate Element -->
+<div id="google_translate_element" style="visibility: hidden; position: absolute; z-index: -1;"></div>
+
+<script>
+function googleTranslateElementInit() {
+  new google.translate.TranslateElement({
+    pageLanguage: 'en',
+    includedLanguages: 'en,sw',
+    autoDisplay: false
+  }, 'google_translate_element');
+
+  var savedLang = localStorage.getItem("selectedLanguage");
+  if (savedLang) {
+    setTimeout(function () {
+      setLanguage(savedLang);
+    }, 800);
+  }
+}
+
+function changeLanguage(lang) {
+  localStorage.setItem("selectedLanguage", lang);
+  setLanguage(lang);
+}
+
+function setLanguage(lang) {
+  var select = document.querySelector(".goog-te-combo");
+  if (select) {
+    select.value = lang;
+    select.dispatchEvent(new Event("change"));
+  } else {
+    setTimeout(function () {
+      setLanguage(lang);
+    }, 300);
+  }
+}
+</script>
+
+
+<!-- ===== Chart JS ===== -->
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+
+const ageCtx = document.getElementById('ageReportChart').getContext('2d');
+
+new Chart(ageCtx,{
+type:'pie',
+
+data:{
+labels:['0-10 yrs','11-20 yrs','21-40 yrs','41-60 yrs','60+ yrs'],
+
+datasets:[{
+label:'Members',
+data:[5,10,15,7,3],
+
+backgroundColor:[
+'rgba(75,192,192,0.7)',
+'rgba(54,162,235,0.7)',
+'rgba(255,206,86,0.7)',
+'rgba(255,99,132,0.7)',
+'rgba(153,102,255,0.7)'
+]
+}]
+},
+
+options:{
+responsive:true,
+plugins:{
+legend:{position:'bottom'}
+}
+}
+
+})
+
+const paymentCtx = document.getElementById('paymentReportChart').getContext('2d');
+
+new Chart(paymentCtx,{
+type:'doughnut',
+
+data:{
+labels:['Paid','Pending','Failed'],
+
+datasets:[{
+data:[20,5,2],
+
+backgroundColor:[
+'rgba(75,192,192,0.7)',
+'rgba(255,206,86,0.7)',
+'rgba(255,99,132,0.7)'
+]
+}]
+},
+
+options:{
+responsive:true,
+plugins:{
+legend:{position:'bottom'}
+}
+}
+
+})
+
+</script>
+
+<!-- ===== DataTable ===== -->
+
+<script>
+
+document.addEventListener("DOMContentLoaded",function(){
+
+new simpleDatatables.DataTable("#familyReportTable",{
+searchable:true,
+perPage:10,
+responsive:true
+})
+
+})
+
+</script>
+
+<!-- ===== Print Function ===== -->
+
+<script>
+
+function printReport(){
+window.print();
+}
+
+</script>
+
+  <!-- ======= Footer ======= -->
+    <footer id="footer" class="footer">
+    <div class="copyright">
+        &copy; Copyright <strong><span>Family Genealogy System</span></strong>. All Rights Reserved
+    </div>
+    <div class="credits">
+        Developed by <strong>Maulid Mwalimu</strong>
+    </div>
+    </footer>
+    <!-- End Footer -->
+
+  <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+
+  <!-- Vendor JS Files -->
+  <script src="/assets/vendor/apexcharts/apexcharts.min.js"></script>
+  <script src="/assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="/assets/vendor/chart.js/chart.umd.js"></script>
+  <script src="/assets/vendor/echarts/echarts.min.js"></script>
+  <script src="/assets/vendor/quill/quill.js"></script>
+  <script src="/assets/vendor/simple-datatables/simple-datatables.js"></script>
+  <script src="/assets/vendor/tinymce/tinymce.min.js"></script>
+  <script src="/assets/vendor/php-email-form/validate.js"></script>
+  <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+  <!-- Main JS File -->
+  <script src="/assets/js/main.js"></script>
+
+</body>
+
+</html>

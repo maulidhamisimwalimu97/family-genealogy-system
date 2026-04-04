@@ -22,13 +22,24 @@ function formatPhone(phone) {
 
 const multer = require('multer');
 
-// Cấu hình storage kwa ajili ya mafaili
 const storage = multer.diskStorage({
-    destination: './public/uploads/drive/',
+    destination: (req, file, cb) => {
+        // '../' inarudi nyuma kutoka 'src' kwenda 'backend'
+        // Kisha inaingia kwenye 'public/uploads/drives/'
+        const fullPath = path.join(__dirname, '../public/uploads/drives/');
+        
+        // Hakikisha folder lipo, kama halipo litengeneze
+        if (!fs.existsSync(fullPath)) {
+            fs.mkdirSync(fullPath, { recursive: true });
+        }
+        
+        cb(null, fullPath);
+    },
     filename: (req, file, cb) => {
         cb(null, Date.now() + path.extname(file.originalname));
     }
 });
+
 const upload = multer({ storage: storage });
 
 // --- 2. SETTINGS & VIEW ENGINE ---
@@ -39,7 +50,19 @@ app.set('views', path.join(__dirname, '../../frontend/views'));
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// 1. Ruhusu ufikiaji wa mafaili yaliyopakiwa (Images, PDFs, n.k.)
+// Hii inaunganisha URL ya /uploads na folder halisi la backend/public/uploads
+app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
+
+// 2. Ruhusu ufikiaji wa folder la frontend (HTML, CSS, JS ya kule mbele)
 app.use(express.static(path.join(__dirname, '../../frontend')));
+
+// Global Cache Control (Prevents back-button access after logout)
+app.use((req, res, next) => {
+    res.set('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
+    next();
+});
 
 // Session Configuration
 app.use(session({
@@ -1632,6 +1655,128 @@ app.post('/send-reminder', async (req, res) => {
     });
 });
 
+app.get('/events', (req, res) => {
+    const memberId = req.session.member_id;
+    const familyId = req.session.family_id;
+    const filterType = req.query.type; // Inasoma kama ni 'emergency' au kawaida
+
+    if (!memberId || !familyId) return res.redirect('/index');
+
+    const profileQuery = `SELECT first_name, last_name, role FROM family_member WHERE member_id = ? LIMIT 1`;
+    const notificationsQuery = `SELECT 'meeting' AS type, title, created_at FROM meeting WHERE family_id = ? ORDER BY created_at DESC LIMIT 5`;
+
+    // 1. Vuta Events (Kama kuna filter ya emergency, leta msiba pekee)
+    let eventSql = `SELECT e.*, m.first_name as creator_name 
+                    FROM family_event e 
+                    JOIN family_member m ON e.created_by = m.member_id 
+                    WHERE e.family_id = ?`;
+    
+    if (filterType === 'emergency') {
+        eventSql += ` AND e.event_type = 'msiba'`;
+    }
+    eventSql += ` ORDER BY e.event_date ASC`;
+
+    // 2. Smart Stats kwa ajili ya Sidebar Badges
+    const badgeQuery = `
+        SELECT 
+            (SELECT COUNT(*) FROM family_event WHERE family_id = ? AND event_date >= CURDATE()) as activeEventsCount,
+            (SELECT COUNT(*) FROM family_event WHERE family_id = ? AND has_contribution = 1 AND event_id NOT IN (
+                SELECT event_id FROM payment WHERE recorded_by = ? AND payment_type = 'event'
+            )) as pendingPayments`;
+
+    db.query(profileQuery, [memberId], (err, profile) => {
+        db.query(notificationsQuery, [familyId], (err2, notifications) => {
+            db.query(badgeQuery, [familyId, familyId, memberId], (err3, badgeData) => {
+                db.query(eventSql, [familyId], (err4, events) => {
+                    
+                    const badges = badgeData[0] || { activeEventsCount: 0, pendingPayments: 0 };
+
+                    res.render('events', {
+                        profile: profile[0] || { first_name: 'User' },
+                        notifications: notifications || [],
+                        totalNotifications: notifications.length,
+                        events: events || [],
+                        activeEventsCount: badges.activeEventsCount,
+                        pendingPayments: badges.pendingPayments,
+                        filterType,
+                        memberId
+                    });
+                });
+            });
+        });
+    });
+});
+
+// A. GET: Onyesha Ukurasa wa Kuunda Event
+app.get('/create_event', (req, res) => {
+    const memberId = req.session.member_id;
+    const familyId = req.session.family_id;
+
+    if (!memberId || !familyId) return res.redirect('/index');
+
+    const profileQuery = `SELECT first_name, last_name, role FROM family_member WHERE member_id = ? LIMIT 1`;
+    
+    db.query(profileQuery, [memberId], (err, profile) => {
+        res.render('create_event', {
+            profile: profile[0],
+            notifications: [], // Ongeza notifications hapa kama kawaida
+            totalNotifications: 0,
+            activeEventsCount: 0, // Unaweza kuvuta hizi pia kama unataka sidebar badges ziwepo hapa
+            pendingPayments: 0
+        });
+    });
+});
+
+// B. POST: Hifadhi Event Mpya na Tuma SMS kama ni ya Dharura
+app.post('/save_event', (req, res) => {
+    const { title, description, event_type, event_date, event_time, location, has_contribution, target_amount } = req.body;
+    const familyId = req.session.family_id;
+    const memberId = req.session.member_id;
+
+    const sql = `INSERT INTO family_event (family_id, title, description, event_type, event_date, event_time, location, has_contribution, target_amount, created_by) 
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+
+    db.query(sql, [familyId, title, description, event_type, event_date, event_time, location, has_contribution || 0, target_amount || 0, memberId], (err, result) => {
+        if (err) return res.status(500).send(err);
+
+        // SMART LOGIC: Kama ni MSiba, tuma SMS kwa familia nzima mara moja
+        if (event_type === 'msiba') {
+            const getFamilyPhones = `SELECT phone FROM family_member WHERE family_id = ?`;
+            db.query(getFamilyPhones, [familyId], (err2, members) => {
+                if (!err2) {
+                    const message = `TAARIFA YA MSIBA: ${title}. Utakaofanyika tarehe ${event_date} sehemu ya ${location}. Tafadhali login kwenye mfumo kwa maelezo zaidi.`;
+                    // Hapa utaita function yako ya Beem SMS uliyonayo awali
+                    // sendBeemSMS(members.map(m => m.phone), message);
+                }
+            });
+        }
+
+        req.session.success = "Event posted successfully!";
+        res.redirect('/events');
+    });
+});
+
+app.get('/event_contributions', (req, res) => {
+    const familyId = req.session.family_id;
+    const memberId = req.session.member_id;
+
+    const query = `
+        SELECT e.title, e.target_amount, e.event_type,
+        (SELECT SUM(amount) FROM payment WHERE payment_type = 'event' AND family_id = e.family_id) as total_collected
+        FROM family_event e 
+        WHERE e.family_id = ? AND e.has_contribution = 1`;
+
+    db.query(query, [familyId], (err, contributions) => {
+        // Hapa render ukurasa wako wa michango
+        res.render('event_contributions', {
+            contributions: contributions || [],
+            profile: {}, // Ongeza profile hapa
+            activeEventsCount: 0,
+            pendingPayments: 0
+        });
+    });
+});
+
 // package
 app.get('/package', (req, res) => {
   res.render('package'); // HOF
@@ -1644,7 +1789,56 @@ app.get('/payment_history', (req, res) => {
 
 // family report
 app.get('/family_report', (req, res) => {
-  res.render('family_report'); // HOF
+    const memberId = req.session.member_id;
+    const familyId = req.session.family_id;
+
+    if (!memberId || !familyId) return res.redirect('/index');
+
+    const profileQuery = `SELECT first_name, last_name, role FROM family_member WHERE member_id = ? LIMIT 1`;
+    const notificationsQuery = `SELECT 'meeting' AS type, title, created_at FROM meeting WHERE family_id = ? ORDER BY created_at DESC LIMIT 5`;
+
+    // 1. Stats Query (Tumetumia 'payment' badala ya 'payments')
+    const statsQuery = `
+        SELECT 
+            (SELECT COUNT(*) FROM family_member WHERE family_id = ?) as total_members,
+            (SELECT SUM(amount) FROM payment WHERE family_id = ?) as total_payments,
+            (SELECT COUNT(*) FROM meeting WHERE family_id = ?) as total_meetings`;
+
+    // 2. Table Query (Tumetumia 'payment' na column sahihi 'recorded_by' kama ndiye aliyelipa)
+    // AU kama 'recorded_by' ni admin, hakikisha una column ya 'member_id' kwenye table ya payment.
+    // Hapa nimebadilisha 'payments' kuwa 'payment'.
+    const tableQuery = `
+        SELECT 
+            m.member_id, m.first_name, m.last_name, m.role,
+            (SELECT COUNT(*) FROM drive_file WHERE uploaded_by = m.member_id) as files_count,
+            (SELECT SUM(amount) FROM payment WHERE recorded_by = m.member_id) as member_paid
+        FROM family_member m
+        WHERE m.family_id = ?`;
+
+    db.query(profileQuery, [memberId], (err, profile) => {
+        if (err) return res.status(500).send("Database Error");
+
+        db.query(notificationsQuery, [familyId], (err2, notifications) => {
+            db.query(statsQuery, [familyId, familyId, familyId], (err3, stats) => {
+                if (err3) console.error("Stats Error:", err3);
+                
+                const finalStats = (stats && stats.length > 0) ? stats[0] : { total_members: 0, total_payments: 0, total_meetings: 0 };
+
+                db.query(tableQuery, [familyId], (err4, tableData) => {
+                    if (err4) console.error("Table Error:", err4);
+
+                    res.render('family_report', {
+                        profile: profile[0] || { first_name: 'User' },
+                        notifications: notifications || [],
+                        totalNotifications: notifications ? notifications.length : 0,
+                        stats: finalStats,
+                        tableData: tableData || [],
+                        memberId
+                    });
+                });
+            });
+        });
+    });
 });
 
 // future head of family
@@ -1954,7 +2148,7 @@ app.post('/upload_file', upload.array('familyFile', 10), (req, res) => {
     null,          // drive_id auto
     member_id,
     file.originalname,
-    '/uploads/drive/' + file.filename,
+    '/uploads/drives/' + file.filename,
     file.mimetype,
     folder_id || null
   ]);

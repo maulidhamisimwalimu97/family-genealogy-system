@@ -97,25 +97,50 @@
       </ul>
     </li>
 
-    <!-- Family Drive -->
+    <!-- Family Events -->
     <li class="nav-item">
-      <a class="nav-link collapsed" data-bs-target="#drive-nav" data-bs-toggle="collapse" href="#">
-        <i class="bi bi-hdd-stack"></i>
-        <span>Family Drive</span>
+      <a class="nav-link collapsed" data-bs-target="#events-nav" data-bs-toggle="collapse" href="#">
+        <i class="bi bi-calendar-event-fill"></i>
+        <span>Family Events</span>
+        <% if (typeof activeEventsCount !== 'undefined' && activeEventsCount > 0) { %>
+          <span class="badge bg-danger badge-number ms-2"><%= activeEventsCount %></span>
+        <% } %>
         <i class="bi bi-chevron-down ms-auto"></i>
       </a>
 
-      <ul id="drive-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
+      <ul id="events-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
+        <li>
+          <a href="/events">
+            <i class="bi bi-grid-fill"></i>
+            <span>All Events</span>
+          </a>
+        </li>
+        
+        <li>
+          <a href="/events?type=emergency">
+            <i class="bi bi-exclamation-triangle-fill text-danger"></i>
+            <span>Emergency Alerts</span>
+          </a>
+        </li>
 
         <li>
-          <a href="/drive_files">
-            <i class="bi bi-circle"></i>
-            <span>My Files</span>
+          <a href="/create_event">
+            <i class="bi bi-plus-circle-fill"></i>
+            <span>Post New Event</span>
+          </a>
+        </li>
+
+        <li>
+          <a href="/event_contributions">
+            <i class="bi bi-cash-coin"></i>
+            <span>Contributions</span>
+            <% if (typeof pendingPayments !== 'undefined' && pendingPayments > 0) { %>
+              <span class="badge rounded-pill bg-warning text-dark ms-2">Pay</span>
+            <% } %>
           </a>
         </li>
       </ul>
     </li>
-
     <!-- Payments Dropdown -->
     <li class="nav-item">
       <a class="nav-link collapsed" data-bs-target="#payments-nav" data-bs-toggle="collapse" href="#">

@@ -33,299 +33,130 @@
 <body>
 
   <!-- ======= Header ======= -->
-  <header id="header" class="header fixed-top d-flex align-items-center">
-
-    <div class="d-flex align-items-center justify-content-between">
-      <a href="/" class="logo d-flex align-items-center">
-        <img src="" alt="">
-        <span class="d-none d-lg-block">Family Genealogy</span>
-      </a>
-      <i class="bi bi-list toggle-sidebar-btn"></i>
-    </div><!-- End Logo -->
-
-    <nav class="header-nav ms-auto">
-      <ul class="d-flex align-items-center">
-
-        <!-- Notifications -->
-        <li class="nav-item dropdown">
-          <a class="nav-link nav-icon" href="#" data-bs-toggle="dropdown">
-            <i class="bi bi-bell"></i>
-            <span class="badge bg-primary badge-number">0</span>
-          </a><!-- End Notification Icon -->
-
-          <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow notifications">
-            <li class="dropdown-header">
-              You have 0 new notifications
-              <a href="#">
-                <span class="badge rounded-pill bg-primary p-2 ms-2">View all</span>
-              </a>
-            </li>
-
-            <li><hr class="dropdown-divider"></li>
-
-            <li class="notification-item text-center">
-              <div>No notifications available</div>
-            </li>
-
-            <li><hr class="dropdown-divider"></li>
-
-            <li class="dropdown-footer">
-              <a href="#">Show all notifications</a>
-            </li>
-          </ul>
-        </li><!-- End Notifications -->
-
-        <!-- Profile -->
-        <li class="nav-item dropdown pe-3">
-          <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
-            <img src="assets/img/3.png" alt="Profile" class="rounded-circle">
-            <span class="d-none d-md-block dropdown-toggle ps-2">Family Admin</span>
-          </a><!-- End Profile Image Icon -->
-
-          <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
-            <li class="dropdown-header">
-              <h6>Family Admin</h6>
-              <span><b>Family Account</b></span>
-            </li>
-
-            <li><hr class="dropdown-divider"></li>
-
-            <li>
-              <a class="dropdown-item d-flex align-items-center" href="/family_admin/profile">
-                <i class="bi bi-person"></i>
-                <span>My Profile</span>
-              </a>
-            </li>
-
-            <li><hr class="dropdown-divider"></li>
-
-            <li>
-              <a class="dropdown-item d-flex align-items-center" href="/logout">
-                <i class="bi bi-box-arrow-right"></i>
-                <span>Sign Out</span>
-              </a>
-            </li>
-          </ul><!-- End Profile Dropdown Items -->
-        </li><!-- End Profile Nav -->
-
-      </ul>
-    </nav><!-- End Icons Navigation -->
-
-  </header><!-- End Header -->
+<%- include('partials/title') %>
 
 <%- include('partials/header') %>
 
-<!-- ======= Main Content ======= -->
 <main id="main" class="main">
+  <div class="pagetitle d-flex justify-content-between align-items-center">
+    <h1>Family System Report</h1>
+    <button onclick="window.print()" class="btn btn-primary">
+      <i class="bi bi-printer"></i> Print Report
+    </button>
+  </div>
 
-<div class="pagetitle d-flex justify-content-between align-items-center">
-  <h1>Family System Report</h1>
+  <section class="section">
+    <div id="printArea">
+      <div class="row">
 
-  <!-- Print Button -->
-  <button onclick="printReport()" class="btn btn-primary">
-    <i class="bi bi-printer"></i> Print Report
-  </button>
-</div>
+        <div class="col-xxl-4 col-md-6">
+          <div class="card info-card">
+            <div class="card-body">
+              <h5 class="card-title">Total Members</h5>
+              <div class="d-flex align-items-center">
+                <div class="card-icon rounded-circle d-flex align-items-center justify-content-center bg-success text-white">
+                  <i class="bi bi-people"></i>
+                </div>
+                <div class="ps-3">
+                  <h6><%= stats.total_members %></h6>
+                  <span class="text-muted small">Registered Members</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-<section class="section">
+        <div class="col-xxl-4 col-md-6">
+          <div class="card info-card">
+            <div class="card-body">
+              <h5 class="card-title">Total Payments</h5>
+              <div class="d-flex align-items-center">
+                <div class="card-icon rounded-circle d-flex align-items-center justify-content-center bg-warning text-white">
+                  <i class="bi bi-cash-stack"></i>
+                </div>
+                <div class="ps-3">
+                  <h6><%= (stats.total_payments || 0).toLocaleString() %> TZS</h6>
+                  <span class="text-muted small">Total Collection</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-<!-- Printable Area -->
-<div id="printArea">
+        <div class="col-xxl-4 col-md-6">
+          <div class="card info-card">
+            <div class="card-body">
+              <h5 class="card-title">Total Meetings</h5>
+              <div class="d-flex align-items-center">
+                <div class="card-icon rounded-circle d-flex align-items-center justify-content-center bg-info text-white">
+                  <i class="bi bi-calendar-event"></i>
+                </div>
+                <div class="ps-3">
+                  <h6><%= stats.total_meetings || 0 %></h6>
+                  <span class="text-muted small">Meetings Held</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-<div class="row">
+        <div class="col-12 mt-4">
+          <div class="card overflow-auto">
+            <div class="card-body">
+              <h5 class="card-title">Member Activity Report</h5>
+              <table class="table table-striped table-bordered">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Full Name</th>
+                    <th>Role</th>
+                    <th>Files Uploaded</th>
+                    <th>Total Contributed</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% if (tableData && tableData.length > 0) { %>
+                    <% tableData.forEach((row, index) => { %>
+                    <tr>
+                      <td><%= index + 1 %></td>
+                      <td><%= row.first_name %> <%= row.last_name %></td>
+                      <td><span class="badge bg-light text-dark border"><%= row.role %></span></td>
+                      <td><%= row.files_count %></td>
+                      <td><%= (row.member_paid || 0).toLocaleString() %> TZS</td>
+                    </tr>
+                    <% }) %>
+                  <% } else { %>
+                    <tr>
+                      <td colspan="5" class="text-center">Hakuna data inayopatikana.</td>
+                    </tr>
+                  <% } %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
 
-<!-- ===== Stat Cards ===== -->
-
-<div class="col-xxl-3 col-md-6">
-<div class="card info-card">
-<div class="card-body">
-
-<h5 class="card-title">Total Families</h5>
-
-<div class="d-flex align-items-center">
-
-<div class="card-icon rounded-circle d-flex align-items-center justify-content-center bg-primary text-white">
-<i class="bi bi-house"></i>
-</div>
-
-<div class="ps-3">
-<h6>12</h6>
-<span class="text-muted small">Families Registered</span>
-</div>
-
-</div>
-</div>
-</div>
-</div>
-
-<div class="col-xxl-3 col-md-6">
-<div class="card info-card">
-<div class="card-body">
-
-<h5 class="card-title">Total Members</h5>
-
-<div class="d-flex align-items-center">
-
-<div class="card-icon rounded-circle d-flex align-items-center justify-content-center bg-success text-white">
-<i class="bi bi-people"></i>
-</div>
-
-<div class="ps-3">
-<h6>45</h6>
-<span class="text-muted small">Adults & Dependents</span>
-</div>
-
-</div>
-</div>
-</div>
-</div>
-
-<div class="col-xxl-3 col-md-6">
-<div class="card info-card">
-<div class="card-body">
-
-<h5 class="card-title">Payments Collected</h5>
-
-<div class="d-flex align-items-center">
-
-<div class="card-icon rounded-circle d-flex align-items-center justify-content-center bg-warning text-white">
-<i class="bi bi-currency-dollar"></i>
-</div>
-
-<div class="ps-3">
-<h6>$1020</h6>
-<span class="text-muted small">Total Paid</span>
-</div>
-
-</div>
-</div>
-</div>
-</div>
-
-<div class="col-xxl-3 col-md-6">
-<div class="card info-card">
-<div class="card-body">
-
-<h5 class="card-title">Meetings Scheduled</h5>
-
-<div class="d-flex align-items-center">
-
-<div class="card-icon rounded-circle d-flex align-items-center justify-content-center bg-info text-white">
-<i class="bi bi-calendar-event"></i>
-</div>
-
-<div class="ps-3">
-<h6>8</h6>
-<span class="text-muted small">Upcoming / Completed</span>
-</div>
-
-</div>
-</div>
-</div>
-</div>
-
-<!-- ===== Charts ===== -->
-
-<div class="col-12 mt-4">
-<div class="card">
-
-<div class="card-body">
-<h5 class="card-title">Family Members Age Distribution</h5>
-
-<canvas id="ageReportChart" style="max-height:400px;"></canvas>
-
-</div>
-</div>
-</div>
-
-<div class="col-12 mt-4">
-<div class="card">
-
-<div class="card-body">
-<h5 class="card-title">Payment Status Overview</h5>
-
-<canvas id="paymentReportChart" style="max-height:400px;"></canvas>
-
-</div>
-</div>
-</div>
-
-<!-- ===== Table ===== -->
-
-<div class="col-12 mt-4">
-<div class="card recent-sales overflow-auto">
-
-<div class="card-body">
-
-<h5 class="card-title">Detailed Family Report</h5>
-
-<table id="familyReportTable"
-class="table table-striped table-bordered dt-responsive nowrap"
-style="width:100%">
-
-<thead>
-
-<tr>
-<th>#</th>
-<th>Family Name</th>
-<th>Members</th>
-<th>Adults</th>
-<th>Dependents</th>
-<th>Total Payment</th>
-<th>Last Payment</th>
-<th>Meetings Attended</th>
-</tr>
-
-</thead>
-
-<tbody>
-
-<tr>
-<td>1</td>
-<td>Mwalimu Family</td>
-<td>8</td>
-<td>5</td>
-<td>3</td>
-<td>$200</td>
-<td>2026-01-15</td>
-<td>2</td>
-</tr>
-
-<tr>
-<td>2</td>
-<td>Salum Family</td>
-<td>5</td>
-<td>3</td>
-<td>2</td>
-<td>$150</td>
-<td>2026-01-10</td>
-<td>1</td>
-</tr>
-
-<tr>
-<td>3</td>
-<td>Omary Family</td>
-<td>7</td>
-<td>4</td>
-<td>3</td>
-<td>$250</td>
-<td>2026-01-12</td>
-<td>3</td>
-</tr>
-
-</tbody>
-
-</table>
-
-</div>
-</div>
-</div>
-
-</div>
-</div>
-
-</section>
+      </div>
+    </div>
+  </section>
 </main>
+
+<style>
+/* CSS ya kusaidia Print ionekane vizuri */
+@media print {
+  .sidebar, .header, .btn, .pagetitle h1 {
+    display: none !important;
+  }
+  #main {
+    margin-left: 0 !important;
+    padding: 0 !important;
+  }
+  .card {
+    border: 1px solid #ddd !important;
+    box-shadow: none !important;
+  }
+}
+</style>
 
 <!-- Google Translate Element -->
 <div id="google_translate_element" style="visibility: hidden; position: absolute; z-index: -1;"></div>
