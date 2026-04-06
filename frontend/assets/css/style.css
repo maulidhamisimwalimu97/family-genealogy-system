@@ -1979,3 +1979,5 @@ iframe[src*="translate.google.com"] { display: none !important; }
     .chat-scroll { height: 75vh !important; }
     .msg-bubble { max-width: 92% !important; }
   }
+
+  

@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+
+  <title>List of Contributors</title>
+  <meta content="Family Admin Panel for managing family genealogy records" name="description">
+  <meta content="family, genealogy, admin, lineage" name="keywords">
+
+  <link href="https://fonts.gstatic.com" rel="preconnect">
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Nunito:300,300i,400,400i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
+
+  <link href="/assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+  <link href="/assets/vendor/boxicons/css/boxicons.min.css" rel="stylesheet">
+  <link href="/assets/vendor/quill/quill.snow.css" rel="stylesheet">
+  <link href="/assets/vendor/quill/quill.bubble.css" rel="stylesheet">
+  <link href="/assets/vendor/remixicon/remixicon.css" rel="stylesheet">
+  <link href="/assets/vendor/simple-datatables/style.css" rel="stylesheet">
+
+  <link href="/assets/css/style.css" rel="stylesheet">
+  <link href="/assets/css/dark.css" rel="stylesheet">
+
+  <style>
+    .form-control:focus, .form-select:focus {
+      border-color: #4154f1;
+      box-shadow: 0 0 0 0.2rem rgba(65, 84, 241, 0.1);
+    }
+    .form-label {
+      font-size: 0.9rem;
+      color: #444;
+    }
+    .progress {
+      border-radius: 10px;
+      background-color: #f0f0f0;
+    }
+  </style>
+</head>
+
+<body>
+
+  <%- include('partials/title') %>
+  <%- include('partials/header') %>
+
+<main id="main" class="main">
+  <div class="pagetitle">
+    <h1>Contributors List</h1>
+  </div>
+
+  <section class="section">
+    <div class="card">
+      <div class="card-body">
+        <div style="overflow-x:auto;">
+          <table id="contributorsTable" class="table table-striped table-bordered nowrap" style="width:100%">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Contributor Name</th>
+                <th>Event</th>
+                <th>Amount Paid</th>
+                <th>Status</th>
+                <th>Date / Pledge Date</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% contributors.forEach((c, index) => { %>
+                <tr>
+                  <td><%= index + 1 %></td>
+                  <td><%= c.first_name %> <%= c.last_name %></td>
+                  <td><%= c.event_title %></td>
+                  <td><%= (c.total_paid || 0).toLocaleString() %> TZS</td>
+                  <td>
+                    <% if (c.status === 'paid') { %>
+                      <span class="badge bg-success">Paid</span>
+                    <% } else if (c.status === 'partial') { %>
+                      <span class="badge bg-warning text-dark">Partial</span>
+                    <% } else { %>
+                      <span class="badge bg-warning text-dark">Pledge</span>
+                    <% } %>
+                  </td>
+                  <td>
+                    <% if (c.last_payment_date) { %>
+                      <%= new Date(c.last_payment_date).toISOString().slice(0,10) %>
+                    <% } else { %>
+                      <%= c.pledge_notes || 'Ahadi' %>
+                    <% } %>
+                  </td>
+                  <td>
+                    <% if (c.status !== 'paid') { %>
+                      <button class="btn btn-sm btn-primary send-sms" 
+                              data-member="<%= c.member_id %>" 
+                              data-event="<%= c.event_id %>">
+                        🔔 Reminder
+                      </button>
+                    <% } %>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+  <!-- Google Translate Element -->
+<div id="google_translate_element" style="visibility: hidden; position: absolute; z-index: -1;"></div>
+
+<script>
+function googleTranslateElementInit() {
+  new google.translate.TranslateElement({
+    pageLanguage: 'en',
+    includedLanguages: 'en,sw',
+    autoDisplay: false
+  }, 'google_translate_element');
+
+  var savedLang = localStorage.getItem("selectedLanguage");
+  if (savedLang) {
+    setTimeout(function () {
+      setLanguage(savedLang);
+    }, 800);
+  }
+}
+
+function changeLanguage(lang) {
+  localStorage.setItem("selectedLanguage", lang);
+  setLanguage(lang);
+}
+
+function setLanguage(lang) {
+  var select = document.querySelector(".goog-te-combo");
+  if (select) {
+    select.value = lang;
+    select.dispatchEvent(new Event("change"));
+  } else {
+    setTimeout(function () {
+      setLanguage(lang);
+    }, 300);
+  }
+}
+</script>
+
+
+  <footer id="footer" class="footer">
+    <div class="copyright">
+        &copy; Copyright <strong><span>Family Genealogy System</span></strong>. All Rights Reserved
+    </div>
+    <div class="credits">
+        Developed by <strong>Maulid Mwalimu</strong>
+    </div>
+  </footer>
+
+  <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+<script>
+  // Toggle field ya mchango
+  function toggleContributionField() {
+    const isChecked = document.getElementById('hasContribution').checked;
+    const field = document.getElementById('contributionField');
+    field.style.display = isChecked ? 'block' : 'none';
+  }
+
+  // Update theme kulingana na tukio
+  function updateEventTheme() {
+    const type = document.getElementById('eventType').value;
+    const submitBtn = document.getElementById('submitBtn');
+
+    if (type === 'msiba') {
+      submitBtn.className = 'btn btn-danger px-5 shadow';
+      alert("Tahadhari: Ukichagua MSIBA, mfumo utatuma SMS ya dharura kwa familia.");
+    } else if (type === 'sherehe') {
+      submitBtn.className = 'btn btn-success px-5 shadow';
+    } else {
+      submitBtn.className = 'btn btn-primary px-5 shadow';
+    }
+  }
+</script>
+<!-- Vendor JS Files -->
+<script src="/assets/vendor/apexcharts/apexcharts.min.js"></script>
+<script src="/assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="/assets/vendor/chart.js/chart.umd.js"></script>
+<script src="/assets/vendor/echarts/echarts.min.js"></script>
+<script src="/assets/vendor/quill/quill.js"></script>
+<!-- Removed simple-datatables.js to avoid conflict with jQuery DataTables -->
+<script src="/assets/vendor/tinymce/tinymce.min.js"></script>
+<script src="/assets/vendor/php-email-form/validate.js"></script>
+<script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+<!-- Include jQuery first -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Include DataTables CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css">
+
+<!-- Include DataTables JS -->
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+
+<!-- Initialize DataTables -->
+<script>
+$(document).ready(function() {
+  $('#contributorsTable').DataTable({
+    responsive: true,
+    paging: true,
+    pageLength: 10,
+    searching: true,
+    scrollY: '400px',
+    scrollCollapse: true,
+    scroller: true,
+    order: [[5, 'desc']],
+    language: {
+      search: "Search:",
+      lengthMenu: "Show _MENU_ entries"
+    }
+  });
+
+  // Send SMS Reminder via /send_reminder_sms
+  $('.send-sms').click(function() {
+    const memberId = $(this).data('member');
+    const eventId = $(this).data('event');
+
+    $.post('/send_reminder_sms', { memberId, eventId }, function(res) {
+      alert(res.message || 'Reminder sent!');
+    }).fail(function() {
+      alert('Failed to send SMS reminder.');
+    });
+  });
+});
+</script>
+<!-- Main JS File -->
+<script src="/assets/js/main.js"></script>
+
+</body>
+</html>

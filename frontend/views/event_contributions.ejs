@@ -40,14 +40,12 @@
 <main id="main" class="main">
   <div class="pagetitle">
     <h1>Event Contributions & Pledges</h1>
-    <p class="text-muted">Changia au weka ahadi kwa ajili ya matukio ya familia (Misiba, Sherehe, nk.)</p>
   </div>
 
   <section class="section">
     <%- include('partials/notifications') %>
-    
     <div class="row">
-      <% contributions.forEach(event => { %>
+      <% currentEvents.forEach(event => { %>
         <div class="col-lg-6">
           <div class="card shadow-sm border-0 mb-4">
             <div class="card-body p-4">
@@ -91,6 +89,7 @@
           </div>
         </div>
 
+        <!-- Payment Modal -->
         <div class="modal fade" id="payModal<%= event.event_id %>" tabindex="-1">
           <div class="modal-dialog">
             <form action="/submit_contribution" method="POST" class="modal-content">
@@ -119,6 +118,7 @@
           </div>
         </div>
 
+        <!-- Pledge Modal -->
         <div class="modal fade" id="pledgeModal<%= event.event_id %>" tabindex="-1">
           <div class="modal-dialog">
             <form action="/submit_contribution" method="POST" class="modal-content">
@@ -147,7 +147,8 @@
         </div>
       <% }) %>
     </div>
-  </section>
+
+     </section>
 </main>
 
 <script>
@@ -174,40 +175,6 @@
   }
 </script>
 
-<style>
-  .form-control:focus, .form-select:focus {
-    border-color: #4154f1;
-    box-shadow: 0 0 0 0.2rem rgba(65, 84, 241, 0.1);
-  }
-  .form-label {
-    font-size: 0.9rem;
-    color: #444;
-  }
-</style>
-
-<style>
-  /* CSS kwa ajili ya Muonekano Bora */
-  .event-card {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-  }
-  .event-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
-  }
-  .text-truncate-2 {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;  
-    overflow: hidden;
-  }
-  .x-small {
-    font-size: 0.75rem;
-  }
-  .progress {
-    border-radius: 10px;
-    background-color: #f0f0f0;
-  }
-</style>
 
 <!-- Google Translate Element -->
 <div id="google_translate_element" style="visibility: hidden; position: absolute; z-index: -1;"></div>

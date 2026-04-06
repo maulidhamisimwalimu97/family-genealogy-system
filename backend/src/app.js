@@ -1658,48 +1658,65 @@ app.post('/send-reminder', async (req, res) => {
 app.get('/events', (req, res) => {
     const memberId = req.session.member_id;
     const familyId = req.session.family_id;
-    const filterType = req.query.type; // Inasoma kama ni 'emergency' au kawaida
+    const filterType = req.query.type;
 
     if (!memberId || !familyId) return res.redirect('/index');
 
+    // 1️⃣ Fetch profile
     const profileQuery = `SELECT first_name, last_name, role FROM family_member WHERE member_id = ? LIMIT 1`;
-    const notificationsQuery = `SELECT 'meeting' AS type, title, created_at FROM meeting WHERE family_id = ? ORDER BY created_at DESC LIMIT 5`;
 
-    // 1. Vuta Events (Kama kuna filter ya emergency, leta msiba pekee)
-    let eventSql = `SELECT e.*, m.first_name as creator_name 
-                    FROM family_event e 
-                    JOIN family_member m ON e.created_by = m.member_id 
-                    WHERE e.family_id = ?`;
-    
+    // 2️⃣ Fetch notifications from meetings
+    const notificationsQuery = `
+        SELECT 'meeting' AS type, title, created_at
+        FROM meeting
+        WHERE family_id = ?
+        ORDER BY created_at DESC
+        LIMIT 5
+    `;
+
+    // 3️⃣ Fetch events
+    let eventSql = `
+        SELECT e.*, m.first_name AS creator_name
+        FROM family_event e
+        LEFT JOIN family_member m ON e.created_by = m.member_id
+        WHERE e.family_id = ?
+    `;
+    let queryParams = [familyId];
     if (filterType === 'emergency') {
         eventSql += ` AND e.event_type = 'msiba'`;
     }
     eventSql += ` ORDER BY e.event_date ASC`;
 
-    // 2. Smart Stats kwa ajili ya Sidebar Badges
+    // 4️⃣ Badge counts
     const badgeQuery = `
-        SELECT 
-            (SELECT COUNT(*) FROM family_event WHERE family_id = ? AND event_date >= CURDATE()) as activeEventsCount,
-            (SELECT COUNT(*) FROM family_event WHERE family_id = ? AND has_contribution = 1 AND event_id NOT IN (
-                SELECT event_id FROM payment WHERE recorded_by = ? AND payment_type = 'event'
-            )) as pendingPayments`;
+        SELECT
+            (SELECT COUNT(*) FROM family_event WHERE family_id = ? AND event_date >= CURDATE()) AS activeEventsCount,
+            (SELECT COUNT(*) FROM family_event WHERE family_id = ? AND has_contribution = 1) AS pendingPayments
+    `;
 
-    db.query(profileQuery, [memberId], (err, profile) => {
+    // Execute queries
+    db.query(profileQuery, [memberId], (err, profileResult) => {
+        if (err) return res.status(500).send("Database Error (Profile)");
+
         db.query(notificationsQuery, [familyId], (err2, notifications) => {
-            db.query(badgeQuery, [familyId, familyId, memberId], (err3, badgeData) => {
-                db.query(eventSql, [familyId], (err4, events) => {
-                    
+            if (err2) console.error("Notifications Query Error:", err2);
+
+            db.query(badgeQuery, [familyId, familyId], (err3, badgeData) => {
+                if (err3) console.error("Badge Query Error:", err3);
+
+                db.query(eventSql, queryParams, (err4, events) => {
+                    if (err4) return res.status(500).send("Events Query Error");
+
                     const badges = badgeData[0] || { activeEventsCount: 0, pendingPayments: 0 };
 
                     res.render('events', {
-                        profile: profile[0] || { first_name: 'User' },
-                        notifications: notifications || [],
-                        totalNotifications: notifications.length,
+                        profile: profileResult[0] || { first_name: 'Member', role: 'member' },
+                        notifications: notifications || [],          // ✅ Notifications from meetings
+                        totalNotifications: (notifications || []).length,
                         events: events || [],
                         activeEventsCount: badges.activeEventsCount,
                         pendingPayments: badges.pendingPayments,
-                        filterType,
-                        memberId
+                        filterType: filterType || 'all'
                     });
                 });
             });
@@ -1707,24 +1724,252 @@ app.get('/events', (req, res) => {
     });
 });
 
-// A. GET: Onyesha Ukurasa wa Kuunda Event
+app.get('/events', (req, res) => {
+    const memberId = req.session.member_id;
+    const familyId = req.session.family_id;
+    const filterType = req.query.type;
+
+    if (!memberId || !familyId) return res.redirect('/index');
+
+    // 1️⃣ Fetch profile
+    const profileQuery = `SELECT first_name, last_name, role FROM family_member WHERE member_id = ? LIMIT 1`;
+
+    // 2️⃣ Fetch notifications from meetings
+    const notificationsQuery = `
+        SELECT 'meeting' AS type, title, created_at
+        FROM meeting
+        WHERE family_id = ?
+        ORDER BY created_at DESC
+        LIMIT 5
+    `;
+
+    // 3️⃣ Fetch events
+    let eventSql = `
+        SELECT e.*, m.first_name AS creator_name
+        FROM family_event e
+        LEFT JOIN family_member m ON e.created_by = m.member_id
+        WHERE e.family_id = ?
+    `;
+    let queryParams = [familyId];
+    if (filterType === 'emergency') {
+        eventSql += ` AND e.event_type = 'msiba'`;
+    }
+    eventSql += ` ORDER BY e.event_date ASC`;
+
+    // 4️⃣ Badge counts
+    const badgeQuery = `
+        SELECT
+            (SELECT COUNT(*) FROM family_event WHERE family_id = ? AND event_date >= CURDATE()) AS activeEventsCount,
+            (SELECT COUNT(*) FROM family_event WHERE family_id = ? AND has_contribution = 1) AS pendingPayments
+    `;
+
+    // Execute queries
+    db.query(profileQuery, [memberId], (err, profileResult) => {
+        if (err) return res.status(500).send("Database Error (Profile)");
+
+        db.query(notificationsQuery, [familyId], (err2, notifications) => {
+            if (err2) console.error("Notifications Query Error:", err2);
+
+            db.query(badgeQuery, [familyId, familyId], (err3, badgeData) => {
+                if (err3) console.error("Badge Query Error:", err3);
+
+                db.query(eventSql, queryParams, (err4, events) => {
+                    if (err4) return res.status(500).send("Events Query Error");
+
+                    const badges = badgeData[0] || { activeEventsCount: 0, pendingPayments: 0 };
+
+                    res.render('events', {
+                        profile: profileResult[0] || { first_name: 'Member', role: 'member' },
+                        notifications: notifications || [],          // ✅ Notifications from meetings
+                        totalNotifications: (notifications || []).length,
+                        events: events || [],
+                        activeEventsCount: badges.activeEventsCount,
+                        pendingPayments: badges.pendingPayments,
+                        filterType: filterType || 'all'
+                    });
+                });
+            });
+        });
+    });
+});
+
+
 app.get('/create_event', (req, res) => {
     const memberId = req.session.member_id;
     const familyId = req.session.family_id;
 
     if (!memberId || !familyId) return res.redirect('/index');
 
+    // 1️⃣ Profile
     const profileQuery = `SELECT first_name, last_name, role FROM family_member WHERE member_id = ? LIMIT 1`;
-    
-    db.query(profileQuery, [memberId], (err, profile) => {
-        res.render('create_event', {
-            profile: profile[0],
-            notifications: [], // Ongeza notifications hapa kama kawaida
-            totalNotifications: 0,
-            activeEventsCount: 0, // Unaweza kuvuta hizi pia kama unataka sidebar badges ziwepo hapa
-            pendingPayments: 0
+
+    // 2️⃣ Notifications from meeting table
+    const notificationsQuery = `
+        SELECT 'meeting' AS type, title, created_at
+        FROM meeting
+        WHERE family_id = ?
+        ORDER BY created_at DESC
+        LIMIT 5
+    `;
+
+    // 3️⃣ Badge counts
+    const badgeQuery = `
+        SELECT
+            (SELECT COUNT(*) FROM family_event WHERE family_id = ? AND event_date >= CURDATE()) AS activeEventsCount,
+            (SELECT COUNT(*) FROM family_event WHERE family_id = ? AND has_contribution = 1) AS pendingPayments
+    `;
+
+    // Execute queries
+    db.query(profileQuery, [memberId], (err, profileResult) => {
+        if (err) return res.status(500).send("Database Error (Profile)");
+
+        db.query(notificationsQuery, [familyId], (err2, notifications) => {
+            if (err2) console.error("Notifications Query Error:", err2);
+
+            db.query(badgeQuery, [familyId, familyId], (err3, badgeData) => {
+                if (err3) console.error("Badge Query Error:", err3);
+
+                const badges = badgeData[0] || { activeEventsCount: 0, pendingPayments: 0 };
+
+                res.render('create_event', {
+                    profile: profileResult[0] || { first_name: 'Member', role: 'member' },
+                    notifications: notifications || [],
+                    totalNotifications: (notifications || []).length,
+                    activeEventsCount: badges.activeEventsCount,
+                    pendingPayments: badges.pendingPayments
+                });
+            });
         });
     });
+});
+
+app.get('/lists', (req, res) => {
+  const familyId = req.session.family_id;
+  const memberId = req.session.member_id;
+
+  if (!familyId || !memberId) return res.redirect('/index');
+
+  // --- 1. Profile of logged-in user ---
+  const profileQuery = `SELECT first_name, last_name, role FROM family_member WHERE member_id = ? LIMIT 1`;
+
+  // --- 2. Recent notifications (e.g., meetings/events) ---
+  const notificationsQuery = `
+    SELECT 'meeting' AS type, title, created_at 
+    FROM meeting 
+    WHERE family_id = ? 
+    ORDER BY created_at DESC 
+    LIMIT 5
+  `;
+
+  // --- 3. Contributors (aggregated payments) ---
+  const contributorsQuery = `
+    SELECT 
+      m.member_id,
+      m.first_name,
+      m.last_name,
+      e.event_id,
+      e.title AS event_title,
+      e.event_type,
+      e.target_amount,
+      SUM(CASE WHEN p.status = 'paid' THEN p.amount ELSE 0 END) AS total_paid,
+      SUM(CASE WHEN p.status = 'pledge' THEN p.amount ELSE 0 END) AS total_pledge,
+      MAX(p.payment_date) AS last_payment_date,
+      GROUP_CONCAT(CASE WHEN p.status = 'pledge' THEN p.note END SEPARATOR ', ') AS pledge_notes
+    FROM payment p
+    JOIN family_member m ON p.recorded_by = m.member_id
+    JOIN family_event e ON p.event_id = e.event_id
+    WHERE p.family_id = ?
+    GROUP BY m.member_id, e.event_id
+    ORDER BY last_payment_date DESC
+  `;
+
+  db.query(profileQuery, [memberId], (err, profileRows) => {
+    if (err) return res.status(500).send("Error fetching profile");
+
+    const profile = profileRows[0] || { first_name: 'User', role: 'member' };
+
+    db.query(notificationsQuery, [familyId], (err2, notifications) => {
+      if (err2) notifications = [];
+
+      db.query(contributorsQuery, [familyId], (err3, contributors) => {
+        if (err3) contributors = [];
+
+        // Compute contributor status and remaining amount
+        const updatedContributors = contributors.map(c => {
+          let status = '';
+          if (c.total_paid >= c.target_amount) status = 'paid';
+          else if (c.total_paid > 0 && (c.total_paid + c.total_pledge) >= c.target_amount) status = 'partial';
+          else status = 'pledge';
+
+          return {
+            ...c,
+            status,
+            remaining_amount: c.target_amount - c.total_paid
+          };
+        });
+
+        res.render('lists', {
+          profile,
+          notifications: notifications || [],
+          totalNotifications: notifications ? notifications.length : 0,
+          contributors: updatedContributors || []
+        });
+      });
+    });
+  });
+});
+
+
+app.post('/send_reminder_sms', (req, res) => {
+  const { memberId, eventId } = req.body;
+
+  if (!memberId || !eventId) return res.status(400).json({ message: 'Missing member or event ID' });
+
+  // Get member info and event info
+  const sql = `
+    SELECT m.phone, m.first_name, e.title AS event_title, e.target_amount,
+           SUM(CASE WHEN p.status='paid' THEN p.amount ELSE 0 END) AS total_paid
+    FROM family_member m
+    JOIN payment p ON p.recorded_by = m.member_id AND p.event_id = ?
+    JOIN family_event e ON e.event_id = p.event_id
+    WHERE m.member_id = ?
+    GROUP BY m.member_id, e.event_id
+  `;
+
+  db.query(sql, [eventId, memberId], (err, rows) => {
+    if (err || rows.length === 0) {
+      console.error('Error fetching member/event data:', err);
+      return res.status(500).json({ message: 'Error fetching data' });
+    }
+
+    const member = rows[0];
+    const remaining = member.target_amount - (member.total_paid || 0);
+
+    const smsMessage = `Habari ${member.first_name}, bado umeacha kutoa mchango wa ${remaining} TZS kwa tukio: ${member.event_title}. Tafadhali malizia ahadi yako.`;
+
+    // --- Send SMS via TegaSMS ---
+    const smsData = {
+      from: "FamilyHub",
+      recipient: member.phone,
+      message: smsMessage,
+      channel: "1010105"
+    };
+
+    axios.post('https://tegasms.teganas.co.tz/api/v1/send_sms/type/single', smsData, {
+      headers: {
+        'Authorization': `Bearer ${apiToken}`,
+        'Content-Type': 'application/json'
+      }
+    })
+    .then(response => {
+      console.log(`SMS sent to ${member.phone}:`, response.data);
+      res.json({ message: 'SMS reminder sent successfully!' });
+    })
+    .catch(error => {
+      console.error(`SMS Error for ${member.phone}:`, error.response ? error.response.data : error.message);
+      res.status(500).json({ message: 'Failed to send SMS reminder.' });
+    });
+  });
 });
 
 // B. POST: Hifadhi Event Mpya na Tuma SMS kupitia TegaSMS kama ni ya Dharura (Msiba)
@@ -1808,25 +2053,34 @@ Umoja ni Nguvu.`;
 app.get('/event_contributions', (req, res) => {
     const memberId = req.session.member_id;
     const familyId = req.session.family_id;
-
     if (!memberId || !familyId) return res.redirect('/index');
 
-    // 1. Query ya Profile ya mtumiaji
     const profileQuery = `SELECT first_name, last_name, role FROM family_member WHERE member_id = ? LIMIT 1`;
-    
-    // 2. Query ya Notifications (kama unavyotumia kwenye kurasa zingine)
     const notificationsQuery = `SELECT 'meeting' AS type, title, created_at FROM meeting WHERE family_id = ? ORDER BY created_at DESC LIMIT 5`;
 
-    // 3. Query ya Michango (Pamoja na Logic ya Paid/Pledge)
-    // Hakikisha umeongeza column ya 'status' kwenye table ya payment kwanza!
-    const eventQuery = `
+    // Current Events: contribution still open (3 days after event_date)
+    const currentEventQuery = `
         SELECT e.*, 
         (SELECT SUM(amount) FROM payment WHERE event_id = e.event_id AND status = 'paid') as collected_amount,
         (SELECT amount FROM payment WHERE event_id = e.event_id AND recorded_by = ? AND status = 'paid' LIMIT 1) as my_paid_amount,
         (SELECT amount FROM payment WHERE event_id = e.event_id AND recorded_by = ? AND status = 'pledge' LIMIT 1) as my_pledge_amount
-        FROM family_event e 
-        WHERE e.family_id = ? AND e.has_contribution = 1 
-        ORDER BY e.event_date DESC`;
+        FROM family_event e
+        WHERE e.family_id = ? AND e.has_contribution = 1
+          AND CURDATE() <= DATE_ADD(e.event_date, INTERVAL 3 DAY)
+        ORDER BY e.event_date DESC
+    `;
+
+    // Previous Events: contribution closed
+    const previousEventQuery = `
+        SELECT e.*, 
+        (SELECT SUM(amount) FROM payment WHERE event_id = e.event_id AND status = 'paid') as collected_amount,
+        (SELECT amount FROM payment WHERE event_id = e.event_id AND recorded_by = ? AND status = 'paid' LIMIT 1) as my_paid_amount,
+        (SELECT amount FROM payment WHERE event_id = e.event_id AND recorded_by = ? AND status = 'pledge' LIMIT 1) as my_pledge_amount
+        FROM family_event e
+        WHERE e.family_id = ? AND e.has_contribution = 1
+          AND CURDATE() > DATE_ADD(e.event_date, INTERVAL 3 DAY)
+        ORDER BY e.event_date DESC
+    `;
 
     db.query(profileQuery, [memberId], (err, profile) => {
         if (err) return res.status(500).send("Database Error (Profile)");
@@ -1834,30 +2088,18 @@ app.get('/event_contributions', (req, res) => {
         db.query(notificationsQuery, [familyId], (err2, notifications) => {
             if (err2) console.error("Notification Error:", err2);
 
-            db.query(eventQuery, [memberId, memberId, familyId], (err3, contributions) => {
-                if (err3) {
-                    console.error("Event Query Error:", err3);
-                    // Kama bado hujaongeza column ya 'status', hapa ndipo itafeli
-                }
+            db.query(currentEventQuery, [memberId, memberId, familyId], (errCurrent, currentEvents) => {
+                if (errCurrent) console.error("Current Event Error:", errCurrent);
 
-                // Vuta counts kwa ajili ya sidebar badges (Smart Logic)
-                const badgeQuery = `
-                    SELECT 
-                    (SELECT COUNT(*) FROM family_event WHERE family_id = ? AND event_date >= CURDATE()) as activeEventsCount,
-                    (SELECT COUNT(*) FROM family_event WHERE family_id = ? AND has_contribution = 1 AND event_id NOT IN (
-                        SELECT event_id FROM payment WHERE recorded_by = ? AND status = 'paid'
-                    )) as pendingPaymentsCount`;
-
-                db.query(badgeQuery, [familyId, familyId, memberId], (err4, badgeData) => {
-                    const badges = badgeData ? badgeData[0] : { activeEventsCount: 0, pendingPaymentsCount: 0 };
+                db.query(previousEventQuery, [memberId, memberId, familyId], (errPrev, previousEvents) => {
+                    if (errPrev) console.error("Previous Event Error:", errPrev);
 
                     res.render('event_contributions', {
                         profile: profile[0] || { first_name: 'User', role: 'member' },
                         notifications: notifications || [],
                         totalNotifications: notifications ? notifications.length : 0,
-                        contributions: contributions || [],
-                        activeEventsCount: badges.activeEventsCount,
-                        pendingPayments: badges.pendingPaymentsCount,
+                        currentEvents: currentEvents || [],
+                        previousEvents: previousEvents || [],
                         memberId
                     });
                 });
