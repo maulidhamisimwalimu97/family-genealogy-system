@@ -15,7 +15,6 @@ function formatPhone(phone) {
   let p = phone.trim();
   if (p.startsWith('+')) p = p.slice(1);
   if (p.startsWith('0')) p = '255' + p.slice(1);
-  // Ensure it starts with 255
   if (!p.startsWith('255')) p = '255' + p;
   return p;
 }
@@ -23,21 +22,12 @@ function formatPhone(phone) {
 const multer = require('multer');
 
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        // '../' inarudi nyuma kutoka 'src' kwenda 'backend'
-        // Kisha inaingia kwenye 'public/uploads/drives/'
-        const fullPath = path.join(__dirname, '../public/uploads/drives/');
-        
-        // Hakikisha folder lipo, kama halipo litengeneze
-        if (!fs.existsSync(fullPath)) {
-            fs.mkdirSync(fullPath, { recursive: true });
-        }
-        
-        cb(null, fullPath);
-    },
-    filename: (req, file, cb) => {
-        cb(null, Date.now() + path.extname(file.originalname));
-    }
+  destination: (req, file, cb) => {
+    const fullPath = path.join(__dirname, '../public/uploads/drives/');
+    if (!fs.existsSync(fullPath)) fs.mkdirSync(fullPath, { recursive: true });
+    cb(null, fullPath);
+  },
+  filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname))
 });
 
 const upload = multer({ storage: storage });
@@ -50,83 +40,67 @@ app.set('views', path.join(__dirname, '../../frontend/views'));
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// 1. Ruhusu ufikiaji wa mafaili yaliyopakiwa (Images, PDFs, n.k.)
-// Hii inaunganisha URL ya /uploads na folder halisi la backend/public/uploads
 app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
-
-// 2. Ruhusu ufikiaji wa folder la frontend (HTML, CSS, JS ya kule mbele)
 app.use(express.static(path.join(__dirname, '../../frontend')));
 
-// Global Cache Control (Prevents back-button access after logout)
+// Global Cache Control
 app.use((req, res, next) => {
-    res.set('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
-    next();
+  res.set('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
+  next();
 });
 
 // Session Configuration
 app.use(session({
-    secret: 'secret-key-genealogy', 
-    resave: false,
-    saveUninitialized: false,
-    cookie: { 
-        secure: false, 
-        maxAge: 24 * 60 * 60 * 1000 
-    }
+  secret: 'secret-key-genealogy', 
+  resave: false,
+  saveUninitialized: false,
+  cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 }
 }));
 
-// Global Cache Control (Prevents back-button access after logout)
+// --- 4. AUTHENTICATION / GLOBAL DATA MIDDLEWARE ---
+
+// 4.1 Admin info
 app.use((req, res, next) => {
-    res.set('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
+  const adminId = req.session.adminId;
+  const adminName = req.session.adminName;
+
+  res.locals.adminName = adminName || null;
+  res.locals.familyCount = 0;
+
+  if (!adminId) return next();
+
+  const sql = "SELECT COUNT(*) AS totalFamilies FROM family WHERE registered_by = ?";
+  db.query(sql, [adminId], (err, result) => {
+    if (!err && result.length > 0) res.locals.familyCount = result[0].totalFamilies;
     next();
+  });
 });
 
-// --- 4. AUTHENTICATION ROUTES ---
-
-app.use((req, res, next) => {
-
-    const adminId = req.session.adminId;
-    const adminName = req.session.adminName;
-
-    res.locals.adminName = adminName || null;
-    res.locals.familyCount = 0;
-
-    if (!adminId) return next();
-
-    const sql = "SELECT COUNT(*) AS totalFamilies FROM family WHERE registered_by = ?";
-
-    db.query(sql, [adminId], (err, result) => {
-
-        if (!err && result.length > 0) {
-            res.locals.familyCount = result[0].totalFamilies;
-        }
-
-        next();
-    });
-
-});
-
-// ===== GLOBAL DATA MIDDLEWARE =====
+// 4.2 Profile & Notifications (Global)
 app.use((req, res, next) => {
   const memberId = req.session.member_id;
   const familyId = req.session.family_id;
 
-  // Default values (avoid EJS crash)
-  res.locals.profile = { first_name: 'User', last_name: '', role: '' };
+  // Defaults
+  res.locals.profile = { 
+      first_name: 'User', 
+      last_name: '', 
+      role: '', 
+      is_future_head: 0, 
+      profile_image: '/assets/img/3.png' 
+  };
   res.locals.notifications = [];
   res.locals.totalNotifications = 0;
 
   if (!memberId || !familyId) return next();
 
-  // 🔹 Profile
   const profileQuery = `
-    SELECT first_name, last_name, role
+    SELECT first_name, last_name, role, profile_image, is_future_head
     FROM family_member
     WHERE member_id = ?
     LIMIT 1
   `;
 
-  // 🔹 Notifications
   const notificationsQuery = `
     SELECT title, created_at
     FROM notifications
@@ -137,7 +111,12 @@ app.use((req, res, next) => {
 
   db.query(profileQuery, [memberId], (err, profileResult) => {
     if (!err && profileResult.length > 0) {
-      res.locals.profile = profileResult[0];
+      const user = profileResult[0];
+
+      // If session has profile_image, use it (after update)
+      user.profile_image = req.session.profile_image || (user.profile_image ? user.profile_image + '?' + Date.now() : '/assets/img/3.png');
+      
+      res.locals.profile = user;
     }
 
     db.query(notificationsQuery, [familyId], (err2, notifications) => {
@@ -145,58 +124,59 @@ app.use((req, res, next) => {
         res.locals.notifications = notifications;
         res.locals.totalNotifications = notifications.length;
       }
-
       next();
     });
   });
 });
+
+// --- 5. AUTH CHECK HELPERS ---
+function checkMember(req, res, next) {
+  if (!req.session.member_id) return res.redirect('/');
+  next();
+}
+
+function checkAdmin(req, res, next) {
+  const userType = getUserType(req.session);
+  if (userType !== 'admin') return res.send("Access denied");
+  next();
+}
+
+function getUserType(session) {
+  if (session.role === 'family_admin') return 'admin';
+  if (session.is_future_head == 1) return 'admin';
+  return 'member';
+}
 
 // Login page
 app.get('/index', (req, res) => {
     res.render('index', { error: null });
 });
 
-// Login process
 app.post('/index', (req, res) => {
   const { phone, password } = req.body;
 
-  // 1️⃣ Check system_admin first
   const adminQuery = "SELECT * FROM system_admin WHERE phone = ? LIMIT 1";
 
   db.query(adminQuery, [phone], async (err, adminResult) => {
-    if (err) {
-      console.log(err);
-      return res.render('index', { error: "Server error" });
-    }
+    if (err) return res.render('index', { error: "Server error" });
 
-    // ✅ If found in system_admin
     if (adminResult.length > 0) {
       const admin = adminResult[0];
       const match = await bcrypt.compare(password, admin.password);
 
-      if (!match) {
-        return res.render('index', { error: "Incorrect password" });
-      }
+      if (!match) return res.render('index', { error: "Incorrect password" });
 
-      // Login success (System Admin)
       req.session.adminId = admin.admin_id;
       req.session.adminName = admin.full_name;
 
       return res.redirect('/Admin');
     }
 
-    // 2️⃣ If not system_admin → check family_member (family_admin)
-    const familyQuery = `
-      SELECT * FROM family_member 
-      WHERE phone = ? AND role = 'family_admin' 
-      LIMIT 1
-    `;
+    // 🔹 FAMILY MEMBER
+    const familyQuery = "SELECT * FROM family_member WHERE phone = ? LIMIT 1";
 
     db.query(familyQuery, [phone], async (err, familyResult) => {
-      if (err) {
-        console.log(err);
-        return res.render('index', { error: "Server error" });
-      }
+      if (err) return res.render('index', { error: "Server error" });
 
       if (familyResult.length === 0) {
         return res.render('index', { error: "Phone number not found" });
@@ -205,16 +185,21 @@ app.post('/index', (req, res) => {
       const user = familyResult[0];
       const match = await bcrypt.compare(password, user.password);
 
-      if (!match) {
-        return res.render('index', { error: "Incorrect password" });
-      }
+      if (!match) return res.render('index', { error: "Incorrect password" });
 
-      // ✅ Login success (Family Admin)
+      // ✅ SESSION (IMPORTANT)
       req.session.family_id = user.family_id;
       req.session.member_id = user.member_id;
       req.session.member_name = user.first_name + " " + user.last_name;
+      req.session.role = user.role;
+      req.session.is_future_head = user.is_future_head;
 
-      return res.redirect('/family_admin');
+      // ✅ REDIRECT BASED ON ROLE
+      if (user.role === 'family_admin' || user.is_future_head == 1) {
+        return res.redirect('/family_admin');
+      }
+
+      return res.redirect('/member');
     });
   });
 });
@@ -925,6 +910,11 @@ app.post('/password', async (req, res) => {
 // header.ejs
 app.get('/header', (req, res) => {
   res.render('header'); // Admin
+});
+
+// home.ejs
+app.get('/home', (req, res) => {
+  res.render('home'); // Admin
 });
 
 
@@ -1843,135 +1833,111 @@ app.get('/create_event', (req, res) => {
     });
 });
 
+// Route ya kuonyesha list
 app.get('/lists', (req, res) => {
   const familyId = req.session.family_id;
   const memberId = req.session.member_id;
 
   if (!familyId || !memberId) return res.redirect('/index');
 
-  // --- 1. Profile of logged-in user ---
   const profileQuery = `SELECT first_name, last_name, role FROM family_member WHERE member_id = ? LIMIT 1`;
+  const notificationsQuery = `SELECT 'meeting' AS type, title, created_at FROM meeting WHERE family_id = ? ORDER BY created_at DESC LIMIT 5`;
 
-  // --- 2. Recent notifications (e.g., meetings/events) ---
-  const notificationsQuery = `
-    SELECT 'meeting' AS type, title, created_at 
-    FROM meeting 
-    WHERE family_id = ? 
-    ORDER BY created_at DESC 
-    LIMIT 5
-  `;
-
-  // --- 3. Contributors (aggregated payments) ---
+  // Contributors: include all members, even those without payments or pledges
   const contributorsQuery = `
     SELECT 
-      m.member_id,
-      m.first_name,
-      m.last_name,
-      e.event_id,
-      e.title AS event_title,
-      e.event_type,
-      e.target_amount,
+      m.member_id, m.first_name, m.last_name, m.phone,
+      e.event_id, e.title AS event_title, e.target_amount,
       SUM(CASE WHEN p.status = 'paid' THEN p.amount ELSE 0 END) AS total_paid,
       SUM(CASE WHEN p.status = 'pledge' THEN p.amount ELSE 0 END) AS total_pledge,
       MAX(p.payment_date) AS last_payment_date,
       GROUP_CONCAT(CASE WHEN p.status = 'pledge' THEN p.note END SEPARATOR ', ') AS pledge_notes
-    FROM payment p
-    JOIN family_member m ON p.recorded_by = m.member_id
-    JOIN family_event e ON p.event_id = e.event_id
-    WHERE p.family_id = ?
+    FROM family_member m
+    LEFT JOIN payment p ON p.recorded_by = m.member_id
+    LEFT JOIN family_event e ON 1=1 AND (p.event_id = e.event_id OR e.event_id IS NOT NULL) AND e.family_id = m.family_id
+    WHERE m.family_id = ?
     GROUP BY m.member_id, e.event_id
     ORDER BY last_payment_date DESC
   `;
 
   db.query(profileQuery, [memberId], (err, profileRows) => {
-    if (err) return res.status(500).send("Error fetching profile");
-
     const profile = profileRows[0] || { first_name: 'User', role: 'member' };
-
     db.query(notificationsQuery, [familyId], (err2, notifications) => {
-      if (err2) notifications = [];
-
       db.query(contributorsQuery, [familyId], (err3, contributors) => {
-        if (err3) contributors = [];
+        const updatedContributors = (contributors || []).map(c => {
+          let status = 'unpaid'; // default
 
-        // Compute contributor status and remaining amount
-        const updatedContributors = contributors.map(c => {
-          let status = '';
-          if (c.total_paid >= c.target_amount) status = 'paid';
-          else if (c.total_paid > 0 && (c.total_paid + c.total_pledge) >= c.target_amount) status = 'partial';
-          else status = 'pledge';
+          if (c.total_paid >= (c.target_amount || 0) && (c.target_amount || 0) > 0) status = 'paid';
+          else if (c.total_paid > 0) status = 'partial';
+          // Remains 'unpaid' if total_paid = 0 AND no pledge_notes
 
-          return {
-            ...c,
-            status,
-            remaining_amount: c.target_amount - c.total_paid
+          return { 
+            ...c, 
+            status, 
+            remaining_amount: (c.target_amount || 0) - (c.total_paid || 0) 
           };
         });
+
+        const totalNotifications = notifications ? notifications.length : 0;
 
         res.render('lists', {
           profile,
           notifications: notifications || [],
-          totalNotifications: notifications ? notifications.length : 0,
-          contributors: updatedContributors || []
+          totalNotifications,
+          contributors: updatedContributors
         });
       });
     });
   });
 });
 
-
+// Route ya kutuma SMS
 app.post('/send_reminder_sms', (req, res) => {
   const { memberId, eventId } = req.body;
+  const apiToken = 'WEKA_TOKEN_YAKO_HAPA';
 
-  if (!memberId || !eventId) return res.status(400).json({ message: 'Missing member or event ID' });
-
-  // Get member info and event info
   const sql = `
     SELECT m.phone, m.first_name, e.title AS event_title, e.target_amount,
-           SUM(CASE WHEN p.status='paid' THEN p.amount ELSE 0 END) AS total_paid
+           COALESCE(SUM(p.amount),0) AS total_paid
     FROM family_member m
-    JOIN payment p ON p.recorded_by = m.member_id AND p.event_id = ?
-    JOIN family_event e ON e.event_id = p.event_id
+    LEFT JOIN payment p ON p.recorded_by = m.member_id AND p.event_id = ?
+    LEFT JOIN family_event e ON e.event_id = ?
     WHERE m.member_id = ?
     GROUP BY m.member_id, e.event_id
   `;
 
-  db.query(sql, [eventId, memberId], (err, rows) => {
-    if (err || rows.length === 0) {
-      console.error('Error fetching member/event data:', err);
-      return res.status(500).json({ message: 'Error fetching data' });
-    }
+  db.query(sql, [eventId, eventId, memberId], (err, rows) => {
+    if (err || rows.length === 0) 
+      return res.status(500).json({ success: false, message: 'Data haikupatikana' });
 
     const member = rows[0];
+
+    if (!member.phone || member.phone.trim() === '') 
+      return res.status(400).json({ success: false, message: 'Namba ya simu haipo' });
+
     const remaining = member.target_amount - (member.total_paid || 0);
 
-    const smsMessage = `Habari ${member.first_name}, bado umeacha kutoa mchango wa ${remaining} TZS kwa tukio: ${member.event_title}. Tafadhali malizia ahadi yako.`;
+    // Format namba: 255 prefix
+    let phone = member.phone.trim();
+    if (phone.startsWith('0')) phone = '255' + phone.substring(1);
 
-    // --- Send SMS via TegaSMS ---
-    const smsData = {
+    const smsMessage = `Habari ${member.first_name}, mchango wako wa ${remaining.toLocaleString()} TZS kwa tukio la ${member.event_title || 'Tukio'} bado haujakamilika. Tafadhali malizia ahadi yako. Asante.`;
+
+    axios.post('https://tegasms.teganas.co.tz/api/v1/send_sms/type/single', {
       from: "FamilyHub",
-      recipient: member.phone,
+      recipient: phone,
       message: smsMessage,
-      channel: "1010105"
-    };
-
-    axios.post('https://tegasms.teganas.co.tz/api/v1/send_sms/type/single', smsData, {
-      headers: {
-        'Authorization': `Bearer ${apiToken}`,
-        'Content-Type': 'application/json'
-      }
+      channel: "1010105" // Hakikisha hii ni sahihi
+    }, {
+      headers: { 'Authorization': `Bearer ${apiToken}`, 'Content-Type': 'application/json' }
     })
-    .then(response => {
-      console.log(`SMS sent to ${member.phone}:`, response.data);
-      res.json({ message: 'SMS reminder sent successfully!' });
-    })
-    .catch(error => {
-      console.error(`SMS Error for ${member.phone}:`, error.response ? error.response.data : error.message);
-      res.status(500).json({ message: 'Failed to send SMS reminder.' });
+    .then(() => res.json({ success: true, message: 'SMS imetumwa!' }))
+    .catch((err) => {
+      console.error('TegaSMS Error:', err.response?.data || err.message);
+      res.status(500).json({ success: false, message: 'TegaSMS Error' });
     });
   });
 });
-
 // B. POST: Hifadhi Event Mpya na Tuma SMS kupitia TegaSMS kama ni ya Dharura (Msiba)
 app.post('/save_event', (req, res) => {
     const { title, description, event_type, event_date, event_time, location, has_contribution, target_amount } = req.body;
@@ -2318,9 +2284,96 @@ app.get('/view', (req, res) => {
 
 // member
 
-// member
+// --- GET: Member Dashboard ---
 app.get('/member', (req, res) => {
-  res.render('member'); // HOF
+  const family_id = req.session.family_id;
+  const member_id = req.session.member_id;
+
+  if (!family_id || !member_id) return res.redirect('/index');
+
+  // 🔹 Profile
+  const profileQuery = `
+    SELECT first_name, last_name, role
+    FROM family_member
+    WHERE member_id = ?
+    LIMIT 1
+  `;
+
+  // 🔹 Total family members
+  const membersQuery = `
+    SELECT COUNT(*) AS total_members
+    FROM family_member
+    WHERE family_id = ?
+  `;
+
+  // 🔹 Upcoming meetings
+  const meetingsQuery = `
+    SELECT COUNT(*) AS total_meetings
+    FROM meeting
+    WHERE family_id = ? AND meeting_date >= CURDATE()
+  `;
+
+  // 🔹 Recent meetings
+  const recentMeetingsQuery = `
+    SELECT meeting_id, title, meeting_date
+    FROM meeting
+    WHERE family_id = ?
+    ORDER BY meeting_date DESC
+    LIMIT 5
+  `;
+
+  // 🔹 Activities
+  const activitiesQuery = `
+    SELECT CONCAT(first_name, ' ', last_name) AS name, created_at
+    FROM family_member
+    WHERE family_id = ?
+    ORDER BY created_at DESC
+    LIMIT 5
+  `;
+
+  // 🔹 Notifications
+  const notificationsQuery = `
+    SELECT title, created_at
+    FROM notifications
+    WHERE family_id = ?
+    ORDER BY created_at DESC
+    LIMIT 5
+  `;
+
+  db.query(profileQuery, [member_id], (err, profileResult) => {
+    if (err) throw err;
+    const profile = profileResult[0] || { first_name: 'User', last_name: '', role: '' };
+
+    db.query(membersQuery, [family_id], (err, membersResult) => {
+      if (err) throw err;
+
+      db.query(meetingsQuery, [family_id], (err, meetingsResult) => {
+        if (err) throw err;
+
+        db.query(recentMeetingsQuery, [family_id], (err, recentMeetings) => {
+          if (err) throw err;
+
+          db.query(activitiesQuery, [family_id], (err, activities) => {
+            if (err) throw err;
+
+            db.query(notificationsQuery, [family_id], (err, notifications) => {
+              if (err) notifications = [];
+
+              res.render('member', {
+                profile,
+                totalMembers: membersResult[0].total_members,
+                totalMeetings: meetingsResult[0].total_meetings,
+                recentMeetings,
+                activities,
+                notifications,
+                totalNotifications: notifications.length
+              });
+            });
+          });
+        });
+      });
+    });
+  });
 });
 
 // Dependent
@@ -2453,98 +2506,144 @@ app.get('/chat_list', (req, res) => {
     });
 });
 
+// GET MESSAGES
+app.get('/chat_messages/:id',(req,res)=>{
+  const me=req.session.member_id;
+  const other=req.params.id;
 
+  const sql = `
+  SELECT *,
+  CASE WHEN sender_id=? THEN 1 ELSE 0 END as isMe
+  FROM chat_message
+  WHERE (sender_id=? AND receiver_id=?)
+     OR (sender_id=? AND receiver_id=?)
+  ORDER BY sent_at ASC`;
+
+  db.query(sql,[me,me,other,other,me],(err,data)=>{
+    if(err){
+      console.log(err);
+      return res.json([]);
+    }
+    res.json(data);
+  });
+});
+
+// SEND TEXT
+app.post('/send_message',(req,res)=>{
+  const me=req.session.member_id;
+
+  db.query(`INSERT INTO chat_message(sender_id,receiver_id,message) VALUES(?,?,?)`,
+  [me,req.body.receiver_id,req.body.message],()=>res.sendStatus(200));
+});
+
+// IMAGE
+app.post('/send_image', upload.single('image'), (req,res)=>{
+  const me = req.session.member_id;
+
+  if (!req.file) {
+    console.log("NO FILE");
+    return res.sendStatus(400);
+  }
+
+  db.query(
+    `INSERT INTO chat_message(sender_id,receiver_id,image) VALUES(?,?,?)`,
+    [me, req.body.receiver_id, req.file.filename],
+    ()=> res.sendStatus(200)
+  );
+});
+
+// VOICE
+app.post('/send_voice',upload.single('audio'),(req,res)=>{
+  const me=req.session.member_id;
+
+  db.query(`INSERT INTO chat_message(sender_id,receiver_id,image) VALUES(?,?,?)`,
+  [me,req.body.receiver_id,req.file.filename],()=>res.sendStatus(200));
+});
+
+// SEEN
+app.get('/mark_seen/:id',(req,res)=>{
+  db.query(`UPDATE chat_message SET seen=1 WHERE sender_id=? AND receiver_id=?`,
+  [req.params.id, req.session.member_id]);
+  res.sendStatus(200);
+});
+
+
+// Display family chat
 app.get('/family_chat', (req, res) => {
-    const { member_id: memberId, family_id: familyId } = req.session;
+  const memberId = req.session.member_id;
+  const familyId = req.session.family_id;
 
-    if (!memberId || !familyId) return res.redirect('/index');
+  if (!memberId || !familyId) return res.redirect('/index');
 
-    const profileQuery = `
-        SELECT first_name, last_name, role 
-        FROM family_member 
-        WHERE member_id = ? LIMIT 1`;
+  // Queries
+  const profileQuery = "SELECT first_name, last_name, role FROM family_member WHERE member_id=? LIMIT 1";
+  const familyQuery = "SELECT family_name FROM family WHERE family_id=? LIMIT 1";
+  const membersQuery = "SELECT member_id, first_name, last_name, role, relationship FROM family_member WHERE family_id=?";
+  const messagesQuery = `
+    SELECT cm.*, fm.first_name, fm.last_name
+    FROM chat_message cm
+    JOIN family_member fm ON cm.sender_id=fm.member_id
+    WHERE fm.family_id=? AND cm.receiver_id IS NULL
+    ORDER BY cm.sent_at ASC
+  `;
+  const notificationsQuery = `
+    SELECT 'meeting' AS type, title, created_at
+    FROM meeting
+    WHERE family_id=?
+    ORDER BY created_at DESC
+    LIMIT 5
+  `;
 
-    const familySql = `
-        SELECT family_name 
-        FROM family 
-        WHERE family_id = ? LIMIT 1`;
+  // Fetch everything
+  db.query(profileQuery, [memberId], (err, profileRes) => {
+    if (err) return res.status(500).send("Profile error");
 
-    const messagesSql = `
-        SELECT cm.*, fm.first_name, fm.last_name, fm.role as sender_role
-        FROM chat_message cm
-        JOIN family_member fm ON cm.sender_id = fm.member_id
-        WHERE fm.family_id = ? AND cm.receiver_id IS NULL
-        ORDER BY cm.sent_at ASC`;
+    db.query(familyQuery, [familyId], (err2, familyRes) => {
+      if (err2) return res.status(500).send("Family error");
 
-    const membersSql = `
-        SELECT member_id, first_name, last_name, role, relationship 
-        FROM family_member 
-        WHERE family_id = ?`;
+      db.query(membersQuery, [familyId], (err3, allMembers) => {
+        if (err3) return res.status(500).send("Members error");
 
-    // 🔔 Notifications kama chat_list
-    const notificationsQuery = `
-        SELECT 'meeting' AS type, title, created_at 
-        FROM meeting 
-        WHERE family_id = ? 
-        ORDER BY created_at DESC LIMIT 5`;
+        db.query(messagesQuery, [familyId], (err4, messages) => {
+          if (err4) return res.status(500).send("Messages error");
 
-    db.query(profileQuery, [memberId], (err, profileRes) => {
-        if (err) return res.status(500).send("Profile Error");
+          db.query(notificationsQuery, [familyId], (err5, notifications) => {
+            if (err5) return res.status(500).send("Notifications error");
 
-        db.query(familySql, [familyId], (err2, familyRes) => {
-            if (err2) return res.status(500).send("Family Error");
-
-            db.query(messagesSql, [familyId], (err3, messages) => {
-                if (err3) return res.status(500).send("Messages Error");
-
-                db.query(membersSql, [familyId], (err4, allMembers) => {
-                    if (err4) return res.status(500).send("Members Error");
-
-                    db.query(notificationsQuery, [familyId], (err5, notifications) => {
-                        if (err5) return res.status(500).send("Notifications Error");
-
-                        const renderData = {
-                            family: {
-                                family_name: familyRes[0]?.family_name || 'Family Group',
-                                total_members: allMembers.length
-                            },
-
-                            // ✅ FIX PROFILE
-                            profile: profileRes[0] || {
-                                first_name: 'User',
-                                last_name: '',
-                                role: 'Member'
-                            },
-
-                            messages: messages || [],
-                            allMembers: allMembers || [],
-                            memberId: memberId,
-
-                            // ✅ FIX NOTIFICATIONS
-                            notifications: notifications || [],
-                            totalNotifications: notifications.length
-                        };
-
-                        res.render('family_chat', renderData);
-                    });
-                });
+            // Render with everything
+            res.render('family_chat', {
+              profile: profileRes[0] || { first_name: 'User', last_name: '', role: 'Member' },
+              family: {
+                family_name: familyRes[0]?.family_name || 'Family Group',
+                total_members: allMembers.length
+              },
+              allMembers: allMembers || [],
+              messages: messages || [],
+              notifications: notifications || [],
+              totalNotifications: notifications.length,
+              memberId
             });
+          });
         });
+      });
     });
+  });
 });
 
-// Route ya kupost meseji
-app.post('/send_group_message', (req, res) => {
-    const senderId = req.session.member_id;
-    const { message } = req.body;
-    if (!senderId || !message) return res.redirect('back');
+// Send text + optional image
+app.post('/send_group_message', upload.single('image'), (req, res) => {
+  const senderId = req.session.member_id;
+  if (!senderId) return res.redirect('/family_chat');
 
-    const sql = "INSERT INTO chat_message (sender_id, receiver_id, message) VALUES (?, NULL, ?)";
-    db.query(sql, [senderId, message], (err) => {
-        res.redirect('/family_chat'); // Inarudi hapa hapa kuonyesha meseji mpya
-    });
+  const { message } = req.body;
+  const imageFile = req.file ? req.file.filename : null;
+
+  const sql = "INSERT INTO chat_message(sender_id, receiver_id, message, image) VALUES (?, NULL, ?, ?)";
+  db.query(sql, [senderId, message || null, imageFile], (err) => {
+    if (err) console.error(err);
+    res.redirect('/family_chat');
+  });
 });
-
 // direct chat
 app.get('/direct_messages', (req, res) => {
   res.render('direct_messages'); // HOF
@@ -2760,53 +2859,119 @@ app.get('/profile', (req, res) => {
 
     if (!memberId || !familyId) return res.redirect('/index');
 
-    // 1. Query ya Profile, Notifications na Sidebar Badges
-    const profileQuery = `SELECT * FROM family_member WHERE member_id = ? LIMIT 1`;
-    const notificationsQuery = `SELECT 'meeting' AS type, title, created_at FROM meeting WHERE family_id = ? ORDER BY created_at DESC LIMIT 5`;
+    // 🔹 Profile (IMPORTANT: include profile_image & is_future_head)
+    const profileQuery = `
+        SELECT member_id, first_name, last_name, phone, email, role, profile_image, is_future_head
+        FROM family_member
+        WHERE member_id = ?
+        LIMIT 1
+    `;
+
+    // 🔹 Notifications
+    const notificationsQuery = `
+        SELECT 'meeting' AS type, title, created_at 
+        FROM meeting 
+        WHERE family_id = ? 
+        ORDER BY created_at DESC 
+        LIMIT 5
+    `;
+
+    // 🔹 Sidebar Badges
     const badgeQuery = `
         SELECT 
-            (SELECT COUNT(*) FROM family_event WHERE family_id = ? AND event_date >= CURDATE()) as activeEventsCount,
-            (SELECT COUNT(*) FROM family_event WHERE family_id = ? AND has_contribution = 1 AND event_id NOT IN (
-                SELECT event_id FROM payment WHERE recorded_by = ? AND status = 'paid'
-            )) as pendingPaymentsCount`;
+            (SELECT COUNT(*) 
+             FROM family_event 
+             WHERE family_id = ? AND event_date >= CURDATE()
+            ) as activeEventsCount,
+
+            (SELECT COUNT(*) 
+             FROM family_event 
+             WHERE family_id = ? 
+             AND has_contribution = 1 
+             AND event_id NOT IN (
+                SELECT event_id 
+                FROM payment 
+                WHERE recorded_by = ? AND status = 'paid'
+             )
+            ) as pendingPaymentsCount
+    `;
 
     db.query(profileQuery, [memberId], (err, profileData) => {
-        if (err || profileData.length === 0) return res.redirect('/dashboard');
 
-        const user = profileData[0];
+        if (err) {
+            console.log(err);
+            return res.redirect('/dashboard');
+        }
+
+        if (!profileData || profileData.length === 0) {
+            return res.redirect('/dashboard');
+        }
+
+        let user = profileData[0];
+
+        // 🔥 DEFAULT IMAGE FIX (VERY IMPORTANT)
+        if (!user.profile_image) {
+            user.profile_image = '/assets/img/3.png';
+        }
+
+        // 🔥 ROLE LABEL (SMART)
+        let roleName = 'Member';
+        if (user.role === 'family_admin') {
+            roleName = 'Family Admin';
+        } else if (user.is_future_head == 1) {
+            roleName = 'Future Admin';
+        }
 
         db.query(notificationsQuery, [familyId], (err2, notifications) => {
+
+            if (err2) notifications = [];
+
             db.query(badgeQuery, [familyId, familyId, memberId], (err3, badgeData) => {
-                
-                const badges = badgeData ? badgeData[0] : { activeEventsCount: 0, pendingPaymentsCount: 0 };
+
+                const badges = badgeData && badgeData.length > 0 
+                    ? badgeData[0] 
+                    : { activeEventsCount: 0, pendingPaymentsCount: 0 };
+
                 const status = req.query.status;
                 const message = req.query.message;
 
                 res.render('profile', {
                     profile: user,
-                    adminName: user.first_name + " " + user.last_name,
-                    adminPhone: user.phone || 'N/A',
-                    adminEmail: user.email || 'N/A',
-                    adminRole: user.role,
+
+                    // 🔥 DISPLAY DATA
+                    fullName: user.first_name + " " + user.last_name,
+                    phone: user.phone || 'N/A',
+                    email: user.email || 'N/A',
+                    roleName: roleName,
+
+                    // 🔔 Notifications
                     notifications: notifications || [],
                     totalNotifications: notifications ? notifications.length : 0,
-                    activeEventsCount: badges.activeEventsCount,
-                    pendingPayments: badges.pendingPaymentsCount,
+
+                    // 📊 Sidebar badges
+                    activeEventsCount: badges.activeEventsCount || 0,
+                    pendingPayments: badges.pendingPaymentsCount || 0,
+
+                    // ⚙️ System
                     systemTitle: "Family Genealogy System",
+
+                    // ✅ Alerts
                     success: status === 'success' ? message : null,
                     error: status === 'error' ? message : null
                 });
+
             });
+
         });
+
     });
 });
 
-// --- 1. UPDATE PROFILE IMAGE ---
-app.post('/update-profile-image', upload.single('profileImage'), (req, res) => {
+// --- UPDATE PROFILE IMAGE ---
+app.post('/update-profile-image', upload.single('profile_image'), (req, res) => {
     const memberId = req.session.member_id;
     if (!req.file) return res.redirect('/profile?status=error&message=Tafadhali chagua picha');
 
-    // Njia inayohifadhiwa kwenye database (Inaendana na static folder la public)
     const dbImagePath = '/uploads/drives/' + req.file.filename;
 
     const sql = "UPDATE family_member SET profile_image = ? WHERE member_id = ?";
@@ -2815,39 +2980,45 @@ app.post('/update-profile-image', upload.single('profileImage'), (req, res) => {
             console.error(err);
             return res.redirect('/profile?status=error&message=Imeshindikana kusasisha picha');
         }
+
+        // 🔹 Update session so header shows new image everywhere
+        req.session.profile_image = dbImagePath + '?' + Date.now();
+
         res.redirect('/profile?status=success&message=Picha imebadilishwa kikamilifu');
     });
 });
 
-app.post('/update-profile', (req, res) => {
-    // 1. Debugging: Angalia nini kinakuja kutoka kwenye Form
-    console.log("Form Data:", req.body);
-    console.log("Session Data:", req.session);
+app.post('/update-profile', checkMember, async (req, res) => {
+  const { firstName, lastName, email, phone, gender } = req.body;
+  const memberId = req.session.member_id;
 
-    const { firstName, lastName, email, phone, gender } = req.body;
-    
-    // 2. Chagua jina sahihi la session unalotumia kwenye mfumo wako
-    const memberId = req.session.member_id; 
-
-    if (!memberId) {
-        console.log("KOSA: Session haikuonekana, ninarudisha Index...");
-        return res.redirect('/index');
+  try {
+    if (!firstName || !lastName || !phone || !gender) {
+      return res.redirect('/profile?status=error&message=Tafadhali jaza mashamba yote yanayohitajika');
     }
 
-    // 3. Hakikisha SQL inalingana na majina ya Column kwenye DB
-    const sql = "UPDATE family_member SET first_name = ?, last_name = ?, email = ?, phone = ?, gender = ? WHERE member_id = ?";
-    
-    db.query(sql, [firstName, lastName, email, phone, gender, memberId], (err, result) => {
-        if (err) {
-            console.error("Database Error Wakati wa Update:", err);
-            // Ikishindwa kwenye DB, rudi kwenye profile uonyeshe error
-            return res.redirect('/profile?status=error&message=Hitilafu kwenye database');
-        }
-        
-        console.log("Update Imefanikiwa kwa ID:", memberId);
-        res.redirect('/profile?status=success&message=Taarifa zimesasishwa kikamilifu');
+    const sql = `
+      UPDATE family_member 
+      SET first_name = ?, last_name = ?, email = ?, phone = ?, gender = ?
+      WHERE member_id = ?
+    `;
+
+    db.query(sql, [firstName, lastName, email || null, phone, gender, memberId], (err, result) => {
+      if (err) {
+        console.error("DB Error:", err);
+        return res.redirect('/profile?status=error&message=Hitilafu kwenye database');
+      }
+
+      console.log("Profile updated successfully for member ID:", memberId);
+      return res.redirect('/profile?status=success&message=Taarifa zimesasishwa kikamilifu');
     });
+
+  } catch (error) {
+    console.error("Unexpected Error:", error);
+    return res.redirect('/profile?status=error&message=Hitilafu isiyotarajiwa');
+  }
 });
+
 // --- 3. UPDATE PASSWORD ---
 app.post('/update-password', async (req, res) => {
     const { currentPassword, newPassword, confirmNewPassword } = req.body;
@@ -2884,6 +3055,63 @@ app.get('/title', (req, res) => {
             // ... data zingine
         });
     });
+});
+
+app.get('/dashboard', (req, res) => {
+  if (!req.session.member_id) return res.redirect('/');
+
+  const userType = (req.session.role === 'family_admin' || req.session.is_future_head == 1) ? 'admin' : 'member';
+
+  if (userType === 'admin') {
+    return res.redirect('/family_admin');
+  } else {
+    return res.redirect('/member');
+  }
+});
+// --- GET: Member Profile API ---
+app.get('/api/profile/:memberId', (req, res) => {
+  const memberId = req.params.memberId;
+  const familyId = req.session.family_id; // We still need to restrict to the current family
+
+  if (!memberId || !familyId) return res.status(400).json({ error: 'Invalid request' });
+
+  // Fetch any member in the current family by memberId
+  const profileQuery = `
+    SELECT 
+      member_id,
+      first_name,
+      middle_name,
+      last_name,
+      gender,
+      phone,
+      email,
+      role,
+      is_future_head,
+      relationship,
+      branch_type,
+      profile_image
+    FROM family_member
+    WHERE member_id = ? AND family_id = ?
+    LIMIT 1
+  `;
+
+  db.query(profileQuery, [memberId, familyId], (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (!results || results.length === 0) return res.status(404).json({ error: 'Profile not found' });
+
+    const profile = results[0];
+    const fullName = `${profile.first_name} ${profile.middle_name ? profile.middle_name + ' ' : ''}${profile.last_name}`;
+    let roleName = 'Member';
+    if (profile.role === 'family_admin') roleName = 'Family Admin';
+    else if (profile.is_future_head == 1) roleName = 'Future Admin';
+    else roleName = profile.role.charAt(0).toUpperCase() + profile.role.slice(1);
+
+    res.json({
+      ...profile,
+      fullName,
+      roleName
+    });
+  });
 });
 
 module.exports = app;

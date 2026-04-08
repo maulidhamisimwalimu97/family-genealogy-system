@@ -54,40 +54,56 @@
     <%- include('partials/notifications') %>
 
     <div class="row">
+      <!-- LEFT -->
       <div class="col-xl-4">
         <div class="card shadow-sm border-0">
           <div class="card-body profile-card pt-4 d-flex flex-column align-items-center text-center">
+
+            <!-- 🔥 PROFILE IMAGE -->
             <div class="position-relative">
-              <img src="<%= profile.profile_image || '/assets/img/3.png' %>" alt="Profile" class="rounded-circle border p-1" style="width: 120px; height: 120px; object-fit: cover;">
+              <img 
+                src="<%= profile.profile_image ? profile.profile_image + '?' + Date.now() : '/assets/img/3.png' %>" 
+                alt="Profile" 
+                class="rounded-circle border p-1" 
+                style="width: 120px; height: 120px; object-fit: cover;"
+              >
               
-              <label for="profileImageInput" class="position-absolute bottom-0 end-0 btn btn-primary btn-sm rounded-circle shadow-sm" title="Upload new profile image" style="cursor: pointer;">
+              <label for="profileImageInput" class="position-absolute bottom-0 end-0 btn btn-primary btn-sm rounded-circle shadow-sm" style="cursor: pointer;">
                 <i class="bi bi-camera-fill"></i>
               </label>
               
               <form action="/update-profile-image" method="POST" enctype="multipart/form-data" id="profileImageForm" class="d-none">
-                <input type="file" name="profileImage" id="profileImageInput" accept="image/*" onchange="document.getElementById('profileImageForm').submit()">
+                <input type="file" name="profile_image" id="profileImageInput" accept="image/*" onchange="document.getElementById('profileImageForm').submit()">
               </form>
             </div>
-            
-            <h2 class="mt-3 h5 fw-bold"><%= adminName %></h2>
+
+            <!-- 🔥 NAME + ROLE -->
+            <h2 class="mt-3 h5 fw-bold"><%= fullName %></h2>
+
             <span class="badge bg-primary-light text-primary text-capitalize px-3 py-2 rounded-pill">
-              <%= adminRole.replace('_', ' ') %>
+              <%= roleName %>
             </span>
-            <p class="text-muted small mt-2"><i class="bi bi-phone me-1"></i> <%= adminPhone %></p>
+
+            <p class="text-muted small mt-2">
+              <i class="bi bi-phone me-1"></i> <%= phone %>
+            </p>
+
           </div>
         </div>
       </div>
 
+      <!-- RIGHT -->
       <div class="col-xl-8">
         <div class="card shadow-sm border-0">
           <div class="card-body pt-3">
+
             <ul class="nav nav-tabs nav-tabs-bordered">
               <li class="nav-item">
                 <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#overview">Overview</button>
               </li>
-              <li class="nav-item">
+              <!-- <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="tab" data-bs-target="#edit">Edit Profile</button>
-              </li>
+              </li> -->
               <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="tab" data-bs-target="#security">Security</button>
               </li>
@@ -95,105 +111,127 @@
 
             <div class="tab-content pt-4">
 
+              <!-- OVERVIEW -->
               <div class="tab-pane fade show active profile-overview" id="overview">
                 <h5 class="card-title fw-bold border-bottom pb-2">Family Member Details</h5>
+
                 <div class="row mb-3">
-                  <div class="col-lg-3 col-md-4 label text-primary fw-bold">Full Name</div>
-                  <div class="col-lg-9 col-md-8"><%= adminName %></div>
+                  <div class="col-lg-3 label text-primary fw-bold">Full Name</div>
+                  <div class="col-lg-9"><%= fullName %></div>
                 </div>
+
                 <div class="row mb-3">
-                  <div class="col-lg-3 col-md-4 label text-primary fw-bold">Gender</div>
-                  <div class="col-lg-9 col-md-8 text-capitalize"><%= profile.gender || 'N/A' %></div>
+                  <div class="col-lg-3 label text-primary fw-bold">Gender</div>
+                  <div class="col-lg-9 text-capitalize"><%= profile.gender || 'N/A' %></div>
                 </div>
+
                 <div class="row mb-3">
-                  <div class="col-lg-3 col-md-4 label text-primary fw-bold">Email</div>
-                  <div class="col-lg-9 col-md-8"><%= adminEmail %></div>
+                  <div class="col-lg-3 label text-primary fw-bold">Email</div>
+                  <div class="col-lg-9"><%= email %></div>
                 </div>
+
                 <div class="row mb-3">
-                  <div class="col-lg-3 col-md-4 label text-primary fw-bold">Phone</div>
-                  <div class="col-lg-9 col-md-8"><%= adminPhone %></div>
+                  <div class="col-lg-3 label text-primary fw-bold">Phone</div>
+                  <div class="col-lg-9"><%= phone %></div>
                 </div>
+
                 <div class="row mb-3">
-                  <div class="col-lg-3 col-md-4 label text-primary fw-bold">Account Role</div>
-                  <div class="col-lg-9 col-md-8 text-capitalize"><%= adminRole.replace('_', ' ') %></div>
+                  <div class="col-lg-3 label text-primary fw-bold">Account Role</div>
+                  <div class="col-lg-9"><%= roleName %></div>
                 </div>
               </div>
 
+              <!-- EDIT
               <div class="tab-pane fade pt-3" id="edit">
                 <form action="/update-profile" method="POST">
+
                   <div class="row mb-3">
-                    <label class="col-md-4 col-lg-3 col-form-label fw-bold">First Name</label>
-                    <div class="col-md-8 col-lg-9">
+                    <label class="col-md-4 col-form-label fw-bold">First Name</label>
+                    <div class="col-md-8">
                       <input name="firstName" type="text" class="form-control" value="<%= profile.first_name %>" required>
                     </div>
                   </div>
+
                   <div class="row mb-3">
-                    <label class="col-md-4 col-lg-3 col-form-label fw-bold">Last Name</label>
-                    <div class="col-md-8 col-lg-9">
+                    <label class="col-md-4 col-form-label fw-bold">Last Name</label>
+                    <div class="col-md-8">
                       <input name="lastName" type="text" class="form-control" value="<%= profile.last_name %>" required>
                     </div>
                   </div>
+
                   <div class="row mb-3">
-                    <label class="col-md-4 col-lg-3 col-form-label fw-bold">Email Address</label>
-                    <div class="col-md-8 col-lg-9">
-                      <input name="email" type="email" class="form-control" value="<%= adminEmail === 'N/A' ? '' : adminEmail %>" required>
+                    <label class="col-md-4 col-form-label fw-bold">Email</label>
+                    <div class="col-md-8">
+                      <input name="email" type="email" class="form-control" value="<%= email === 'N/A' ? '' : email %>">
                     </div>
                   </div>
+
                   <div class="row mb-3">
-                    <label class="col-md-4 col-lg-3 col-form-label fw-bold">Phone Number</label>
-                    <div class="col-md-8 col-lg-9">
+                    <label class="col-md-4 col-form-label fw-bold">Phone</label>
+                    <div class="col-md-8">
                       <input name="phone" type="text" class="form-control" value="<%= profile.phone %>" required>
                     </div>
                   </div>
+
                   <div class="row mb-3">
-                    <label class="col-md-4 col-lg-3 col-form-label fw-bold">Gender</label>
-                    <div class="col-md-8 col-lg-9">
+                    <label class="col-md-4 col-form-label fw-bold">Gender</label>
+                    <div class="col-md-8">
                       <select name="gender" class="form-select">
                         <option value="Male" <%= profile.gender === 'Male' ? 'selected' : '' %>>Male</option>
                         <option value="Female" <%= profile.gender === 'Female' ? 'selected' : '' %>>Female</option>
                       </select>
                     </div>
                   </div>
-                  <div class="text-end">
-                    <button type="submit" class="btn btn-primary px-4 shadow-sm">Save Changes</button>
-                  </div>
-                </form>
-              </div>
 
+                  <div class="text-end">
+                    <button type="submit" class="btn btn-primary px-4">Save Changes</button>
+                  </div>
+
+                </form>
+              </div> -->
+
+              <!-- SECURITY -->
               <div class="tab-pane fade pt-3" id="security">
                 <form action="/update-password" method="POST">
+
                   <div class="row mb-3">
-                    <label class="col-md-4 col-lg-3 col-form-label fw-bold">Current Password</label>
-                    <div class="col-md-8 col-lg-9">
-                      <input name="currentPassword" type="password" class="form-control" placeholder="Ingiza password ya sasa" required>
+                    <label class="col-md-4 col-form-label fw-bold">Current Password</label>
+                    <div class="col-md-8">
+                      <input name="currentPassword" type="password" class="form-control" required>
                     </div>
                   </div>
+
                   <div class="row mb-3">
-                    <label class="col-md-4 col-lg-3 col-form-label fw-bold">New Password</label>
-                    <div class="col-md-8 col-lg-9">
-                      <input name="newPassword" type="password" class="form-control" placeholder="Ingiza password mpya" required>
+                    <label class="col-md-4 col-form-label fw-bold">New Password</label>
+                    <div class="col-md-8">
+                      <input name="newPassword" type="password" class="form-control" required>
                     </div>
                   </div>
+
                   <div class="row mb-3">
-                    <label class="col-md-4 col-lg-3 col-form-label fw-bold">Confirm Password</label>
-                    <div class="col-md-8 col-lg-9">
-                      <input name="confirmNewPassword" type="password" class="form-control" placeholder="Rudia password mpya" required>
+                    <label class="col-md-4 col-form-label fw-bold">Confirm Password</label>
+                    <div class="col-md-8">
+                      <input name="confirmNewPassword" type="password" class="form-control" required>
                     </div>
                   </div>
+
                   <div class="text-end">
-                    <button type="submit" class="btn btn-success px-4 shadow-sm">Update Password</button>
+                    <button type="submit" class="btn btn-success px-4">Update Password</button>
                   </div>
+
                 </form>
               </div>
 
             </div>
+
           </div>
         </div>
       </div>
+
     </div>
   </section>
-</main>
 
+</main>
 <!-- Google Translate Element -->
 <div id="google_translate_element" style="visibility: hidden; position: absolute; z-index: -1;"></div>
 

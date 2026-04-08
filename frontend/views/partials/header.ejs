@@ -1,78 +1,108 @@
 <!-- ======= Sidebar ======= -->
 <aside id="sidebar" class="sidebar">
+
+  <!-- 🔥 ROLE LOGIC -->
+  <% const userType = (profile.role === 'family_admin' || profile.is_future_head == 1) ? 'admin' : 'member'; %>
+
   <ul class="sidebar-nav" id="sidebar-nav">
 
     <!-- Dashboard -->
-    <li class="nav-item">
-      <a class="nav-link" href="/family_admin">
-        <i class="bi bi-grid"></i>
-        <span>Dashboard</span>
-      </a>
-    </li>
+<li class="nav-item">
+  <a class="nav-link" href="/dashboard">
+    <i class="bi bi-grid"></i>
 
-    <!-- My Family Dropdown -->
+    <% 
+      let dashName = 'Member Dashboard';
+
+      if (profile.role === 'family_admin') {
+        dashName = 'Family Admin Dashboard';
+      } else if (profile.is_future_head == 1) {
+        dashName = 'Future Admin Dashboard';
+      }
+    %>
+
+    <span><%= dashName %></span>
+  </a>
+</li>
+    <!-- My Family -->
     <li class="nav-item">
       <a class="nav-link collapsed" data-bs-target="#myfamily-nav" data-bs-toggle="collapse" href="#">
         <i class="bi bi-people"></i>
         <span>My Family</span>
         <i class="bi bi-chevron-down ms-auto"></i>
       </a>
+
       <ul id="myfamily-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
+
+        <% if (userType === 'admin') { %>
         <li>
           <a href="/register_family">
             <i class="bi bi-circle"></i><span>Register Family</span>
           </a>
         </li>
-         <li>
+
+        <li>
           <a href="/select_future">
             <i class="bi bi-circle"></i><span>Select Future Admin</span>
           </a>
         </li>
+        <% } %>
+
         <li>
           <a href="/family_lists">
             <i class="bi bi-circle"></i><span>Family List</span>
           </a>
         </li>
+
         <li>
           <a href="/family_tree">
             <i class="bi bi-circle"></i><span>Family Tree</span>
           </a>
         </li>
+
       </ul>
     </li>
 
-    <!-- Meetings & Reminders -->
+    <!-- Meetings -->
     <li class="nav-item">
       <a class="nav-link collapsed" data-bs-target="#meetings-nav" data-bs-toggle="collapse" href="#">
         <i class="bi bi-calendar-event"></i>
         <span>Meetings</span>
         <i class="bi bi-chevron-down ms-auto"></i>
       </a>
+
       <ul id="meetings-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
+
+        <% if (userType === 'admin') { %>
         <li>
           <a href="/schedule">
             <i class="bi bi-circle"></i><span>Schedule Meeting</span>
           </a>
         </li>
-        <li>
-          <a href="/meeting_list">
-            <i class="bi bi-circle"></i><span>Meeting Lists</span>
-          </a>
-        </li>
-        <li>
-          <a href="/Attend_meeting">
-            <i class="bi bi-circle"></i><span>Attend Meeting</span>
-          </a>
-        </li>
+
         <li>
           <a href="/reminder">
             <i class="bi bi-circle"></i><span>Reminders</span>
           </a>
         </li>
+        <% } %>
+
+        <li>
+          <a href="/meeting_list">
+            <i class="bi bi-circle"></i><span>Meeting Lists</span>
+          </a>
+        </li>
+
+        <li>
+          <a href="/Attend_meeting">
+            <i class="bi bi-circle"></i><span>Attend Meeting</span>
+          </a>
+        </li>
+
       </ul>
     </li>
 
-    <!-- Chats -->
+    <!-- Chats (ALL USERS) -->
     <li class="nav-item">
       <a class="nav-link collapsed" data-bs-target="#chat-nav" data-bs-toggle="collapse" href="#">
         <i class="bi bi-chat-dots"></i>
@@ -97,7 +127,7 @@
       </ul>
     </li>
 
-    <!-- Family Drive -->
+    <!-- Family Drive (ALL USERS) -->
     <li class="nav-item">
       <a class="nav-link collapsed" data-bs-target="#drive-nav" data-bs-toggle="collapse" href="#">
         <i class="bi bi-hdd-stack"></i>
@@ -105,8 +135,7 @@
         <i class="bi bi-chevron-down ms-auto"></i>
       </a>
 
-      <ul id="drive-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
-
+      <ul id="drive-nav" class="nav-content collapse">
         <li>
           <a href="/drive_files">
             <i class="bi bi-circle"></i>
@@ -116,65 +145,73 @@
       </ul>
     </li>
 
-        <!-- Family Drive -->
-  <li class="nav-item">
-    <a class="nav-link collapsed" data-bs-target="#events-nav" data-bs-toggle="collapse" href="#">
-      <i class="bi bi-calendar-event-fill"></i>
-      <span>Family Events</span>
-      <% if (typeof activeEventsCount !== 'undefined' && activeEventsCount > 0) { %>
-        <span class="badge bg-danger badge-number ms-2"><%= activeEventsCount %></span>
-      <% } %>
-      <i class="bi bi-chevron-down ms-auto"></i>
-    </a>
+    <!-- Events -->
+    <li class="nav-item">
+      <a class="nav-link collapsed" data-bs-target="#events-nav" data-bs-toggle="collapse" href="#">
+        <i class="bi bi-calendar-event-fill"></i>
+        <span>Family Events</span>
 
-    <ul id="events-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
-      <li>
-        <a href="/events">
-          <i class="bi bi-grid-fill"></i>
-          <span>All Events</span>
-        </a>
-      </li>
-      
-      <li>
-        <a href="/events?type=emergency">
-          <i class="bi bi-exclamation-triangle-fill text-danger"></i>
-          <span>Emergency Alerts</span>
-        </a>
-      </li>
+        <% if (typeof activeEventsCount !== 'undefined' && activeEventsCount > 0) { %>
+          <span class="badge bg-danger badge-number ms-2"><%= activeEventsCount %></span>
+        <% } %>
 
-      <li>
-        <a href="/create_event">
-          <i class="bi bi-plus-circle-fill"></i>
-          <span>Post New Event</span>
-        </a>
-      </li>
+        <i class="bi bi-chevron-down ms-auto"></i>
+      </a>
 
-      <li>
-        <a href="/event_contributions">
-          <i class="bi bi-cash-coin"></i>
-          <span>Contributions</span>
-          <% if (typeof pendingPayments !== 'undefined' && pendingPayments > 0) { %>
-            <span class="badge rounded-pill bg-warning text-dark ms-2">Pay</span>
-          <% } %>
-        </a>
-      </li>
-       <li>
-        <a href="/lists">
-          <i class="bi bi-plus-circle-fill"></i>
-          <span>List for Contributions</span>
-        </a>
-      </li>
-    </ul>
-  </li>
+      <ul id="events-nav" class="nav-content collapse">
 
-    <!-- Payments Dropdown -->
+        <li>
+          <a href="/events">
+            <i class="bi bi-grid-fill"></i>
+            <span>All Events</span>
+          </a>
+        </li>
+
+        <li>
+          <a href="/events?type=emergency">
+            <i class="bi bi-exclamation-triangle-fill text-danger"></i>
+            <span>Emergency Alerts</span>
+          </a>
+        </li>
+
+        <% if (userType === 'admin') { %>
+        <li>
+          <a href="/create_event">
+            <i class="bi bi-plus-circle-fill"></i>
+            <span>Post New Event</span>
+          </a>
+        </li>
+        <% } %>
+
+        <li>
+          <a href="/event_contributions">
+            <i class="bi bi-cash-coin"></i>
+            <span>Contributions</span>
+          </a>
+        </li>
+
+        <% if (userType === 'admin') { %>
+        <li>
+          <a href="/lists">
+            <i class="bi bi-plus-circle-fill"></i>
+            <span>List for Contributions</span>
+          </a>
+        </li>
+        <% } %>
+
+      </ul>
+    </li>
+
+    <!-- Payments (ADMIN ONLY) -->
+    <% if (userType === 'admin') { %>
     <li class="nav-item">
       <a class="nav-link collapsed" data-bs-target="#payments-nav" data-bs-toggle="collapse" href="#">
         <i class="bi bi-credit-card"></i>
         <span>Payments</span>
         <i class="bi bi-chevron-down ms-auto"></i>
       </a>
-      <ul id="payments-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
+
+      <ul id="payments-nav" class="nav-content collapse">
         <li>
           <a href="/package">
             <i class="bi bi-circle"></i><span>Package</span>
@@ -187,36 +224,41 @@
         </li>
       </ul>
     </li>
+    <% } %>
 
-    <!-- Reports -->
+    <!-- Reports (ADMIN ONLY) -->
+    <% if (userType === 'admin') { %>
     <li class="nav-item">
       <a class="nav-link" href="/family_report">
         <i class="bi bi-bar-chart-line"></i>
         <span>Generate Reports</span>
       </a>
     </li>
+    <% } %>
 
+    <!-- Language -->
     <li class="nav-item">
-            <a class="nav-link collapsed" data-bs-target="#language-nav" data-bs-toggle="collapse" href="#">
-              <i class="bi bi-translate"></i>
-              <span>Language / Lugha</span>
-              <i class="bi bi-chevron-down ms-auto"></i>
-            </a>
-            <ul id="language-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
-            <li>
-              <a href="javascript:void(0);" onclick="changeLanguage('en')">
-                <i class="bi bi-circle"></i><span>English</span>
-              </a>
-            </li>
-            <li>
-              <a href="javascript:void(0);" onclick="changeLanguage('sw')">
-                <i class="bi bi-circle"></i><span>Kiswahili (Swahili)</span>
-              </a>
-            </li>
-          </ul>
-          </li>
+      <a class="nav-link collapsed" data-bs-target="#language-nav" data-bs-toggle="collapse" href="#">
+        <i class="bi bi-translate"></i>
+        <span>Language / Lugha</span>
+        <i class="bi bi-chevron-down ms-auto"></i>
+      </a>
 
-     <div id="google_translate_element" style="visibility: hidden; position: absolute; z-index: -1;"></div>
+      <ul id="language-nav" class="nav-content collapse">
+        <li>
+          <a href="javascript:void(0);" onclick="changeLanguage('en')">
+            <i class="bi bi-circle"></i><span>English</span>
+          </a>
+        </li>
+        <li>
+          <a href="javascript:void(0);" onclick="changeLanguage('sw')">
+            <i class="bi bi-circle"></i><span>Kiswahili</span>
+          </a>
+        </li>
+      </ul>
+    </li>
+
+    <div id="google_translate_element" style="visibility: hidden; position: absolute;"></div>
 
   </ul>
 </aside>

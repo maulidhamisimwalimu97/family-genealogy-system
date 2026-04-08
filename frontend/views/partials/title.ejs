@@ -2,7 +2,8 @@
 <header id="header" class="header fixed-top d-flex align-items-center">
 
   <div class="d-flex align-items-center justify-content-between">
-    <a href="/" class="logo d-flex align-items-center">
+    <!-- 🔥 Dashboard link smart -->
+    <a href="/dashboard" class="logo d-flex align-items-center">
       <img src="" alt="">
       <span class="d-none d-lg-block">Family Genealogy</span>
     </a>
@@ -38,11 +39,11 @@
                 <i class="bi bi-info-circle text-primary"></i>
                 <div>
                   <strong><%= note.title %></strong><br>
-                  <% if (note.meeting_date) { %>
-                    <small><%= new Date(note.meeting_date).toDateString() %></small>
-                  <% } else if (note.created_at) { %>
-                    <small><%= new Date(note.created_at).toDateString() %></small>
-                  <% } %>
+                  <small>
+                    <%= note.created_at 
+                        ? new Date(note.created_at).toDateString() 
+                        : '' %>
+                  </small>
                 </div>
               </li>
               <li><hr class="dropdown-divider"></li>
@@ -50,42 +51,64 @@
           <% } %>
 
           <li class="dropdown-footer">
-            <a href="#">Show all notifications</a>
+            <a href="/notifications">Show all notifications</a>
           </li>
         </ul>
       </li><!-- End Notifications -->
 
       <!-- 👤 Profile -->
       <li class="nav-item dropdown pe-3">
+
         <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
-        <img src="<%= profile.profile_image ? profile.profile_image : '/assets/img/3.png' %>" 
-         alt="Profile" 
-         class="rounded-circle" 
-         style="width: 35px; height: 35px; object-fit: cover;">
-          <!-- ✅ Dynamic Name -->
+          
+          <!-- 🔥 Profile Image -->
+          <img 
+            src="<%= profile.profile_image ? profile.profile_image : '/assets/img/3.png' %>" 
+            alt="Profile" 
+            class="rounded-circle" 
+            style="width: 35px; height: 35px; object-fit: cover;"
+          >
+
+          <!-- 🔥 Name -->
           <span class="d-none d-md-block dropdown-toggle ps-2">
-            <%= profile ? profile.first_name : 'User' %>
+            <%= profile && profile.first_name ? profile.first_name : 'User' %>
           </span>
+
         </a><!-- End Profile Image Icon -->
 
         <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
+
           <li class="dropdown-header">
 
             <!-- ✅ Full Name -->
             <h6>
-              <%= profile ? profile.first_name + ' ' + profile.last_name : '' %>
+              <%= profile 
+                  ? profile.first_name + ' ' + profile.last_name 
+                  : '' %>
             </h6>
 
-            <!-- ✅ Role -->
+            <!-- 🔥 ROLE LOGIC (IMPORTANT FIX) -->
             <span>
               <b>
-                <%= profile && profile.role === 'family_admin' ? 'Family Admin' : 'Member' %>
+                <% 
+                  let roleName = 'Member';
+
+                  if (profile.role === 'family_admin') {
+                    roleName = 'Family Admin';
+                  } else if (profile.is_future_head == 1) {
+                    roleName = 'Future Admin';
+                  }
+                %>
+
+                <%= roleName %>
               </b>
             </span>
+
           </li>
 
           <li><hr class="dropdown-divider"></li>
 
+          <!-- Profile -->
           <li>
             <a class="dropdown-item d-flex align-items-center" href="/profile">
               <i class="bi bi-person"></i>
@@ -95,12 +118,14 @@
 
           <li><hr class="dropdown-divider"></li>
 
+          <!-- Logout -->
           <li>
             <a class="dropdown-item d-flex align-items-center" href="/logout">
               <i class="bi bi-box-arrow-right"></i>
               <span>Sign Out</span>
             </a>
           </li>
+
         </ul><!-- End Profile Dropdown Items -->
       </li><!-- End Profile Nav -->
 

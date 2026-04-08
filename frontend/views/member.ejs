@@ -33,274 +33,153 @@
 <body>
 
   <!-- ======= Header ======= -->
-  <header id="header" class="header fixed-top d-flex align-items-center">
+  <%- include('partials/title') %>
+  <%- include('partials/header') %>
 
-    <div class="d-flex align-items-center justify-content-between">
-      <a href="/" class="logo d-flex align-items-center">
-        <img src="" alt="">
-        <span class="d-none d-lg-block">Family Genealogy</span>
-      </a>
-      <i class="bi bi-list toggle-sidebar-btn"></i>
-    </div><!-- End Logo -->
-
-    <nav class="header-nav ms-auto">
-      <ul class="d-flex align-items-center">
-
-        <!-- Notifications -->
-        <li class="nav-item dropdown">
-          <a class="nav-link nav-icon" href="#" data-bs-toggle="dropdown">
-            <i class="bi bi-bell"></i>
-            <span class="badge bg-primary badge-number">0</span>
-          </a><!-- End Notification Icon -->
-
-          <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow notifications">
-            <li class="dropdown-header">
-              You have 0 new notifications
-              <a href="#">
-                <span class="badge rounded-pill bg-primary p-2 ms-2">View all</span>
-              </a>
-            </li>
-
-            <li><hr class="dropdown-divider"></li>
-
-            <li class="notification-item text-center">
-              <div>No notifications available</div>
-            </li>
-
-            <li><hr class="dropdown-divider"></li>
-
-            <li class="dropdown-footer">
-              <a href="#">Show all notifications</a>
-            </li>
-          </ul>
-        </li><!-- End Notifications -->
-
-        <!-- Profile -->
-        <li class="nav-item dropdown pe-3">
-          <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
-            <img src="assets/img/3.png" alt="Profile" class="rounded-circle">
-            <span class="d-none d-md-block dropdown-toggle ps-2">Member</span>
-          </a><!-- End Profile Image Icon -->
-
-          <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
-            <li class="dropdown-header">
-              <h6>Family Admin</h6>
-              <span><b>Family Account</b></span>
-            </li>
-
-            <li><hr class="dropdown-divider"></li>
-
-            <li>
-              <a class="dropdown-item d-flex align-items-center" href="/family_admin/profile">
-                <i class="bi bi-person"></i>
-                <span>My Profile</span>
-              </a>
-            </li>
-
-            <li><hr class="dropdown-divider"></li>
-
-            <li>
-              <a class="dropdown-item d-flex align-items-center" href="/logout">
-                <i class="bi bi-box-arrow-right"></i>
-                <span>Sign Out</span>
-              </a>
-            </li>
-          </ul><!-- End Profile Dropdown Items -->
-        </li><!-- End Profile Nav -->
-
-      </ul>
-    </nav><!-- End Icons Navigation -->
-
-  </header><!-- End Header -->
-
-<!-- ======= Sidebar (Family Member) ======= -->
-<aside id="sidebar" class="sidebar">
-  <ul class="sidebar-nav" id="sidebar-nav">
-
-    <!-- Dashboard -->
-    <li class="nav-item">
-      <a class="nav-link" href="/member_dashboard">
-        <i class="bi bi-grid"></i>
-        <span>Dashboard</span>
-      </a>
-    </li>
-
-    <!-- Family -->
-    <li class="nav-item">
-      <a class="nav-link collapsed" data-bs-target="#family-nav" data-bs-toggle="collapse" href="#">
-        <i class="bi bi-people"></i>
-        <span>Family</span>
-        <i class="bi bi-chevron-down ms-auto"></i>
-      </a>
-      <ul id="family-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
-        <li>
-          <a href="/family_lists">
-            <i class="bi bi-circle"></i>
-            <span>View Members</span>
-          </a>
-        </li>
-        <li>
-          <a href="/family_tree">
-            <i class="bi bi-circle"></i>
-            <span>Family Tree</span>
-          </a>
-        </li>
-      </ul>
-    </li>
-
-    <!-- Meetings -->
-    <li class="nav-item">
-      <a class="nav-link collapsed" data-bs-target="#meeting-nav" data-bs-toggle="collapse" href="#">
-        <i class="bi bi-calendar-event"></i>
-        <span>Meetings</span>
-        <i class="bi bi-chevron-down ms-auto"></i>
-      </a>
-      <ul id="meeting-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
-        <li>
-          <a href="/meeting_list">
-            <i class="bi bi-circle"></i>
-            <span>Meeting List</span>
-          </a>
-        </li>
-        <li>
-          <a href="/Attend_meeting">
-            <i class="bi bi-circle"></i>
-            <span>Attend Meeting</span>
-          </a>
-        </li>
-      </ul>
-    </li>
-
-    <!-- Notifications -->
-    <li class="nav-item">
-      <a class="nav-link" href="/member/notifications">
-        <i class="bi bi-bell"></i>
-        <span>Notifications</span>
-      </a>
-    </li>
-
-  </ul>
-</aside>
-<!-- ======= Main Content (Family Member Dashboard) ======= -->
 <main id="main" class="main">
 
-  <div class="pagetitle">
-    <h1>Member Dashboard</h1>
-    <nav>
-      <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="/member_dashboard">Home</a></li>
-        <li class="breadcrumb-item active">Dashboard</li>
-      </ol>
-    </nav>
+  <!-- Page Title -->
+  <div class="pagetitle d-flex justify-content-between align-items-center">
+    <div>
+      <h1>Member Dashboard</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="/member_dashboard">Home</a></li>
+          <li class="breadcrumb-item active">Dashboard</li>
+        </ol>
+      </nav>
+    </div>
   </div>
 
   <section class="section dashboard">
     <div class="row">
 
-      <!-- Left Side -->
+      <!-- LEFT SIDE -->
       <div class="col-lg-8">
         <div class="row">
 
-          <!-- Total Family Members -->
+          <!-- 👨‍👩‍👧‍👦 Total Members -->
           <div class="col-xxl-4 col-md-6">
             <a href="/family_lists" class="text-decoration-none">
-              <div class="card info-card">
+              <div class="card info-card shadow-sm">
+
                 <div class="card-body">
                   <h5 class="card-title">Family Members</h5>
+
                   <div class="d-flex align-items-center">
                     <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
                       <i class="bi bi-people"></i>
                     </div>
+
                     <div class="ps-3">
-                      <h6>25</h6>
-                      <span class="text-muted small">Registered Members</span>
+                      <h6><%= totalMembers %></h6>
+                      <span class="text-muted small">Registered</span>
                     </div>
                   </div>
                 </div>
+
               </div>
             </a>
           </div>
 
-          <!-- My Upcoming Meetings -->
+          <!-- 📅 Meetings -->
           <div class="col-xxl-4 col-md-6">
             <a href="/meeting_list" class="text-decoration-none">
-              <div class="card info-card">
+              <div class="card info-card shadow-sm">
+
                 <div class="card-body">
-                  <h5 class="card-title">My Upcoming Meetings</h5>
+                  <h5 class="card-title">Upcoming Meetings</h5>
+
                   <div class="d-flex align-items-center">
                     <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
                       <i class="bi bi-calendar-event"></i>
                     </div>
+
                     <div class="ps-3">
-                      <h6>2</h6>
+                      <h6><%= totalMeetings %></h6>
                       <span class="text-info small">Scheduled</span>
                     </div>
                   </div>
                 </div>
+
               </div>
             </a>
           </div>
 
-          <!-- My Attendance -->
+          <!-- 📊 Attendance (STATIC FOR NOW) -->
           <div class="col-xxl-4 col-md-6">
-            <div class="card info-card">
+            <div class="card info-card shadow-sm">
+
               <div class="card-body">
                 <h5 class="card-title">My Attendance</h5>
+
                 <div class="d-flex align-items-center">
                   <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
                     <i class="bi bi-check2-square"></i>
                   </div>
+
                   <div class="ps-3">
                     <h6>80%</h6>
-                    <span class="text-success small">Participation Rate</span>
+                    <span class="text-success small">Participation</span>
                   </div>
                 </div>
               </div>
+
             </div>
           </div>
 
-          <!-- Family Tree -->
+          <!-- 🌳 Family Tree -->
           <div class="col-12">
             <a href="/family_tree" class="text-decoration-none">
-              <div class="card">
+              <div class="card shadow-sm">
                 <div class="card-body">
                   <h5 class="card-title">Family Tree</h5>
-                  <p class="small">
-                    View your family lineage and understand your position in the family structure.
+                  <p class="small text-muted">
+                    View your family lineage and understand your position.
                   </p>
                 </div>
               </div>
             </a>
           </div>
 
-          <!-- Recent Meetings -->
+          <!-- 📋 Recent Meetings -->
           <div class="col-12">
-            <div class="card recent-sales overflow-auto">
+            <div class="card recent-sales overflow-auto shadow-sm">
+
               <div class="card-body">
                 <h5 class="card-title">Recent Meetings</h5>
 
-                <table class="table table-borderless">
+                <table class="table table-borderless datatable">
                   <thead>
                     <tr>
                       <th>#</th>
-                      <th>Meeting Title</th>
+                      <th>Meeting</th>
                       <th>Date</th>
                       <th>Status</th>
                     </tr>
                   </thead>
+
                   <tbody>
-                    <tr>
-                      <th>1</th>
-                      <td>Monthly Family Gathering</td>
-                      <td>12 Feb 2026</td>
-                      <td><span class="badge bg-success">Attended</span></td>
-                    </tr>
-                    <tr>
-                      <th>2</th>
-                      <td>Budget Discussion</td>
-                      <td>05 Jan 2026</td>
-                      <td><span class="badge bg-danger">Missed</span></td>
-                    </tr>
+                    <% if (recentMeetings.length === 0) { %>
+                      <tr>
+                        <td colspan="4" class="text-center text-muted">
+                          No meetings available
+                        </td>
+                      </tr>
+                    <% } else { %>
+
+                      <% recentMeetings.forEach((m, i) => { %>
+                        <tr>
+                          <th><%= i + 1 %></th>
+                          <td><%= m.title %></td>
+                          <td><%= new Date(m.meeting_date).toDateString() %></td>
+                          <td>
+                            <span class="badge bg-info">Scheduled</span>
+                          </td>
+                        </tr>
+                      <% }) %>
+
+                    <% } %>
                   </tbody>
                 </table>
 
@@ -311,49 +190,58 @@
         </div>
       </div>
 
-      <!-- Right Side -->
+      <!-- RIGHT SIDE -->
       <div class="col-lg-4">
 
-        <!-- Recent Family Activities -->
-        <div class="card">
+        <!-- 🔔 Activities -->
+        <div class="card shadow-sm">
           <div class="card-body">
             <h5 class="card-title">Family Updates</h5>
 
             <div class="activity">
 
-              <div class="activity-item d-flex">
-                <div class="activite-label">2h ago</div>
-                <i class="bi bi-circle-fill activity-badge text-primary"></i>
-                <div class="activity-content">
-                  New member <strong>Omary Ambari</strong> joined the family
-                </div>
-              </div>
+              <% if (activities.length === 0) { %>
+                <div class="text-muted small">No updates available</div>
+              <% } else { %>
 
-              <div class="activity-item d-flex">
-                <div class="activite-label">Tomorrow</div>
-                <i class="bi bi-circle-fill activity-badge text-warning"></i>
-                <div class="activity-content">
-                  Reminder: Family meeting at 8:00 PM
-                </div>
-              </div>
+                <% activities.forEach(act => { %>
+                  <div class="activity-item d-flex">
+
+                    <div class="activite-label">
+                      <%= new Date(act.created_at).toLocaleDateString() %>
+                    </div>
+
+                    <i class="bi bi-circle-fill activity-badge text-primary align-self-start"></i>
+
+                    <div class="activity-content">
+                      New member <strong><%= act.name %></strong> joined
+                    </div>
+
+                  </div>
+                <% }) %>
+
+              <% } %>
 
             </div>
 
           </div>
         </div>
 
-        <!-- Member Info -->
-        <div class="card">
+        <!-- 🔐 Access -->
+        <div class="card shadow-sm">
           <div class="card-body">
             <h5 class="card-title">Your Access</h5>
+
             <ul class="small">
               <li>View family members</li>
-              <li>View family tree</li>
-              <li>See meeting schedules</li>
-              <li>Attend meetings</li>
+              <li>Family tree</li>
+              <li>Meetings & attendance</li>
+              <li>Chats & communication</li>
+              <li>Events participation</li>
             </ul>
-            <p class="mt-2 small text-muted">
-              For administrative changes, contact the Family Admin.
+
+            <p class="small text-muted mt-2">
+              For administrative actions, contact your Family Admin.
             </p>
           </div>
         </div>
@@ -364,6 +252,7 @@
   </section>
 
 </main>
+
 <!-- ======= Footer ======= -->
     <footer id="footer" class="footer">
     <div class="copyright">

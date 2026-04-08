@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+
+  <title>User Profile</title>
+  <meta content="" name="description">
+  <meta content="" name="keywords">
+
+  <!-- Favicons -->
+
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.gstatic.com" rel="preconnect">
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Nunito:300,300i,400,400i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
+
+  <!-- Vendor CSS Files -->
+  <link href="/assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+  <link href="/assets/vendor/boxicons/css/boxicons.min.css" rel="stylesheet">
+  <link href="/assets/vendor/quill/quill.snow.css" rel="stylesheet">
+  <link href="/assets/vendor/quill/quill.bubble.css" rel="stylesheet">
+  <link href="/assets/vendor/remixicon/remixicon.css" rel="stylesheet">
+  <link href="/assets/vendor/simple-datatables/style.css" rel="stylesheet">
+
+  <!-- Main CSS File -->
+  <link href="assets/css/style.css" rel="stylesheet">
+  <link href="/assets/css/dark.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+  <!-- ======= Header ======= -->
+<%- include('partials/title') %>
+<%- include('partials/header') %>
+
+<main id="main" class="main">
+
+  <div class="pagetitle">
+    <h1>Profile</h1>
+    <nav>
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/dashboard">Home</a></li>
+        <li class="breadcrumb-item"><a href="/family">Family</a></li>
+        <li class="breadcrumb-item active">Profile</li>
+      </ol>
+    </nav>
+  </div>
+
+  <section class="section profile">
+    <div class="row justify-content-center">
+
+      <div class="col-lg-6 col-md-8">
+        <div class="card shadow-sm border-0 position-relative overflow-hidden">
+
+          <!-- Profile Image -->
+          <div class="text-center position-relative">
+            <img 
+              src="<%= profile.profile_image ? profile.profile_image + '?' + Date.now() : '/assets/img/3.png' %>" 
+              alt="Profile" 
+              class="rounded-circle border border-white shadow-sm position-absolute top-0 start-50 translate-middle" 
+              style="width: 140px; height: 140px; object-fit: cover; z-index: 10;"
+            >
+          </div>
+
+          <!-- Card Body -->
+          <div class="card-body text-center mt-5 pt-5">
+            <h3 class="fw-bold mb-1"><%= profile.first_name %> <%= profile.middle_name ? profile.middle_name + ' ' : '' %><%= profile.last_name %></h3>
+
+            <p class="text-muted mb-2">
+              <span class="badge bg-primary-light text-primary text-capitalize px-3 py-2 rounded-pill">
+                <%= profile.role %>
+              </span>
+            </p>
+
+            <p class="text-muted mb-1"><strong>Relationship:</strong> <%= profile.relationship %></p>
+            <p class="text-muted mb-1"><strong>Phone:</strong> <%= profile.phone || 'N/A' %></p>
+            <p class="text-muted mb-1"><strong>Email:</strong> <%= profile.email || 'N/A' %></p>
+            <p class="text-muted mb-1"><strong>Gender:</strong> <%= profile.gender || 'N/A' %></p>
+            <p class="text-muted mb-1"><strong>Date of Birth:</strong> <%= profile.date_of_birth ? profile.date_of_birth.toDateString() : 'N/A' %></p>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+<!-- Google Translate Element -->
+<div id="google_translate_element" style="visibility: hidden; position: absolute; z-index: -1;"></div>
+
+<script>
+function googleTranslateElementInit() {
+  new google.translate.TranslateElement({
+    pageLanguage: 'en',
+    includedLanguages: 'en,sw',
+    autoDisplay: false
+  }, 'google_translate_element');
+
+  var savedLang = localStorage.getItem("selectedLanguage");
+  if (savedLang) {
+    setTimeout(function () {
+      setLanguage(savedLang);
+    }, 800);
+  }
+}
+
+function changeLanguage(lang) {
+  localStorage.setItem("selectedLanguage", lang);
+  setLanguage(lang);
+}
+
+function setLanguage(lang) {
+  var select = document.querySelector(".goog-te-combo");
+  if (select) {
+    select.value = lang;
+    select.dispatchEvent(new Event("change"));
+  } else {
+    setTimeout(function () {
+      setLanguage(lang);
+    }, 300);
+  }
+}
+</script>
+
+
+   <!-- ======= Footer ======= -->
+    <footer id="footer" class="footer">
+    <div class="copyright">
+        &copy; Copyright <strong><span>Family Genealogy System</span></strong>. All Rights Reserved
+    </div>
+    <div class="credits">
+        Developed by <strong>Maulid Mwalimu</strong>
+    </div>
+    </footer>
+    <!-- End Footer -->
+
+  <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+
+  <!-- Vendor JS Files -->
+  <script src="/assets/vendor/apexcharts/apexcharts.min.js"></script>
+  <script src="/assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="/assets/vendor/chart.js/chart.umd.js"></script>
+  <script src="/assets/vendor/echarts/echarts.min.js"></script>
+  <script src="/assets/vendor/quill/quill.js"></script>
+  <script src="/assets/vendor/simple-datatables/simple-datatables.js"></script>
+  <script src="/assets/vendor/tinymce/tinymce.min.js"></script>
+  <script src="/assets/vendor/php-email-form/validate.js"></script>
+  <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+  <!-- Main JS File -->
+  <script src="/assets/js/main.js"></script>
+
+</body>
+
+</html>

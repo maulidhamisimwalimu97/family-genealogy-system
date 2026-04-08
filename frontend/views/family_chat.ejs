@@ -37,7 +37,6 @@
 <%- include('partials/header') %>
 
 <main id="main" class="main">
-
   <div class="pagetitle d-flex justify-content-between align-items-center">
     <h1>Family Group</h1>
   </div>
@@ -45,176 +44,99 @@
   <section class="section">
     <div class="row justify-content-center">
       <div class="col-xl-10 col-lg-12">
-
         <div class="card shadow-sm border-0">
 
           <!-- HEADER -->
           <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
-            
-            <!-- LEFT -->
             <div class="d-flex align-items-center cursor-pointer" data-bs-toggle="modal" data-bs-target="#membersModal">
-
-              <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center me-3 shadow-sm"
-                   style="width:48px;height:48px;font-weight:bold;">
-                <%= (family && family.family_name) ? family.family_name.charAt(0) : 'F' %>
+              <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center me-3 shadow-sm" style="width:48px;height:48px;font-weight:bold;">
+                <%= family.family_name.charAt(0) %>
               </div>
-
               <div>
-                <h6 class="mb-0 fw-bold text-dark">
-                  <%= (family && family.family_name) ? family.family_name : 'Family Group' %>
-                </h6>
-                <small class="text-primary text-decoration-underline">
-                  <%= (family && family.total_members) ? family.total_members : 0 %> Members
-                </small>
+                <h6 class="mb-0 fw-bold text-dark"><%= family.family_name %></h6>
+                <small class="text-primary text-decoration-underline"><%= family.total_members %> Members</small>
               </div>
             </div>
-
-            <!-- RIGHT 3 DOT MENU -->
-            <div class="dropdown">
-              <button class="btn btn-light border-0" data-bs-toggle="dropdown">
-                <i class="bi bi-three-dots-vertical fs-5"></i>
-              </button>
-
-              <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-
-                <% if (profile.role === 'Admin') { %>
-
-                  <li>
-                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#settingsModal">
-                      ⚙️ Group Settings
-                    </a>
-                  </li>
-
-                  <li>
-                    <a class="dropdown-item" href="/toggle_chat">
-                      🚫 Toggle Chat Restriction
-                    </a>
-                  </li>
-
-                <% } else { %>
-
-                  <li>
-                    <span class="dropdown-item text-muted">
-                      Admin only settings
-                    </span>
-                  </li>
-
-                <% } %>
-
-              </ul>
-            </div>
-
           </div>
 
           <!-- CHAT -->
-          <div class="card-body bg-light chat-scroll" id="chatContainer"
-               style="height:60vh;overflow-y:auto;">
-
+          <div class="card-body bg-light chat-scroll" style="height:60vh;overflow-y:auto;">
             <div class="d-flex flex-column gap-3 p-3">
-
-              <% (messages || []).forEach(function(msg){ %>
-
-                <% var isMe = msg.sender_id == memberId; %>
-                <% var readCount = msg.read_count || 0; %>
-
+              <% messages.forEach(msg => { %>
+                <% const isMe = msg.sender_id === memberId; %>
                 <div class="d-flex flex-column <%= isMe ? 'align-items-end' : 'align-items-start' %>">
-
-                  <small class="fw-bold mb-1 px-2 <%= isMe ? 'text-success' : 'text-primary' %>">
-                    <%= msg.first_name || 'User' %>
-                  </small>
-
-                  <div class="p-3 shadow-sm <%= isMe ? 'bg-success-subtle' : 'bg-white' %>"
-                       style="max-width:85%;border-radius:15px;">
-
+                  <small class="fw-bold mb-1 px-2 <%= isMe ? 'text-success' : 'text-primary' %>"><%= msg.first_name %></small>
+                  <div class="p-3 shadow-sm <%= isMe ? 'bg-success-subtle' : 'bg-white' %>" style="max-width:85%;border-radius:15px;">
                     <%= msg.message || '' %>
-
-                    <div class="text-end" style="font-size:0.7rem;">
-                      <%= msg.sent_at ? new Date(msg.sent_at).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '' %>
-
-                      <% if (isMe) { %>
-                        <% if (readCount >= ((family.total_members || 1) - 1)) { %>
-                          ✔✔
-                        <% } else { %>
-                          ✔
-                        <% } %>
-                      <% } %>
-                    </div>
-
+                    <% if(msg.image){ %>
+                      <img src="/uploads/images/<%= msg.image %>" style="max-width:120px;display:block;margin-top:5px;border-radius:8px;">
+                    <% } %>
                   </div>
+                  <small class="text-muted" style="font-size:0.7rem;"><%= msg.sent_at ? new Date(msg.sent_at).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '' %></small>
                 </div>
-
               <% }); %>
-
             </div>
           </div>
 
-          <!-- FOOTER (RESTRICT CHAT) -->
-          <% if (!family.only_admin_chat || profile.role === 'Admin') { %>
-
-          <div class="card-footer bg-white py-3">
-            <form action="/send_group_message" method="POST" class="d-flex gap-2">
+          <!-- FOOTER -->
+          <div class="card-footer bg-white py-3 d-flex gap-2 align-items-center">
+            <form action="/send_group_message" method="POST" enctype="multipart/form-data" class="d-flex gap-2 align-items-center w-100">
               <input type="text" name="message" class="form-control rounded-pill bg-light" placeholder="Andika ujumbe..." required>
-              <button class="btn btn-success rounded-circle px-3">
-                <i class="bi bi-send-fill"></i>
-              </button>
+              <input type="file" name="image" id="imageInput" hidden>
+  
+              <button type="submit" class="btn btn-success rounded-circle px-3"><i class="bi bi-send-fill"></i></button>
             </form>
+            <button type="button" id="emojiBtn" class="btn btn-light">😊</button>
           </div>
-
-          <% } else { %>
-
-          <div class="card-footer text-center text-muted">
-            Only admin can send messages
-          </div>
-
-          <% } %>
+          <div id="emojiPicker" class="p-2 bg-light border rounded shadow-sm" style="position:absolute;display:none;"></div>
 
         </div>
       </div>
     </div>
   </section>
 
-  <!-- SETTINGS MODAL -->
-  <div class="modal fade" id="settingsModal">
-    <div class="modal-dialog modal-dialog-centered">
+  <!-- MEMBERS MODAL -->
+  <div class="modal fade" id="membersModal">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
       <div class="modal-content">
-
         <div class="modal-header">
-          <h5>Group Settings</h5>
+          <h5>Family Members</h5>
           <button class="btn-close" data-bs-dismiss="modal"></button>
         </div>
-
-        <form action="/update_group_settings" method="POST">
-          <div class="modal-body">
-
-            <input type="text" name="family_name" class="form-control mb-3"
-                   value="<%= family.family_name %>">
-
-            <div class="form-check form-switch">
-              <input class="form-check-input" type="checkbox" name="only_admin_chat"
-                     <%= family.only_admin_chat ? 'checked' : '' %>>
-              <label class="form-check-label">
-                Only admin can send messages
-              </label>
-            </div>
-
+        <div class="modal-body">
+          <div class="row">
+            <% allMembers.forEach(member => { %>
+              <div class="col-6 col-md-4 mb-2">
+                <div class="card p-2 text-center shadow-sm">
+                  <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center mx-auto mb-1" style="width:40px;height:40px;">
+                    <%= member.first_name.charAt(0) %>
+                  </div>
+                  <small class="fw-bold"><%= member.first_name %> <%= member.last_name %></small><br>
+                  <small class="text-muted"><%= member.role %></small>
+                </div>
+              </div>
+            <% }); %>
           </div>
-
-          <div class="modal-footer">
-            <button class="btn btn-success w-100">Save</button>
-          </div>
-        </form>
-
+        </div>
       </div>
     </div>
   </div>
-
 </main>
 
 <script>
-document.addEventListener("DOMContentLoaded", function () {
-  var chatBox = document.getElementById('chatContainer');
-  if (chatBox) chatBox.scrollTop = chatBox.scrollHeight;
+const emojis = ['😀','😂','😍','😎','🤔','😭','👍','🙏'];
+const emojiBtn = document.getElementById('emojiBtn');
+const emojiPicker = document.getElementById('emojiPicker');
+const messageInput = document.querySelector('input[name="message"]');
+
+emojiBtn.addEventListener('click', () => {
+  emojiPicker.style.display = emojiPicker.style.display==='none'?'block':'none';
+  emojiPicker.innerHTML = emojis.map(e=>`<button type="button" class="btn btn-light btn-sm m-1" onclick="addEmoji('${e}')">${e}</button>`).join('');
 });
+
+function addEmoji(e){
+  messageInput.value += e;
+}
 </script>
 
 <!-- Google Translate Element -->
@@ -253,6 +175,7 @@ function setLanguage(lang) {
   }
 }
 </script>
+
 <!-- ======= Footer ======= -->
     <footer id="footer" class="footer">
     <div class="copyright">
