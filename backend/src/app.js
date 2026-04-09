@@ -1049,64 +1049,71 @@ app.get('/family_admin', (req, res) => {
 
 // --- GET: Render Register Family Member Form ---
 app.get('/register_family', (req, res) => {
-    const familyId = req.session.family_id;
-    const memberId = req.session.member_id;
+  const familyId = req.session.family_id;
+  const memberId = req.session.member_id;
 
-    if (!familyId || !memberId) return res.redirect('/index');
+  if (!familyId || !memberId) return res.redirect('/index');
 
-    // 🔹 Profile of logged-in user
-    const profileQuery = `
-        SELECT first_name, last_name, role
-        FROM family_member
-        WHERE member_id = ?
-        LIMIT 1
-    `;
+  const profileQuery = `
+    SELECT first_name, last_name, role
+    FROM family_member
+    WHERE member_id = ?
+    LIMIT 1
+  `;
 
-    // 🔹 Notifications = latest 5 activities (member registrations + meetings)
-    const notificationsQuery = `
-        SELECT 'member' AS type, CONCAT(first_name, ' ', last_name) AS title, created_at
-        FROM family_member
-        WHERE registered_by = ?
-        UNION
-        SELECT 'meeting' AS type, title, created_at
-        FROM meeting
-        WHERE created_by = ?
-        ORDER BY created_at DESC
-        LIMIT 5
-    `;
+  const notificationsQuery = `
+    SELECT 'member' AS type, CONCAT(first_name, ' ', last_name) AS title, created_at
+    FROM family_member
+    WHERE registered_by = ?
+    UNION
+    SELECT 'meeting' AS type, title, created_at
+    FROM meeting
+    WHERE created_by = ?
+    ORDER BY created_at DESC
+    LIMIT 5
+  `;
 
-    // 🔹 Total members count
-    const membersCountQuery = `
-        SELECT COUNT(*) AS totalMembers
-        FROM family_member
-        WHERE family_id = ?
-    `;
+  const membersCountQuery = `
+    SELECT COUNT(*) AS totalMembers
+    FROM family_member
+    WHERE family_id = ?
+  `;
 
-    // 🚀 Execute queries
-    db.query(profileQuery, [memberId], (err, profileResult) => {
-        if (err) throw err;
-        const profile = profileResult[0] || { first_name: 'User', last_name: '', role: '' };
+  // 🔥 IMPORTANT: Members for dropdown
+  const membersQuery = `
+    SELECT member_id, first_name, last_name
+    FROM family_member
+    WHERE family_id = ?
+    ORDER BY first_name ASC
+  `;
 
-        db.query(notificationsQuery, [memberId, memberId], (err2, notifications) => {
-            if (err2) notifications = [];
+  db.query(profileQuery, [memberId], (err, profileResult) => {
+    if (err) throw err;
+    const profile = profileResult[0] || { first_name: 'User', last_name: '', role: '' };
 
-            const totalNotifications = notifications.length; // count for badge
+    db.query(notificationsQuery, [memberId, memberId], (err2, notifications) => {
+      if (err2) notifications = [];
+      const totalNotifications = notifications.length;
 
-            db.query(membersCountQuery, [familyId], (err3, countResult) => {
-                const totalMembers = (!err3 && countResult.length > 0) ? countResult[0].totalMembers : 0;
+      db.query(membersCountQuery, [familyId], (err3, countResult) => {
+        const totalMembers = (!err3 && countResult.length > 0) ? countResult[0].totalMembers : 0;
 
-                // Render EJS template with all dynamic data
-                res.render('register_family', {
-                    profile,
-                    notifications,
-                    totalNotifications,
-                    totalMembers,
-                    error: null,
-                    success: null
-                });
-            });
+        db.query(membersQuery, [familyId], (err4, members) => {
+          if (err4) members = [];
+
+          res.render('register_family', {
+            profile,
+            notifications,
+            totalNotifications,
+            totalMembers,
+            members, // ✅ FIX
+            error: null,
+            success: null
+          });
         });
+      });
     });
+  });
 });
 
 app.post('/register-member', async (req, res) => {
@@ -1117,13 +1124,26 @@ app.post('/register-member', async (req, res) => {
 
   const { 
     first_name, middle_name, last_name, gender, date_of_birth, 
-    phone, email, relationship, branch_type 
+    phone, email, relationship, branch_type, parent_id 
   } = req.body;
 
+  // 🔥 render function with members
   const renderPage = (errorMsg, successMsg) => {
-    res.render('register_family', {
-      error: errorMsg,
-      success: successMsg
+
+    const membersQuery = `
+      SELECT member_id, first_name, last_name
+      FROM family_member
+      WHERE family_id = ?
+    `;
+
+    db.query(membersQuery, [familyId], (err, members) => {
+      if (err) members = [];
+
+      res.render('register_family', {
+        members,
+        error: errorMsg,
+        success: successMsg
+      });
     });
   };
 
@@ -1132,24 +1152,31 @@ app.post('/register-member', async (req, res) => {
     return renderPage('Tafadhali jaza sehemu zote zenye nyota (*)', null);
   }
 
-  const formattedPhone = phone.replace(/\s+/g, '');
+  // 🔹 Format phone (Tanzania format)
+  let formattedPhone = phone.replace(/\D/g, '');
+  if (formattedPhone.startsWith('0')) {
+    formattedPhone = '255' + formattedPhone.substring(1);
+  } else if (!formattedPhone.startsWith('255')) {
+    formattedPhone = '255' + formattedPhone;
+  }
 
   try {
-    // 🔹 Check duplicate phone
     db.query("SELECT member_id FROM family_member WHERE phone = ? LIMIT 1", [formattedPhone], async (err, result) => {
       if (err) return renderPage('Database error checking phone.', null);
       if (result.length > 0) return renderPage('Namba hii tayari imesajiliwa.', null);
 
-      // 🔹 Generate password
+      // 🔹 Password
       const plainPassword = crypto.randomBytes(3).toString('hex');
       const hashedPassword = await bcrypt.hash(plainPassword, 10);
 
-      // 🔹 Age check
+      // 🔹 Age logic
       const dob = new Date(date_of_birth);
       const today = new Date();
       let age = today.getFullYear() - dob.getFullYear();
-      if (today.getMonth() < dob.getMonth() || 
-         (today.getMonth() === dob.getMonth() && today.getDate() < dob.getDate())) {
+      if (
+        today.getMonth() < dob.getMonth() ||
+        (today.getMonth() === dob.getMonth() && today.getDate() < dob.getDate())
+      ) {
         age--;
       }
 
@@ -1158,8 +1185,8 @@ app.post('/register-member', async (req, res) => {
       // 🔹 Insert member
       const insertSql = `
         INSERT INTO family_member 
-        (family_id, first_name, middle_name, last_name, gender, date_of_birth, phone, email, role, password, registered_by, relationship, branch_type, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+        (family_id, first_name, middle_name, last_name, gender, date_of_birth, phone, email, role, password, registered_by, relationship, branch_type, parent_id, spouse_id, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, NOW())
       `;
 
       const values = [
@@ -1175,13 +1202,29 @@ app.post('/register-member', async (req, res) => {
         hashedPassword,
         adminId,
         relationship,
-        branch_type
+        branch_type,
+        parent_id || null
       ];
 
-      db.query(insertSql, values, (err2) => {
+      db.query(insertSql, values, (err2, result2) => {
         if (err2) return renderPage('Error saving member.', null);
 
-        // 🔹 Insert notification
+        const newMemberId = result2.insertId;
+
+        // 🔥 RELATIONSHIP LOGIC
+
+        // ✅ SPOUSE
+        if (relationship === 'spouse' && parent_id) {
+          db.query("UPDATE family_member SET spouse_id = ? WHERE member_id = ?", [parent_id, newMemberId]);
+          db.query("UPDATE family_member SET spouse_id = ? WHERE member_id = ?", [newMemberId, parent_id]);
+        }
+
+        // ✅ PARENT
+        if (relationship === 'parent' && parent_id) {
+          db.query("UPDATE family_member SET parent_id = ? WHERE member_id = ?", [newMemberId, parent_id]);
+        }
+
+        // 🔹 Notification
         const notifSql = `
           INSERT INTO notifications (family_id, title, message, created_at)
           VALUES (?, ?, ?, NOW())
@@ -1192,23 +1235,38 @@ app.post('/register-member', async (req, res) => {
           `${first_name} ${last_name} amesajiliwa kwenye familia.`
         ]);
 
-        // 🔹 SMS (optional)
-        const smsMessage = `
-Karibu kwenye Mfumo wa Family Genealogy!
+        // 🔥 TEGASMS INTEGRATION
 
+        const apiToken = '2|ZDVZgBsVfuBbhCRnFf5N9jmYsG7JLPtoXACoqLQO88f41331';
+
+        const smsMessage = `Habari ${first_name},
+
+Umesajiliwa kwenye mfumo wa Family Genealogy.
+
+TAARIFA ZA KUINGIA:
 Username: ${formattedPhone}
 Password: ${plainPassword}
-        `;
 
-        const auth = Buffer.from('YOUR_API_KEY').toString('base64');
+Ingia hapa:
+http://localhost:5000/
 
-        axios.post('https://apisms.beem.africa/v1/send', {
-          source_addr: 'FAMILYGEN',
+Badili neno la siri baada ya kuingia.`;
+
+        const smsData = {
+          from: "FamilyHub",
+          recipient: formattedPhone,
           message: smsMessage,
-          recipients: [{ recipient_id: 1, dest_addr: formattedPhone }]
-        }, {
-          headers: { Authorization: `Basic ${auth}` }
-        }).catch(() => {});
+          channel: "1010105"
+        };
+
+        axios.post('https://tegasms.teganas.co.tz/api/v1/send_sms/type/single', smsData, {
+          headers: {
+            'Authorization': `Bearer ${apiToken}`,
+            'Content-Type': 'application/json'
+          }
+        })
+        .then(res => console.log("SMS Sent:", res.data))
+        .catch(err => console.error("SMS Error:", err.response ? err.response.data : err.message));
 
         return renderPage(null, `Mwanachama ${first_name} ${last_name} amesajiliwa kikamilifu!`);
       });

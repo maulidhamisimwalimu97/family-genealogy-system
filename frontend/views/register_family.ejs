@@ -128,6 +128,20 @@
               </div>
 
               <div class="col-md-4">
+                <label class="form-label">Select Parent (Optional)</label>
+                <select class="form-select" name="parent_id">
+                  <option value="">None</option>
+                  <% if (members) { %>
+                    <% members.forEach(m => { %>
+                      <option value="<%= m.member_id %>">
+                        <%= m.first_name %> <%= m.last_name %>
+                      </option>
+                    <% }) %>
+                  <% } %>
+                </select>
+              </div>
+
+              <div class="col-md-4">
                 <label class="form-label">Relationship to Head of Family <span class="text-danger">*</span></label>
                 <select class="form-select" name="relationship" required>
                   <option value="">Select Relationship</option>
