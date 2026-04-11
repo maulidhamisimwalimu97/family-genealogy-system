@@ -53,49 +53,59 @@
         <div class="tree">
           <ul>
 
-            <% if (tree && tree.length > 0) { %>
+            <% function renderNode(node) { %>
 
-              <% tree.forEach(node => { %>
+              <li>
 
-                <li>
+                <!-- MEMBER CARD -->
+                <div class="member text-center">
 
-                  <!-- ROOT -->
-                  <div class="member text-center">
-                    <a href="#" class="member-link" data-member-id="<%= node.member_id %>">
-                      <strong><%= node.first_name %> <%= node.last_name %></strong>
-                    </a>
-                    <br>
-                    <small><%= node.relationship || node.role %></small>
-                  </div>
+                  <a href="#" class="member-link" data-member-id="<%= node.member_id %>">
+                    <strong><%= node.first_name %> <%= node.last_name %></strong>
+                  </a>
 
-                  <!-- CHILDREN -->
-                  <% if (node.children && node.children.length > 0) { %>
-                    <ul>
+                  <br>
 
-                      <% node.children.forEach(child => { %>
-                        <li>
+                  <small>
+                    <%= node.role || node.relationship || '' %>
+                  </small>
 
-                          <div class="member text-center">
-                            <a href="#" class="member-link" data-member-id="<%= child.member_id %>">
-                              <%= child.first_name %> <%= child.last_name %>
-                            </a>
-                            <br>
-                            <small><%= child.relationship || '' %></small>
-                          </div>
-
-                        </li>
-                      <% }) %>
-
-                    </ul>
+                  <!-- SPOUSE DISPLAY (SIDE INFO) -->
+                  <% if (node.spouse) { %>
+                    <div class="text-primary small mt-1">
+                      ❤️ Spouse:
+                      <a href="#" class="member-link" data-member-id="<%= node.spouse.member_id %>">
+                        <%= node.spouse.first_name %> <%= node.spouse.last_name %>
+                      </a>
+                    </div>
                   <% } %>
 
-                </li>
+                </div>
 
+                <!-- CHILDREN -->
+                <% if (node.children && node.children.length > 0) { %>
+                  <ul>
+
+                    <% node.children.forEach(child => { %>
+                      <%= renderNode(child) %>
+                    <% }) %>
+
+                  </ul>
+                <% } %>
+
+              </li>
+
+            <% } %>
+
+            <!-- ROOT NODES (Family Admin starts here) -->
+            <% if (tree && tree.length > 0) { %>
+
+              <% tree.forEach(root => { %>
+                <%= renderNode(root) %>
               <% }) %>
 
             <% } else { %>
 
-              <!-- 🔥 FIXED EMPTY STATE -->
               <li>
                 <div class="member text-center">
                   <strong>No hierarchy yet</strong><br>

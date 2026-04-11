@@ -52,32 +52,30 @@
 
             <h5 class="card-title">Add New Family Member</h5>
 
-            <!-- Display Success/Error -->
             <% if (error) { %>
               <div class="alert alert-danger"><%= error %></div>
             <% } %>
+
             <% if (success) { %>
               <div class="alert alert-success"><%= success %></div>
             <% } %>
 
-            <!-- Form -->
             <form class="row g-3" action="/register-member" method="POST">
 
-              <!-- Required Notice -->
               <div class="col-12">
                 <p class="text-muted">
                   Fields marked with <span class="text-danger">*</span> are compulsory.
                 </p>
               </div>
 
-              <!-- Personal Information -->
+              <!-- PERSONAL INFO -->
               <div class="col-12">
                 <h6 class="fw-bold text-primary">Personal Information</h6>
                 <hr>
               </div>
 
               <div class="col-md-4">
-                <label class="form-label">First Name <span class="text-danger">*</span></label>
+                <label class="form-label">First Name *</label>
                 <input type="text" name="first_name" class="form-control" required>
               </div>
 
@@ -87,12 +85,12 @@
               </div>
 
               <div class="col-md-4">
-                <label class="form-label">Last Name <span class="text-danger">*</span></label>
+                <label class="form-label">Last Name *</label>
                 <input type="text" name="last_name" class="form-control" required>
               </div>
 
               <div class="col-md-4">
-                <label class="form-label">Gender <span class="text-danger">*</span></label>
+                <label class="form-label">Gender *</label>
                 <select class="form-select" name="gender" required>
                   <option value="">Select Gender</option>
                   <option value="male">Male</option>
@@ -101,12 +99,12 @@
               </div>
 
               <div class="col-md-4">
-                <label class="form-label">Date of Birth <span class="text-danger">*</span></label>
+                <label class="form-label">Date of Birth *</label>
                 <input type="date" id="dob" name="date_of_birth" class="form-control" required>
               </div>
 
               <div class="col-md-4">
-                <label class="form-label">Age (Auto)</label>
+                <label class="form-label">Age</label>
                 <input type="text" id="age" class="form-control" readonly>
               </div>
 
@@ -121,7 +119,7 @@
                 </select>
               </div>
 
-              <!-- Family Relationship -->
+              <!-- FAMILY RELATIONSHIP -->
               <div class="col-12 mt-4">
                 <h6 class="fw-bold text-primary">Family Relationship</h6>
                 <hr>
@@ -130,19 +128,14 @@
               <!-- Father -->
               <div class="col-md-4">
                 <label class="form-label">Select Father</label>
-               <select class="form-select" name="father_id">
+                <select class="form-select" name="father_id">
                   <option value="">Not in system</option>
-
                   <% if (fathers && fathers.length > 0) { %>
                     <% fathers.forEach(f => { %>
-                      <option value="<%= f.member_id %>">
-                        <%= f.first_name %> <%= f.last_name %>
-                      </option>
+                      <option value="<%= f.member_id %>"><%= f.first_name %> <%= f.last_name %></option>
                     <% }) %>
-                  <% } else { %>
-                    <option disabled>No male members found</option>
                   <% } %>
-                </select>       
+                </select>
               </div>
 
               <!-- Mother -->
@@ -150,82 +143,83 @@
                 <label class="form-label">Select Mother</label>
                 <select class="form-select" name="mother_id">
                   <option value="">Not in system</option>
-
                   <% if (mothers && mothers.length > 0) { %>
                     <% mothers.forEach(m => { %>
-                      <option value="<%= m.member_id %>">
-                        <%= m.first_name %> <%= m.last_name %>
-                      </option>
+                      <option value="<%= m.member_id %>"><%= m.first_name %> <%= m.last_name %></option>
                     <% }) %>
-                  <% } else { %>
-                    <option disabled>No female members found</option>
                   <% } %>
                 </select>
               </div>
+
+              <!-- Relationship -->
               <div class="col-md-4">
-                <label class="form-label">Relationship to Head of Family <span class="text-danger">*</span></label>
-                <select class="form-select" name="relationship" required>
+                <label class="form-label">Relationship *</label>
+                <select class="form-select" name="relationship" id="relationship" required>
                   <option value="">Select Relationship</option>
                   <option value="spouse">Spouse</option>
                   <option value="child">Child</option>
-                  <option value="grandchild">Grandchild</option>
-                  <option value="sibling">Brother / Sister</option>
-                  <option value="uncle_aunt">Uncle / Aunt</option>
-                  <option value="cousin">Cousin</option>
-                  <option value="other">Other Relative</option>
+                  <option value="sibling">Sibling</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+
+              <!-- SPOUSE (HIDDEN BY DEFAULT) -->
+              <div class="col-md-4" id="spouseBox" style="display:none;">
+                <label class="form-label">Select Spouse</label>
+                <select class="form-select" name="spouse_id">
+                  <option value="">Select spouse</option>
+
+                  <% if (spouses && spouses.length > 0) { %>
+                    <% spouses.forEach(s => { %>
+                      <option value="<%= s.member_id %>">
+                        <% if (s.gender === 'male') { %>
+                          Mume: <%= s.first_name %> <%= s.last_name %>
+                        <% } else { %>
+                          Mke: <%= s.first_name %> <%= s.last_name %>
+                        <% } %>
+                      </option>
+                    <% }) %>
+                  <% } %>
                 </select>
               </div>
 
               <div class="col-md-4">
-                <label class="form-label">Branch Type <span class="text-danger">*</span></label>
+                <label class="form-label">Branch Type *</label>
                 <select class="form-select" name="branch_type" required>
-                  <option value="">Select Branch Type</option>
-                  <option value="origin">Original Family</option>
-                  <option value="new_branch">New Family Branch</option>
+                  <option value="">Select Branch</option>
+                  <option value="origin">Origin</option>
+                  <option value="new_branch">New Branch</option>
                 </select>
               </div>
 
               <div class="col-md-4">
                 <label class="form-label">System Category</label>
-                <input type="text" id="category" class="form-control" readonly placeholder="Auto generated">
+                <input type="text" id="category" class="form-control" readonly>
               </div>
 
-              <!-- Contact Information -->
+              <!-- CONTACT -->
               <div class="col-12 mt-4">
                 <h6 class="fw-bold text-primary">Contact Information</h6>
-                <hr>
               </div>
 
               <div class="col-md-4">
-                <label class="form-label">Phone Number <span class="text-danger">*</span></label>
+                <label class="form-label">Phone *</label>
                 <input type="text" name="phone" class="form-control" required>
               </div>
 
               <div class="col-md-4">
-                <label class="form-label">Email Address</label>
+                <label class="form-label">Email</label>
                 <input type="email" name="email" class="form-control">
               </div>
 
               <div class="col-md-4">
-                <label class="form-label">Residential Address <span class="text-danger">*</span></label>
+                <label class="form-label">Address *</label>
                 <input type="text" name="address" class="form-control" required>
               </div>
 
-              <!-- System Logic Notice -->
-              <div class="col-12 mt-4">
-                <div class="alert alert-info">
-                  <strong>System Categorization Rules:</strong><br>
-                  • Members under 18 years → Registered as <b>Dependants</b><br>
-                  • Members 18 years and above → Registered as <b>Members</b><br>
-                  • <b>Future Head of Family</b> will be selected later by Family Admin from adult members.<br>
-                  • Family Admin role belongs only to the account owner.
-                </div>
-              </div>
-
-              <!-- Submit -->
               <div class="col-12 text-end mt-3">
                 <button type="reset" class="btn btn-secondary">Cancel</button>
-                <button type="submit" class="btn btn-primary">Register Member</button>
+                <button type="submit" class="btn btn-primary">Register</button>
               </div>
 
             </form>
@@ -237,6 +231,7 @@
     </div>
   </section>
 </main>
+
 
 <!-- Google Translate Element -->
 <div id="google_translate_element" style="visibility: hidden; position: absolute; z-index: -1;"></div>
@@ -306,24 +301,41 @@ function setLanguage(lang) {
 const dobInput = document.getElementById("dob");
 const ageField = document.getElementById("age");
 const categoryField = document.getElementById("category");
+const relationship = document.getElementById("relationship");
+const spouseBox = document.getElementById("spouseBox");
 
-dobInput.addEventListener("change", function(){
-  let dob = new Date(this.value);
+// AGE CALC
+function calculateAge() {
+  if (!dobInput.value) return;
+
+  let dob = new Date(dobInput.value);
   let today = new Date();
 
   let age = today.getFullYear() - dob.getFullYear();
   let month = today.getMonth() - dob.getMonth();
 
-  if(month < 0 || (month === 0 && today.getDate() < dob.getDate())){
+  if (month < 0 || (month === 0 && today.getDate() < dob.getDate())) {
     age--;
   }
 
   ageField.value = age;
-
   categoryField.value = age >= 18 ? "Member" : "Dependant";
+}
+
+dobInput.addEventListener("change", calculateAge);
+dobInput.addEventListener("input", calculateAge);
+window.addEventListener("load", calculateAge);
+
+// SPOUSE LOGIC
+relationship.addEventListener("change", function () {
+  if (this.value === "spouse") {
+    spouseBox.style.display = "block";
+  } else {
+    spouseBox.style.display = "none";
+    document.querySelector('[name="spouse_id"]').value = "";
+  }
 });
 </script>
-
 </body>
 
 </html>
