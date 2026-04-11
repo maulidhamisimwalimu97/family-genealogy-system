@@ -48,74 +48,71 @@
     <div class="card">
       <div class="card-body">
 
-        <h5 class="card-title">Family Origin Structure</h5>
+        <h5 class="card-title">Family Structure</h5>
 
         <div class="tree">
-
           <ul>
-            <% if (founder) { %>
-              <li>
-                <!-- ORIGIN / FOUNDER -->
-                <div class="member founder text-center">
-                  <a href="#" class="text-decoration-none text-dark member-link" data-member-id="<%= founder.member_id %>">
-                    <strong><%= founder.first_name %> <%= founder.last_name %></strong><br>
-                    <small>Founder</small>
-                  </a>
-                </div>
 
-                <ul>
-                  <% Object.keys(branches).forEach(branch => { %>
-                    <li>
-                      <!-- BRANCH -->
-                      <div class="member text-center">
-                        <strong><%= branch || 'Main Branch' %></strong><br>
-                        <small>Head - <%= branch %></small>
-                      </div>
+            <% if (tree && tree.length > 0) { %>
 
-                      <ul>
-                        <% branches[branch].forEach(member => { %>
-                          <% if (member.role !== 'family_admin') { %>
-                            <li>
-                              <div class="member text-center">
-                                <a href="#" class="text-decoration-none text-dark member-link" data-member-id="<%= member.member_id %>">
-                                  <%= member.first_name %> <%= member.last_name %>
-                                </a>
-                                <% if (member.is_future_head == 1) { %>
-                                  <br>
-                                  <small class="text-success">(Future Head)</small>
-                                <% } %>
-                                <% if (member.relationship) { %>
-                                  <br>
-                                  <small class="text-muted text-capitalize"><%= member.relationship %></small>
-                                <% } %>
-                              </div>
-                            </li>
-                          <% } %>
-                        <% }) %>
-                      </ul>
+              <% tree.forEach(node => { %>
 
-                    </li>
-                  <% }) %>
-                </ul>
+                <li>
 
-              </li>
+                  <!-- ROOT -->
+                  <div class="member text-center">
+                    <a href="#" class="member-link" data-member-id="<%= node.member_id %>">
+                      <strong><%= node.first_name %> <%= node.last_name %></strong>
+                    </a>
+                    <br>
+                    <small><%= node.relationship || node.role %></small>
+                  </div>
+
+                  <!-- CHILDREN -->
+                  <% if (node.children && node.children.length > 0) { %>
+                    <ul>
+
+                      <% node.children.forEach(child => { %>
+                        <li>
+
+                          <div class="member text-center">
+                            <a href="#" class="member-link" data-member-id="<%= child.member_id %>">
+                              <%= child.first_name %> <%= child.last_name %>
+                            </a>
+                            <br>
+                            <small><%= child.relationship || '' %></small>
+                          </div>
+
+                        </li>
+                      <% }) %>
+
+                    </ul>
+                  <% } %>
+
+                </li>
+
+              <% }) %>
+
             <% } else { %>
 
-              <!-- NO DATA -->
+              <!-- 🔥 FIXED EMPTY STATE -->
               <li>
                 <div class="member text-center">
-                  <strong>No family data found</strong>
+                  <strong>No hierarchy yet</strong><br>
+                  <small>System will build tree once relationships are added</small>
                 </div>
               </li>
 
             <% } %>
-          </ul>
 
+          </ul>
         </div>
+
       </div>
     </div>
   </section>
 </main>
+
 <!-- Member Profile Modal -->
 <div class="modal fade" id="memberProfileModal" tabindex="-1" aria-labelledby="memberProfileLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -137,53 +134,125 @@
 </div>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-  const modal = new bootstrap.Modal(document.getElementById('memberProfileModal'));
+  const modalEl = document.getElementById('memberProfileModal');
+  const modal = new bootstrap.Modal(modalEl);
 
-  document.querySelectorAll('.member-link').forEach(link => {
-    link.addEventListener('click', (e) => {
-      e.preventDefault();
-      const memberId = link.dataset.memberId;
+  const contentBox = document.getElementById('memberProfileContent');
 
-      // Show modal with spinner
-      document.getElementById('memberProfileContent').innerHTML = `
-        <div class="text-center py-5">
-          <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Loading...</span>
+  // ================================
+  // CLICK EVENT (TREE MEMBERS)
+  // ================================
+  document.addEventListener('click', async (e) => {
+    const link = e.target.closest('.member-link');
+    if (!link) return;
+
+    e.preventDefault();
+
+    const memberId = link.dataset.memberId;
+
+    // Loading UI
+    contentBox.innerHTML = `
+      <div class="text-center py-5">
+        <div class="spinner-border text-primary"></div>
+        <p class="mt-2">Loading profile...</p>
+      </div>
+    `;
+
+    modal.show();
+
+    try {
+      const res = await fetch(`/api/profile/${memberId}`);
+
+      if (!res.ok) {
+        throw new Error('Profile not found');
+      }
+
+      const p = await res.json();
+
+      const fullName =
+        p.fullName ||
+        `${p.first_name || ''} ${p.middle_name || ''} ${p.last_name || ''}`
+          .replace(/\s+/g, ' ')
+          .trim();
+
+      // ================================
+      // ✅ USE AGE FROM BACKEND (IMPORTANT FIX)
+      // ================================
+      const age = p.age;
+
+      const html = `
+        <div class="row">
+
+          <!-- LEFT SIDE -->
+          <div class="col-md-4 text-center">
+            <img src="${p.profile_image || '/assets/img/3.png'}"
+                 class="rounded-circle border shadow"
+                 style="width:120px;height:120px;object-fit:cover;">
+
+            <h5 class="mt-3">${fullName || 'Unknown'}</h5>
+
+            <span class="badge bg-primary">
+              ${p.roleName || 'Member'}
+            </span>
+
+            ${p.is_future_head == 1
+              ? `<div class="mt-2 text-success small">Future Head</div>`
+              : ''
+            }
           </div>
+
+          <!-- RIGHT SIDE -->
+          <div class="col-md-8">
+            <ul class="list-group list-group-flush">
+
+              <li class="list-group-item">
+                <b>Age:</b> ${age !== null ? age + ' years' : 'N/A'}
+              </li>
+
+              <li class="list-group-item">
+                <b>Gender:</b> ${p.gender || 'N/A'}
+              </li>
+
+              <li class="list-group-item">
+                <b>Phone:</b> ${p.phone || 'N/A'}
+              </li>
+
+              <li class="list-group-item">
+                <b>Email:</b> ${p.email || 'N/A'}
+              </li>
+
+              <li class="list-group-item">
+                <b>Relationship:</b> ${p.relationship || 'Not specified'}
+              </li>
+
+              <li class="list-group-item">
+                <b>Branch:</b> ${p.branch_type || 'Main'}
+              </li>
+
+              <li class="list-group-item">
+                <b>Family Role:</b> ${p.roleName || 'Member'}
+              </li>
+
+            </ul>
+          </div>
+
         </div>
       `;
-      modal.show();
 
-      // Fetch profile via AJAX
-      fetch(`/api/profile/${memberId}`)
-        .then(res => res.json())
-        .then(profile => {
-          const html = `
-            <div class="row">
-              <div class="col-md-4 text-center">
-                <img src="${profile.profile_image || '/assets/img/3.png'}" class="rounded-circle border p-1" style="width: 120px; height: 120px; object-fit: cover;">
-                <h5 class="mt-3">${profile.fullName}</h5>
-                <span class="badge bg-primary">${profile.roleName}</span>
-              </div>
-              <div class="col-md-8">
-                <ul class="list-group list-group-flush">
-                  <li class="list-group-item"><strong>Gender:</strong> ${profile.gender || 'N/A'}</li>
-                  <li class="list-group-item"><strong>Phone:</strong> ${profile.phone || 'N/A'}</li>
-                  <li class="list-group-item"><strong>Email:</strong> ${profile.email || 'N/A'}</li>
-                  <li class="list-group-item"><strong>Relationship:</strong> ${profile.relationship || 'N/A'}</li>
-                  <li class="list-group-item"><strong>Branch:</strong> ${profile.branch_type || 'N/A'}</li>
-                </ul>
-              </div>
-            </div>
-          `;
-          document.getElementById('memberProfileContent').innerHTML = html;
-        })
-        .catch(err => {
-          document.getElementById('memberProfileContent').innerHTML = '<p class="text-danger text-center">Failed to load profile.</p>';
-          console.error(err);
-        });
-    });
+      contentBox.innerHTML = html;
+
+    } catch (err) {
+      console.error(err);
+
+      contentBox.innerHTML = `
+        <div class="text-center text-danger py-4">
+          <i class="bi bi-exclamation-triangle" style="font-size:30px;"></i>
+          <p class="mt-2">Failed to load profile</p>
+        </div>
+      `;
+    }
   });
+
 });
 </script>
 <!-- Google Translate Element -->

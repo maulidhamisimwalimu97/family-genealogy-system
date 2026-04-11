@@ -127,20 +127,41 @@
                 <hr>
               </div>
 
+              <!-- Father -->
               <div class="col-md-4">
-                <label class="form-label">Select Parent (Optional)</label>
-                <select class="form-select" name="parent_id">
-                  <option value="">None</option>
-                  <% if (members) { %>
-                    <% members.forEach(m => { %>
+                <label class="form-label">Select Father</label>
+               <select class="form-select" name="father_id">
+                  <option value="">Not in system</option>
+
+                  <% if (fathers && fathers.length > 0) { %>
+                    <% fathers.forEach(f => { %>
+                      <option value="<%= f.member_id %>">
+                        <%= f.first_name %> <%= f.last_name %>
+                      </option>
+                    <% }) %>
+                  <% } else { %>
+                    <option disabled>No male members found</option>
+                  <% } %>
+                </select>       
+              </div>
+
+              <!-- Mother -->
+              <div class="col-md-4">
+                <label class="form-label">Select Mother</label>
+                <select class="form-select" name="mother_id">
+                  <option value="">Not in system</option>
+
+                  <% if (mothers && mothers.length > 0) { %>
+                    <% mothers.forEach(m => { %>
                       <option value="<%= m.member_id %>">
                         <%= m.first_name %> <%= m.last_name %>
                       </option>
                     <% }) %>
+                  <% } else { %>
+                    <option disabled>No female members found</option>
                   <% } %>
                 </select>
               </div>
-
               <div class="col-md-4">
                 <label class="form-label">Relationship to Head of Family <span class="text-danger">*</span></label>
                 <select class="form-select" name="relationship" required>
@@ -281,34 +302,26 @@ function setLanguage(lang) {
   <!-- Main JS File -->
   <script src="/assets/js/main.js"></script>
 
-  <script>
-
+<script>
 const dobInput = document.getElementById("dob");
 const ageField = document.getElementById("age");
 const categoryField = document.getElementById("category");
 
 dobInput.addEventListener("change", function(){
+  let dob = new Date(this.value);
+  let today = new Date();
 
-let dob = new Date(this.value);
-let today = new Date();
+  let age = today.getFullYear() - dob.getFullYear();
+  let month = today.getMonth() - dob.getMonth();
 
-let age = today.getFullYear() - dob.getFullYear();
-let month = today.getMonth() - dob.getMonth();
+  if(month < 0 || (month === 0 && today.getDate() < dob.getDate())){
+    age--;
+  }
 
-if(month < 0 || (month === 0 && today.getDate() < dob.getDate())){
-age--;
-}
+  ageField.value = age;
 
-ageField.value = age;
-
-if(age >= 18){
-categoryField.value = "Member";
-}else{
-categoryField.value = "Dependant";
-}
-
+  categoryField.value = age >= 18 ? "Member" : "Dependant";
 });
-
 </script>
 
 </body>
