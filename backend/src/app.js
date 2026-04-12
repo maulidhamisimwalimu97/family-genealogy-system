@@ -356,6 +356,109 @@ app.post('/index', (req, res) => {
   });
 });
 
+// GET: Payment Page
+app.get('/make_payment', (req, res) => {
+
+  res.render('make_payment', {
+    error: null,
+    success: null
+  });
+
+});
+
+app.get('/approve_payment/:id', (req, res) => {
+
+  const paymentId = req.params.id;
+
+  // get payment
+  db.query("SELECT * FROM payments WHERE payment_id=?", [paymentId], (err, result) => {
+
+    if (result.length === 0) return res.redirect('/Admin');
+
+    const payment = result[0];
+
+    // approve payment
+    db.query("UPDATE payments SET status='approved' WHERE payment_id=?", [paymentId]);
+
+    // activate family
+    db.query(`
+      UPDATE family 
+      SET 
+        is_active=1,
+        package_type=?,
+        payment_status='paid'
+      WHERE family_id=?
+    `, [payment.package_type, payment.family_id]);
+
+    res.redirect('/Admin');
+  });
+
+});
+
+app.post('/submit_payment', (req, res) => {
+
+  let familyId = req.session.family_id;
+
+  if (!familyId && req.body.family_id) {
+    familyId = req.body.family_id;
+  }
+
+  const { package_type, reference_number } = req.body;
+
+  if (!familyId) {
+    return res.redirect('/index');
+  }
+
+  // STEP 1: get package price from DB (optional but good)
+  const getPackage = "SELECT * FROM packages WHERE name=? LIMIT 1";
+
+  db.query(getPackage, [package_type], (err, pkgResult) => {
+
+    if (err || pkgResult.length === 0) {
+      return res.render('make_payment', {
+        error: "Invalid package selected",
+        success: null
+      });
+    }
+
+    const packageData = pkgResult[0];
+
+    // STEP 2: INSERT PAYMENT (FIXED)
+    const sql = `
+      INSERT INTO payments 
+      (family_id, amount, reference_number, payment_type, status, payment_date)
+      VALUES (?, ?, ?, ?, 'pledge', NOW())
+    `;
+
+    db.query(sql, [
+      familyId,
+      packageData.price,
+      reference_number,
+      package_type
+    ], (err2) => {
+
+      if (err2) {
+        console.log("PAYMENT ERROR:", err2);
+
+        return res.render('make_payment', {
+          error: "Error submitting payment",
+          success: null
+        });
+      }
+
+      // STEP 3: update family status
+      db.query(
+        "UPDATE family SET payment_status='pending' WHERE family_id=?",
+        [familyId]
+      );
+
+      return res.render('make_payment', {
+        error: null,
+        success: "Payment submitted successfully. Subiri approval ya admin."
+      });
+    });
+  });
+});
 
 // Logout process
 app.get('/logout', (req, res) => {
