@@ -241,7 +241,10 @@ app.post('/reset_password', async (req, res) => {
 });
 // Login page
 app.get('/index', (req, res) => {
-    res.render('index', { error: null });
+  res.render('index', { 
+    error: null,
+    paymentLink: false
+  });
 });
 
 app.post('/index', (req, res) => {
@@ -250,13 +253,26 @@ app.post('/index', (req, res) => {
   const adminQuery = "SELECT * FROM system_admin WHERE phone = ? LIMIT 1";
 
   db.query(adminQuery, [phone], async (err, adminResult) => {
-    if (err) return res.render('index', { error: "Server error" });
 
+    // ❌ ERROR
+    if (err) {
+      return res.render('index', { 
+        error: "Server error",
+        paymentLink: false
+      });
+    }
+
+    // 🔹 ADMIN LOGIN
     if (adminResult.length > 0) {
       const admin = adminResult[0];
       const match = await bcrypt.compare(password, admin.password);
 
-      if (!match) return res.render('index', { error: "Incorrect password" });
+      if (!match) {
+        return res.render('index', { 
+          error: "Incorrect password",
+          paymentLink: false
+        });
+      }
 
       req.session.adminId = admin.admin_id;
       req.session.adminName = admin.full_name;
@@ -265,28 +281,72 @@ app.post('/index', (req, res) => {
     }
 
     // 🔹 FAMILY MEMBER
-    const familyQuery = "SELECT * FROM family_member WHERE phone = ? LIMIT 1";
+    const familyQuery = `
+      SELECT fm.*, f.package_type, f.trial_ends_at, f.is_active, f.payment_status
+      FROM family_member fm
+      JOIN family f ON fm.family_id = f.family_id
+      WHERE fm.phone = ?
+      LIMIT 1
+    `;
 
     db.query(familyQuery, [phone], async (err, familyResult) => {
-      if (err) return res.render('index', { error: "Server error" });
 
+      // ❌ ERROR
+      if (err) {
+        return res.render('index', { 
+          error: "Server error",
+          paymentLink: false
+        });
+      }
+
+      // ❌ NOT FOUND
       if (familyResult.length === 0) {
-        return res.render('index', { error: "Phone number not found" });
+        return res.render('index', { 
+          error: "Phone number not found",
+          paymentLink: false
+        });
       }
 
       const user = familyResult[0];
+
       const match = await bcrypt.compare(password, user.password);
 
-      if (!match) return res.render('index', { error: "Incorrect password" });
+      if (!match) {
+        return res.render('index', { 
+          error: "Incorrect password",
+          paymentLink: false
+        });
+      }
 
-      // ✅ SESSION (IMPORTANT)
+      // 🔥 ===== TRIAL CHECK =====
+      if (user.package_type === 'trial') {
+        const now = new Date();
+        const trialEnd = new Date(user.trial_ends_at);
+
+        if (now > trialEnd) {
+          return res.render('index', { 
+            error: "Trial imeisha ❌ Tafadhali lipa kuendelea kutumia mfumo.",
+            paymentLink: true
+          });
+        }
+      }
+
+      // 🔥 ===== PAYMENT CHECK =====
+      if (user.package_type !== 'trial' && user.is_active == 0) {
+        return res.render('index', { 
+          error: "Account haija-activate ❌ Subiri uthibitisho wa malipo.",
+          paymentLink: true
+        });
+      }
+
+      // ✅ SESSION
       req.session.family_id = user.family_id;
       req.session.member_id = user.member_id;
       req.session.member_name = user.first_name + " " + user.last_name;
       req.session.role = user.role;
       req.session.is_future_head = user.is_future_head;
 
-      // ✅ REDIRECT BASED ON ROLE
+      // ✅ REDIRECT
       if (user.role === 'family_admin' || user.is_future_head == 1) {
         return res.redirect('/family_admin');
       }
@@ -295,6 +355,7 @@ app.post('/index', (req, res) => {
     });
   });
 });
+
 
 // Logout process
 app.get('/logout', (req, res) => {
@@ -359,19 +420,19 @@ app.get('/register', (req, res) => {
     });
 
 });
-  // --- POST: Handle Family Registration ---
+// --- POST: Handle Family Registration ---
 app.post('/register-family', async (req, res) => {
     const adminId = req.session.adminId;
     const adminName = req.session.adminName;
 
     if (!adminId) return res.redirect('/index');
 
-    // 1. Kuchukua data kutoka kwenye form
     const { 
         family_name, tribe, region, religion, address, 
         first_name, middle_name, last_name, phone, email, gender 
     } = req.body;
 
+    // 🔁 Helper render
     const getCountAndRender = (errorMsg, successMsg) => {
         const countSql = "SELECT COUNT(*) AS totalFamilies FROM family WHERE registered_by = ?";
         db.query(countSql, [adminId], (err, countResult) => {
@@ -385,11 +446,12 @@ app.post('/register-family', async (req, res) => {
         });
     };
 
+    // ❌ Validation
     if (!family_name || !first_name || !phone) {
         return getCountAndRender('Tafadhali jaza sehemu zote muhimu.', null);
     }
 
-    // 2. Safisha namba ya simu (FormattedPhone kwa ajili ya DB na Recipient)
+    // 📞 Format phone
     let formattedPhone = phone.replace(/\D/g, ''); 
     if (formattedPhone.startsWith('0')) {
         formattedPhone = '255' + formattedPhone.substring(1);
@@ -397,21 +459,46 @@ app.post('/register-family', async (req, res) => {
         formattedPhone = '255' + formattedPhone;
     }
 
-    // Hii itatumika kuonyesha Username kwenye message kwa usahihi
     const formattedUsername = formattedPhone;
 
     try {
+        // 🔍 Check duplicate phone
         db.query("SELECT member_id FROM family_member WHERE phone = ? LIMIT 1", [formattedPhone], async (err, result) => {
             if (err) return getCountAndRender('Database error checking phone', null);
-            if (result && result.length > 0) return getCountAndRender('Namba hii tayari imesajiliwa.', null);
 
-            // Tengeneza Password ya nasibu (Random)
+            if (result && result.length > 0) {
+                return getCountAndRender('Namba hii tayari imesajiliwa.', null);
+            }
+
+            // 🔐 Generate password
             const plainPassword = crypto.randomBytes(3).toString('hex'); 
             const hashedPassword = await bcrypt.hash(plainPassword, 10);
 
-            // 3. Save Family Data
-            const familySql = `INSERT INTO family (family_name, tribe, region, religion, address, phone, registered_by, permissions) VALUES (?, ?, ?, ?, ?, ?, ?, '')`;
-            db.query(familySql, [family_name, tribe, region, religion || null, address || null, formattedPhone, adminId], (err2, familyResult) => {
+            // 🕒 TRIAL SETTINGS
+            const trialEnds = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hrs
+            const packageType = "trial";
+            const isActive = 1;
+
+            // 💾 Insert family
+            const familySql = `
+                INSERT INTO family 
+                (family_name, tribe, region, religion, address, phone, registered_by, permissions, package_type, trial_ends_at, is_active) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, '', ?, ?, ?)
+            `;
+
+            db.query(familySql, [
+                family_name,
+                tribe,
+                region,
+                religion || null,
+                address || null,
+                formattedPhone,
+                adminId,
+                packageType,
+                trialEnds,
+                isActive
+            ], (err2, familyResult) => {
+
                 if (err2) {
                     console.error("Family Insert Error:", err2);
                     return getCountAndRender('Error saving family data.', null);
@@ -419,8 +506,12 @@ app.post('/register-family', async (req, res) => {
 
                 const familyId = familyResult.insertId;
 
-                // 4. Save Admin Member
-                const memberSql = `INSERT INTO family_member (family_id, first_name, middle_name, last_name, gender, phone, email, role, password) VALUES (?, ?, ?, ?, ?, ?, ?, 'family_admin', ?)`;
+                // 👤 Insert family admin
+                const memberSql = `
+                    INSERT INTO family_member 
+                    (family_id, first_name, middle_name, last_name, gender, phone, email, role, password) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, 'family_admin', ?)
+                `;
                 
                 db.query(memberSql, [
                     familyId, 
@@ -432,52 +523,71 @@ app.post('/register-family', async (req, res) => {
                     email || '', 
                     hashedPassword
                 ], async (err3) => {
+
                     if (err3) {
                         console.error("Member Insert Error:", err3);
                         return getCountAndRender('Error saving admin member.', null);
                     }
 
-                    // 5. TegaSMS Configuration & Message Styling
+                    // 📩 SMS
                     const apiToken = '2|ZDVZgBsVfuBbhCRnFf5N9jmYsG7JLPtoXACoqLQO88f41331';
-                    
-                    // Ujumbe uliopangwa vizuri kwa nafasi (Spacing)
-                    const smsMessage = `Habari ${first_name}, 
 
-                    Hongera! Familia ya ${family_name} imesajiliwa kikamilifu.
+                    const smsMessage = `Habari ${first_name},
 
-                    TAARIFA ZAKO ZA KUINGIA:
-                    Username: ${formattedUsername}
-                    Neno la Siri: ${plainPassword}
+Hongera! Familia ya ${family_name} imesajiliwa.
 
-                    Ingia hapa: http://localhost:5000/
+🔹 Username: ${formattedUsername}
+🔹 Password: ${plainPassword}
 
-                    Tafadhali badili neno la siri mara tu utakapoingia kwa usalama wa akaunti yako.`;
+⏳ Trial yako ni masaa 24 tu.
+
+Ingia hapa:
+http://localhost:5000/
+
+Badili password yako mara moja kwa usalama.`;
 
                     const smsData = {
-                        "from": "FamilyHub", 
-                        "recipient": formattedPhone,
-                        "message": smsMessage,
-                        "channel": "1010105"
+                        from: "FamilyHub",
+                        recipient: formattedPhone,
+                        message: smsMessage,
+                        channel: "1010105"
                     };
 
-                    // Tuma SMS kupitia Axios
                     axios.post('https://tegasms.teganas.co.tz/api/v1/send_sms/type/single', smsData, {
                         headers: {
                             'Authorization': `Bearer ${apiToken}`,
                             'Content-Type': 'application/json'
                         }
-                    }).then(res => console.log("SMS Success:", res.data))
-                      .catch(e => console.error("SMS API Error:", e.response ? e.response.data : e.message));
+                    })
+                    .then(res => console.log("SMS Success:", res.data))
+                    .catch(e => console.error("SMS API Error:", e.response ? e.response.data : e.message));
 
-                    // 6. Success Response kwa Admin
-                    getCountAndRender(null, `Familia ya ${family_name} imesajiliwa kikamilifu!`);
+                    // ✅ Success
+                    getCountAndRender(null, `Familia ya ${family_name} imesajiliwa kikamilifu! (Trial: 24hrs)`);
                 });
             });
         });
+
     } catch (error) {
         console.error("General Error:", error);
         getCountAndRender('Something went wrong during processing.', null);
     }
+});
+
+app.post('/submit-payment', (req, res) => {
+  const { reference } = req.body;
+  const familyId = req.session.family_id;
+
+  const sql = `
+    INSERT INTO payments (family_id, reference, status)
+    VALUES (?, ?, 'pending')
+  `;
+
+  db.query(sql, [familyId, reference], (err) => {
+    if (err) return res.send("Error");
+
+    res.send("Payment submitted. Subiri approval.");
+  });
 });
 
   // --- GET: List All Families with Live Notification Count ---

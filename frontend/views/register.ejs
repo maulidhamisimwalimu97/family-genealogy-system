@@ -329,6 +329,47 @@
                   <input type="email" name="email" class="form-control" placeholder="example@mail.com">
                 </div>
               </div>
+              <hr class="my-4">
+
+<h6 class="fw-bold text-success">
+  <i class="bi bi-box-seam"></i> Select Package
+</h6>
+
+<div class="row g-3">
+
+  <div class="col-md-6">
+    <div class="card border-primary shadow-sm p-3">
+      <div class="form-check">
+        <input class="form-check-input" type="radio" name="package_type" value="trial" checked>
+        <label class="form-check-label fw-bold text-primary">
+          Trial Package (24 Hours)
+        </label>
+      </div>
+      <small class="text-muted">
+        ✔ Free for 24 hours <br>
+        ✔ Test all features <br>
+        ❌ Will expire automatically
+      </small>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card border-warning shadow-sm p-3">
+      <div class="form-check">
+        <input class="form-check-input" type="radio" name="package_type" value="paid">
+        <label class="form-check-label fw-bold text-warning">
+          Paid Package
+        </label>
+      </div>
+      <small class="text-muted">
+        ✔ Full access <br>
+        ✔ No expiry <br>
+        ✔ Requires payment
+      </small>
+    </div>
+  </div>
+
+</div>
 
               <div class="text-end mt-4">
                 <button type="submit" class="btn btn-primary px-5 shadow-sm">
