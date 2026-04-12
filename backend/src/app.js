@@ -8,6 +8,7 @@ const path = require('path');
 const bcrypt = require('bcrypt');
 const db = require('./config/db');
 
+const otpStore = {};
 const app = express();
 
 // --- HELPER: Format Tanzanian Phone Numbers ---
@@ -147,6 +148,97 @@ function getUserType(session) {
   return 'member';
 }
 
+app.use(express.static(path.join(__dirname, '../../frontend/website')));
+
+
+app.get('/forget_password', (req, res) => {
+  res.render('forget_password', { error: null, success: null });
+});
+
+app.post('/send_otp', (req, res) => {
+  const { phone } = req.body;
+
+  if (!phone) {
+    return res.json({ success: false, message: "Ingiza namba ya simu" });
+  }
+
+  const sql = "SELECT * FROM family_member WHERE phone = ? LIMIT 1";
+
+  db.query(sql, [phone], (err, result) => {
+    if (err || result.length === 0) {
+      return res.json({ success: false, message: "Namba haijapatikana" });
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000);
+
+    otpStore[phone] = {
+      otp,
+      expires: Date.now() + 5 * 60 * 1000
+    };
+
+    const apiToken = '2|ZDVZgBsVfuBbhCRnFf5N9jmYsG7JLPtoXACoqLQO88f41331';
+
+    axios.post('https://tegasms.teganas.co.tz/api/v1/send_sms/type/single', {
+      from: "FamilyHub",
+      recipient: phone,
+      message: `OTP yako ni: ${otp}`,
+      channel: "1010105"
+    }, {
+      headers: {
+        Authorization: `Bearer ${apiToken}`
+      }
+    });
+
+    return res.json({ success: true, message: "OTP imetumwa" });
+  });
+});
+app.post('/verify_otp', (req, res) => {
+  const { phone, otp } = req.body;
+
+  const record = otpStore[phone];
+
+  if (!record) {
+    return res.json({ success: false, message: "OTP haipo" });
+  }
+
+  if (record.expires < Date.now()) {
+    return res.json({ success: false, message: "OTP imeexpire" });
+  }
+
+  if (Number(otp) !== Number(record.otp)) {
+    return res.json({ success: false, message: "OTP si sahihi" });
+  }
+
+  req.session.reset_phone = phone;
+
+  return res.json({ success: true, message: "OTP sahihi" });
+});
+
+app.post('/reset_password', async (req, res) => {
+  const phone = req.session.reset_phone;
+  const { password } = req.body;
+
+  if (!phone) {
+    return res.json({ success: false, message: "Session imeisha" });
+  }
+
+  const hashed = await bcrypt.hash(password, 10);
+
+  db.query(
+    "UPDATE family_member SET password=? WHERE phone=?",
+    [hashed, phone],
+    (err) => {
+      if (err) {
+        return res.json({ success: false, message: "Error kubadili password" });
+      }
+
+      delete otpStore[phone];
+      req.session.reset_phone = null;
+
+      return res.json({ success: true, message: "Password imebadilishwa" });
+    }
+  );
+});
 // Login page
 app.get('/index', (req, res) => {
     res.render('index', { error: null });
@@ -912,11 +1004,9 @@ app.get('/header', (req, res) => {
   res.render('header'); // Admin
 });
 
-// home.ejs
 app.get('/home', (req, res) => {
-  res.render('home'); // Admin
+  res.render('home');
 });
-
 
 // Head of family Dashboard
 // --- GET: Head of Family Dashboard ---

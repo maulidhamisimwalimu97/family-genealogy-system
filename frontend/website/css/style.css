@@ -8,6 +8,10 @@
     --dark: #1a1f36;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 #typing-header, #typing-subheader {
     opacity: 0;
     animation: fadeIn 0.5s forwards;
