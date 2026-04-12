@@ -191,6 +191,22 @@
         </li>
 
         <% if (userType === 'admin') { %>
+          <li>
+            <a href="/transactions">
+              <i class="bi bi-credit-card-2-front-fill"></i>
+              <span>View Transactions</span>
+
+              <% if (typeof pendingTransactions !== 'undefined' && pendingTransactions > 0) { %>
+                <span class="badge bg-warning text-dark ms-2">
+                  <%= pendingTransactions %>
+                </span>
+              <% } %>
+
+            </a>
+          </li>
+          <% } %>
+
+        <% if (userType === 'admin') { %>
         <li>
           <a href="/lists">
             <i class="bi bi-plus-circle-fill"></i>

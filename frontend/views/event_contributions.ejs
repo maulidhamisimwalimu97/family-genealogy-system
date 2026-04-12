@@ -36,6 +36,7 @@
 <%- include('partials/title') %>
 
 <%- include('partials/header') %>
+<%- include('partials/notifications') %>
 
 <main id="main" class="main">
   <div class="pagetitle">
@@ -44,113 +45,209 @@
 
   <section class="section">
     <%- include('partials/notifications') %>
+
     <div class="row">
+
       <% currentEvents.forEach(event => { %>
+
+        <% const totalPaid = event.my_total_paid || 0; %>
+        <% const target = event.target_amount || 0; %>
+        <% const remaining = target - totalPaid; %>
+
         <div class="col-lg-6">
+
           <div class="card shadow-sm border-0 mb-4">
             <div class="card-body p-4">
+
+              <!-- TITLE + TYPE -->
               <div class="d-flex justify-content-between align-items-center mb-3">
                 <h5 class="card-title p-0 m-0 text-primary"><%= event.title %></h5>
+
                 <span class="badge bg-<%= event.event_type === 'msiba' ? 'danger' : 'success' %>">
                   <%= event.event_type === 'msiba' ? 'Rambi Rambi' : 'Mchango' %>
                 </span>
               </div>
 
+              <!-- AMOUNTS -->
               <div class="row mb-3">
                 <div class="col-6">
-                  <small class="text-muted d-block">Lengo la Familia</small>
-                  <strong><%= (event.target_amount || 0).toLocaleString() %> TZS</strong>
+                  <small class="text-muted">Lengo</small><br>
+                  <strong><%= target.toLocaleString() %> TZS</strong>
                 </div>
+
                 <div class="col-6 text-end">
-                  <small class="text-muted d-block">Zilizopatikana</small>
+                  <small class="text-muted">Zilizopatikana</small><br>
                   <strong class="text-success"><%= (event.collected_amount || 0).toLocaleString() %> TZS</strong>
                 </div>
               </div>
 
-              <div class="alert alert-light border mb-4 p-2 small">
-                <% if (event.my_paid_amount) { %>
-                  <i class="bi bi-check-circle-fill text-success"></i> Tayari umetoa: <strong><%= event.my_paid_amount.toLocaleString() %> TZS</strong>
-                <% } else if (event.my_pledge_amount) { %>
-                  <i class="bi bi-clock-history text-warning"></i> Una Ahadi ya: <strong><%= event.my_pledge_amount.toLocaleString() %> TZS</strong>
+              <!-- STATUS BOX -->
+              <div class="alert border p-2 small">
+
+                <% if (totalPaid >= target && target > 0) { %>
+
+                  <i class="bi bi-check-circle-fill text-success"></i>
+                  <b>Umekamilisha Mchango</b><br>
+                  Asante kwa mchango wako.
+
+                <% } else if (totalPaid > 0) { %>
+
+                  <i class="bi bi-wallet2 text-primary"></i>
+                  <b>Mchango wa Sehemu</b><br>
+                  Umelipa <b><%= totalPaid.toLocaleString() %> TZS</b>,
+                  bado <b class="text-danger"><%= remaining.toLocaleString() %> TZS</b>.
+
+                <% } else if (event.my_payment_status === 'pledge') { %>
+
+                  <i class="bi bi-clock-history text-warning"></i>
+                  <b>Ahadi Inasubiri Uthibitisho</b><br>
+                  Subiri admin athibitishe.
+
+                <% } else if (event.my_payment_status === 'rejected') { %>
+
+                  <i class="bi bi-x-circle-fill text-danger"></i>
+                  <b>Muamala Umekataliwa</b><br>
+                  Unaweza kutuma tena.
+
                 <% } else { %>
-                  <i class="bi bi-info-circle text-muted"></i> Bado haujachangia tukio hili.
+
+                  <i class="bi bi-info-circle text-muted"></i>
+                  <b>Bado hujachangia</b>
+
                 <% } %>
+
               </div>
 
-              <div class="d-grid gap-2 d-md-flex justify-content-md-start">
-                <button class="btn btn-primary btn-sm px-4" data-bs-toggle="modal" data-bs-target="#payModal<%= event.event_id %>">
-                  <i class="bi bi-cash"></i> Weka Muamala
-                </button>
-                <button class="btn btn-outline-warning btn-sm px-4" data-bs-toggle="modal" data-bs-target="#pledgeModal<%= event.event_id %>">
-                  <i class="bi bi-calendar-check"></i> Weka Ahadi
-                </button>
+              <!-- ACTION BUTTONS -->
+              <div class="d-grid gap-2 d-md-flex">
+
+                <!-- FULLY PAID -->
+                <% if (totalPaid >= target && target > 0) { %>
+
+                  <button class="btn btn-success btn-sm px-4" disabled>
+                    ✔ Umekamilisha Mchango
+                  </button>
+
+                <!-- PARTIAL PAYMENT -->
+                <% } else if (totalPaid > 0 && remaining > 0) { %>
+
+                  <button class="btn btn-info btn-sm px-4" disabled>
+                    💡 Umelipa <%= totalPaid.toLocaleString() %> / <%= target.toLocaleString() %>
+                  </button>
+
+                  <button class="btn btn-primary btn-sm px-4"
+                    data-bs-toggle="modal"
+                    data-bs-target="#payModal<%= event.event_id %>">
+                    ➕ Ongeza Mchango
+                  </button>
+
+                <!-- NO PAYMENT -->
+                <% } else { %>
+
+                  <button class="btn btn-primary btn-sm px-4"
+                    data-bs-toggle="modal"
+                    data-bs-target="#payModal<%= event.event_id %>">
+                    💰 Weka Muamala
+                  </button>
+
+                  <button class="btn btn-outline-warning btn-sm px-4"
+                    data-bs-toggle="modal"
+                    data-bs-target="#pledgeModal<%= event.event_id %>">
+                    📅 Weka Ahadi
+                  </button>
+
+                <% } %>
+
               </div>
+
             </div>
           </div>
+
         </div>
 
-        <!-- Payment Modal -->
+        <!-- PAYMENT MODAL -->
         <div class="modal fade" id="payModal<%= event.event_id %>" tabindex="-1">
           <div class="modal-dialog">
-            <form action="/submit_contribution" method="POST" class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title text-primary">Ingiza Taarifa za Malipo</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-              </div>
-              <div class="modal-body">
-                <input type="hidden" name="event_id" value="<%= event.event_id %>">
-                <input type="hidden" name="status" value="paid">
-                
-                <div class="mb-3">
-                  <label class="form-label">Kiasi ulichotuma (TZS)</label>
-                  <input type="number" name="amount" class="form-control" placeholder="10000" required>
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">Namba ya Muamala (Reference No.)</label>
-                  <input type="text" name="reference_number" class="form-control" placeholder="PP230404..." required>
-                  <small class="text-muted">Ingiza namba ya muamala ya M-Pesa, Tigo-Pesa, nk.</small>
-                </div>
-              </div>
-              <div class="modal-footer">
-                <button type="submit" class="btn btn-success w-100">Hifadhi Malipo</button>
-              </div>
-            </form>
-          </div>
-        </div>
 
-        <!-- Pledge Modal -->
-        <div class="modal fade" id="pledgeModal<%= event.event_id %>" tabindex="-1">
-          <div class="modal-dialog">
             <form action="/submit_contribution" method="POST" class="modal-content">
+
               <div class="modal-header">
-                <h5 class="modal-title text-warning">Weka Ahadi ya Mchango</h5>
+                <h5 class="modal-title text-primary">Tuma Muamala</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
               </div>
+
               <div class="modal-body">
+
                 <input type="hidden" name="event_id" value="<%= event.event_id %>">
                 <input type="hidden" name="status" value="pledge">
-                
+
                 <div class="mb-3">
-                  <label class="form-label">Kiasi cha Ahadi (TZS)</label>
-                  <input type="number" name="amount" class="form-control" placeholder="50000" required>
+                  <label>Kiasi (TZS)</label>
+                  <input type="number" name="amount" class="form-control" required>
                 </div>
+
                 <div class="mb-3">
-                  <label class="form-label">Lini utalipa?</label>
-                  <input type="date" name="pledge_date" class="form-control" required>
+                  <label>Reference Number</label>
+                  <input type="text" name="reference_number" class="form-control" required>
                 </div>
+
               </div>
+
               <div class="modal-footer">
-                <button type="submit" class="btn btn-warning w-100">Weka Ahadi Yangu</button>
+                <button class="btn btn-success w-100">
+                  Tuma Muamala
+                </button>
               </div>
+
             </form>
+
           </div>
         </div>
+
+        <!-- PLEDGE MODAL -->
+        <div class="modal fade" id="pledgeModal<%= event.event_id %>" tabindex="-1">
+          <div class="modal-dialog">
+
+            <form action="/submit_contribution" method="POST" class="modal-content">
+
+              <div class="modal-header">
+                <h5 class="modal-title text-warning">Weka Ahadi</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+              </div>
+
+              <div class="modal-body">
+
+                <input type="hidden" name="event_id" value="<%= event.event_id %>">
+                <input type="hidden" name="status" value="pledge">
+
+                <div class="mb-3">
+                  <label>Kiasi</label>
+                  <input type="number" name="amount" class="form-control" required>
+                </div>
+
+                <div class="mb-3">
+                  <label>Tarehe ya kulipa</label>
+                  <input type="date" name="pledge_date" class="form-control" required>
+                </div>
+
+              </div>
+
+              <div class="modal-footer">
+                <button class="btn btn-warning w-100">
+                  Weka Ahadi
+                </button>
+              </div>
+
+            </form>
+
+          </div>
+        </div>
+
       <% }) %>
+
     </div>
-
-     </section>
+  </section>
 </main>
-
 <script>
   // Function ya kuonyesha/kuficha field ya mchango
   function toggleContributionField() {

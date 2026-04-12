@@ -1580,25 +1580,62 @@ app.get('/meeting_list', (req, res) => {
 
     if (!familyId || !memberId) return res.redirect('/index');
 
-    const profileQuery = `SELECT first_name, last_name, role FROM family_member WHERE member_id = ? LIMIT 1`;
-    const meetingsQuery = `SELECT * FROM meeting WHERE family_id = ? ORDER BY meeting_date DESC`;
+    const showPast = req.query.past === '1'; // 🔥 toggle
+
+    const profileQuery = `
+        SELECT first_name, last_name, role 
+        FROM family_member 
+        WHERE member_id = ? 
+        LIMIT 1
+    `;
+
+    // 🔥 SMART QUERY (HIDE / SHOW PAST)
+    const meetingsQuery = `
+        SELECT *,
+        CASE 
+            WHEN CONCAT(meeting_date, ' ', meeting_time) < NOW() THEN 'past'
+            ELSE 'upcoming'
+        END AS status
+        FROM meeting 
+        WHERE family_id = ?
+        ${showPast ? '' : "AND CONCAT(meeting_date, ' ', meeting_time) >= NOW()"}
+        ORDER BY meeting_date ASC
+    `;
+
     const notificationsQuery = `
-        SELECT 'member' AS type, CONCAT(first_name, ' ', last_name) AS title, created_at FROM family_member WHERE registered_by = ?
+        SELECT 'member' AS type, CONCAT(first_name, ' ', last_name) AS title, created_at 
+        FROM family_member 
+        WHERE registered_by = ?
+
         UNION
-        SELECT 'meeting' AS type, title, created_at FROM meeting WHERE created_by = ?
-        ORDER BY created_at DESC LIMIT 5`;
+
+        SELECT 'meeting' AS type, title, created_at 
+        FROM meeting 
+        WHERE created_by = ?
+
+        ORDER BY created_at DESC 
+        LIMIT 5
+    `;
 
     db.query(profileQuery, [memberId], (err, profileRes) => {
+        if (err) console.error(err);
+
         db.query(notificationsQuery, [memberId, memberId], (err2, notifications) => {
+            if (err2) console.error(err2);
+
             db.query(meetingsQuery, [familyId], (err3, meetings) => {
+                if (err3) console.error(err3);
+
                 res.render('meeting_list', {
-                    profile: profileRes[0] || { first_name: 'User' },
-                    notifications,
-                    totalNotifications: notifications.length,
-                    meetings, // Tuma list ya mikutano hapa
+                    profile: profileRes?.[0] || { first_name: 'User' },
+                    notifications: notifications || [],
+                    totalNotifications: (notifications || []).length,
+                    meetings: meetings || [],
+                    showPast, // 🔥 muhimu kwa UI
                     success: req.session.success,
                     error: req.session.error
                 });
+
                 req.session.success = null;
                 req.session.error = null;
             });
@@ -1619,8 +1656,22 @@ app.put('/update-meeting/:id', (req, res) => {
 
 // --- API: Delete Meeting ---
 app.delete('/delete-meeting/:id', (req, res) => {
-    db.query("DELETE FROM meeting WHERE meeting_id = ?", [req.params.id], (err) => {
-        if (err) return res.json({ success: false });
+    const meetingId = req.params.id;
+    const familyId = req.session.family_id;
+
+    if (!familyId) return res.json({ success: false });
+
+    const sql = `
+        DELETE FROM meeting 
+        WHERE meeting_id = ? AND family_id = ?
+    `;
+
+    db.query(sql, [meetingId, familyId], (err) => {
+        if (err) {
+            console.error("Delete Error:", err);
+            return res.json({ success: false });
+        }
+
         req.session.success = "Meeting cancelled and deleted.";
         res.json({ success: true });
     });
@@ -2027,7 +2078,9 @@ app.get('/lists', (req, res) => {
 // Route ya kutuma SMS
 app.post('/send_reminder_sms', (req, res) => {
   const { memberId, eventId } = req.body;
-  const apiToken = 'WEKA_TOKEN_YAKO_HAPA';
+
+  // ✅ TegaSMS API TOKEN (weka yako hapa)
+  const apiToken = '2|ZDVZgBsVfuBbhCRnFf5N9jmYsG7JLPtoXACoqLQO88f41331';
 
   const sql = `
     SELECT m.phone, m.first_name, e.title AS event_title, e.target_amount,
@@ -2040,37 +2093,69 @@ app.post('/send_reminder_sms', (req, res) => {
   `;
 
   db.query(sql, [eventId, eventId, memberId], (err, rows) => {
-    if (err || rows.length === 0) 
-      return res.status(500).json({ success: false, message: 'Data haikupatikana' });
+    if (err || rows.length === 0) {
+      return res.status(500).json({
+        success: false,
+        message: 'Data haikupatikana'
+      });
+    }
 
     const member = rows[0];
 
-    if (!member.phone || member.phone.trim() === '') 
-      return res.status(400).json({ success: false, message: 'Namba ya simu haipo' });
+    if (!member.phone || member.phone.trim() === '') {
+      return res.status(400).json({
+        success: false,
+        message: 'Namba ya simu haipo'
+      });
+    }
 
-    const remaining = member.target_amount - (member.total_paid || 0);
+    const remaining = (member.target_amount || 0) - (member.total_paid || 0);
 
-    // Format namba: 255 prefix
+    // Format phone number (TZ format)
     let phone = member.phone.trim();
-    if (phone.startsWith('0')) phone = '255' + phone.substring(1);
+    if (phone.startsWith('0')) {
+      phone = '255' + phone.substring(1);
+    }
 
-    const smsMessage = `Habari ${member.first_name}, mchango wako wa ${remaining.toLocaleString()} TZS kwa tukio la ${member.event_title || 'Tukio'} bado haujakamilika. Tafadhali malizia ahadi yako. Asante.`;
+    const smsMessage =
+      `Habari ${member.first_name}, mchango wako wa ` +
+      `${remaining.toLocaleString()} TZS kwa tukio la ` +
+      `${member.event_title || 'Tukio'} bado haujakamilika. ` +
+      `Tafadhali malizia ahadi yako. Asante.`;
 
-    axios.post('https://tegasms.teganas.co.tz/api/v1/send_sms/type/single', {
-      from: "FamilyHub",
-      recipient: phone,
-      message: smsMessage,
-      channel: "1010105" // Hakikisha hii ni sahihi
-    }, {
-      headers: { 'Authorization': `Bearer ${apiToken}`, 'Content-Type': 'application/json' }
+    axios.post(
+      'https://tegasms.teganas.co.tz/api/v1/send_sms/type/single',
+      {
+        from: "FamilyHub",
+        recipient: phone,
+        message: smsMessage,
+        channel: "1010105"
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${apiToken}`,
+          Accept: 'application/json',
+          'Content-Type': 'application/json'
+        }
+      }
+    )
+    .then(() => {
+      return res.json({
+        success: true,
+        message: 'SMS imetumwa!'
+      });
     })
-    .then(() => res.json({ success: true, message: 'SMS imetumwa!' }))
     .catch((err) => {
       console.error('TegaSMS Error:', err.response?.data || err.message);
-      res.status(500).json({ success: false, message: 'TegaSMS Error' });
+
+      return res.status(500).json({
+        success: false,
+        message: err.response?.data?.message || 'TegaSMS Error'
+      });
     });
   });
 });
+
 // B. POST: Hifadhi Event Mpya na Tuma SMS kupitia TegaSMS kama ni ya Dharura (Msiba)
 app.post('/save_event', (req, res) => {
     const { title, description, event_type, event_date, event_time, location, has_contribution, target_amount } = req.body;
@@ -2152,81 +2237,161 @@ Umoja ni Nguvu.`;
 app.get('/event_contributions', (req, res) => {
     const memberId = req.session.member_id;
     const familyId = req.session.family_id;
+
     if (!memberId || !familyId) return res.redirect('/index');
 
-    const profileQuery = `SELECT first_name, last_name, role FROM family_member WHERE member_id = ? LIMIT 1`;
-    const notificationsQuery = `SELECT 'meeting' AS type, title, created_at FROM meeting WHERE family_id = ? ORDER BY created_at DESC LIMIT 5`;
+    const profileQuery = `
+        SELECT first_name, last_name, role 
+        FROM family_member 
+        WHERE member_id = ? LIMIT 1
+    `;
 
-    // Current Events: contribution still open (3 days after event_date)
+    const notificationsQuery = `
+        SELECT 'meeting' AS type, title, created_at 
+        FROM meeting 
+        WHERE family_id = ? 
+        ORDER BY created_at DESC 
+        LIMIT 5
+    `;
+
+    // ================= CURRENT EVENTS =================
     const currentEventQuery = `
-        SELECT e.*, 
-        (SELECT SUM(amount) FROM payment WHERE event_id = e.event_id AND status = 'paid') as collected_amount,
-        (SELECT amount FROM payment WHERE event_id = e.event_id AND recorded_by = ? AND status = 'paid' LIMIT 1) as my_paid_amount,
-        (SELECT amount FROM payment WHERE event_id = e.event_id AND recorded_by = ? AND status = 'pledge' LIMIT 1) as my_pledge_amount
+        SELECT e.*,
+
+        -- TOTAL CONTRIBUTED BY ALL USERS
+        (SELECT COALESCE(SUM(amount),0)
+         FROM payment 
+         WHERE event_id = e.event_id AND status = 'paid') AS collected_amount,
+
+        -- USER TOTAL PAID (IMPORTANT FIX 🔥)
+        (SELECT COALESCE(SUM(amount),0)
+         FROM payment 
+         WHERE event_id = e.event_id 
+         AND recorded_by = ?
+         AND status = 'paid') AS my_total_paid,
+
+        -- LAST PLEDGE
+        (SELECT amount 
+         FROM payment 
+         WHERE event_id = e.event_id 
+         AND recorded_by = ?
+         AND status = 'pledge' 
+         ORDER BY payment_id DESC LIMIT 1) AS my_pledge_amount,
+
+        -- LAST STATUS
+        (SELECT status 
+         FROM payment 
+         WHERE event_id = e.event_id 
+         AND recorded_by = ?
+         ORDER BY payment_id DESC LIMIT 1) AS my_payment_status
+
         FROM family_event e
-        WHERE e.family_id = ? AND e.has_contribution = 1
-          AND CURDATE() <= DATE_ADD(e.event_date, INTERVAL 3 DAY)
+        WHERE e.family_id = ? 
+        AND e.has_contribution = 1
+        AND CURDATE() <= DATE_ADD(e.event_date, INTERVAL 3 DAY)
         ORDER BY e.event_date DESC
     `;
 
-    // Previous Events: contribution closed
+    // ================= PREVIOUS EVENTS =================
     const previousEventQuery = `
-        SELECT e.*, 
-        (SELECT SUM(amount) FROM payment WHERE event_id = e.event_id AND status = 'paid') as collected_amount,
-        (SELECT amount FROM payment WHERE event_id = e.event_id AND recorded_by = ? AND status = 'paid' LIMIT 1) as my_paid_amount,
-        (SELECT amount FROM payment WHERE event_id = e.event_id AND recorded_by = ? AND status = 'pledge' LIMIT 1) as my_pledge_amount
+        SELECT e.*,
+
+        (SELECT COALESCE(SUM(amount),0)
+         FROM payment 
+         WHERE event_id = e.event_id AND status = 'paid') AS collected_amount,
+
+        (SELECT COALESCE(SUM(amount),0)
+         FROM payment 
+         WHERE event_id = e.event_id 
+         AND recorded_by = ?
+         AND status = 'paid') AS my_total_paid,
+
+        (SELECT amount 
+         FROM payment 
+         WHERE event_id = e.event_id 
+         AND recorded_by = ?
+         AND status = 'pledge' 
+         ORDER BY payment_id DESC LIMIT 1) AS my_pledge_amount,
+
+        (SELECT status 
+         FROM payment 
+         WHERE event_id = e.event_id 
+         AND recorded_by = ?
+         ORDER BY payment_id DESC LIMIT 1) AS my_payment_status
+
         FROM family_event e
-        WHERE e.family_id = ? AND e.has_contribution = 1
-          AND CURDATE() > DATE_ADD(e.event_date, INTERVAL 3 DAY)
+        WHERE e.family_id = ? 
+        AND e.has_contribution = 1
+        AND CURDATE() > DATE_ADD(e.event_date, INTERVAL 3 DAY)
         ORDER BY e.event_date DESC
     `;
 
     db.query(profileQuery, [memberId], (err, profile) => {
-        if (err) return res.status(500).send("Database Error (Profile)");
+        if (err) return res.status(500).send("Profile error");
 
         db.query(notificationsQuery, [familyId], (err2, notifications) => {
-            if (err2) console.error("Notification Error:", err2);
+            if (err2) console.error(err2);
 
-            db.query(currentEventQuery, [memberId, memberId, familyId], (errCurrent, currentEvents) => {
-                if (errCurrent) console.error("Current Event Error:", errCurrent);
+            db.query(currentEventQuery,
+                [memberId, memberId, memberId, familyId],
+                (err3, currentEvents) => {
 
-                db.query(previousEventQuery, [memberId, memberId, familyId], (errPrev, previousEvents) => {
-                    if (errPrev) console.error("Previous Event Error:", errPrev);
+                    if (err3) console.error(err3);
 
-                    res.render('event_contributions', {
-                        profile: profile[0] || { first_name: 'User', role: 'member' },
-                        notifications: notifications || [],
-                        totalNotifications: notifications ? notifications.length : 0,
-                        currentEvents: currentEvents || [],
-                        previousEvents: previousEvents || [],
-                        memberId
-                    });
+                    db.query(previousEventQuery,
+                        [memberId, memberId, memberId, familyId],
+                        (err4, previousEvents) => {
+
+                            if (err4) console.error(err4);
+
+                            res.render('event_contributions', {
+                                profile: profile?.[0] || { first_name: 'User', role: 'member' },
+                                notifications: notifications || [],
+                                totalNotifications: notifications?.length || 0,
+                                currentEvents: currentEvents || [],
+                                previousEvents: previousEvents || [],
+                                memberId
+                            });
+                        });
                 });
-            });
         });
     });
 });
 
 // POST: Hifadhi Muamala au Ahadi
 app.post('/submit_contribution', (req, res) => {
-    const { event_id, amount, reference_number, status, pledge_date } = req.body;
+    const { event_id, amount, reference_number, pledge_date, status } = req.body;
+
     const familyId = req.session.family_id;
     const memberId = req.session.member_id;
 
-    const sql = `INSERT INTO payment (family_id, recorded_by, event_id, amount, reference_number, status, payment_type, note, payment_date) 
-                 VALUES (?, ?, ?, ?, ?, ?, 'event', ?, CURDATE())`;
+    if (!familyId || !memberId) return res.redirect('/index');
 
-    const note = status === 'pledge' ? `Ahadi ya kulipa tarehe ${pledge_date}` : 'Mchango wa tukio';
+    // ⚠️ ALL NEW PAYMENTS GO PENDING FIRST
+    const insertStatus = 'pledge';
 
-    db.query(sql, [familyId, memberId, event_id, amount, reference_number || null, status, note], (err, result) => {
-        if (err) {
-            console.error(err);
-            req.session.error = "Imeshindikana kuhifadhi taarifa.";
-        } else {
-            req.session.success = status === 'paid' ? "Muamala umehifadhiwa! Admin atahakiki." : "Ahadi yako imerekodiwa. Ahsante!";
+    const sql = `
+        INSERT INTO payment 
+        (family_id, recorded_by, event_id, amount, reference_number, status, payment_type, note, payment_date)
+        VALUES (?, ?, ?, ?, ?, ?, 'event', ?, CURDATE())
+    `;
+
+    const note = status === 'paid'
+        ? 'Muamala umepokelewa - unasubiri approval'
+        : `Ahadi ya kulipa tarehe ${pledge_date || ''}`;
+
+    db.query(sql,
+        [familyId, memberId, event_id, amount, reference_number || null, insertStatus, note],
+        (err) => {
+            if (err) {
+                console.error(err);
+                req.session.error = "Imeshindikana kuhifadhi taarifa.";
+            } else {
+                req.session.success = "Muamala umetumwa, unasubiri approval ya Admin.";
+            }
+            res.redirect('/event_contributions');
         }
-        res.redirect('/event_contributions');
-    });
+    );
 });
 
 app.get('/package', (req, res) => {
@@ -2410,9 +2575,82 @@ app.get('/head_of_family', (req, res) => {
   res.render('head_of_family'); // HOF
 });
 
-// head_of_family
-app.get('/view', (req, res) => {
-  res.render('view'); // HOF
+app.get('/transactions', (req, res) => {
+  const familyId = req.session.family_id;
+  const memberId = req.session.member_id;
+
+  if (!familyId || !memberId) return res.redirect('/index');
+
+  const profileQuery = `
+    SELECT first_name, last_name, role 
+    FROM family_member 
+    WHERE member_id = ?
+    LIMIT 1
+  `;
+
+  const paymentsQuery = `
+    SELECT 
+      p.payment_id,
+      p.family_id,
+      p.event_id,
+      p.amount,
+      p.reference_number,
+      p.payment_type,
+      p.payment_method,
+      p.status,
+      p.payment_date,
+      p.recorded_by,
+      p.note,
+
+      m.first_name,
+      m.last_name,
+      e.title AS event_title
+
+    FROM payment p
+    LEFT JOIN family_member m ON m.member_id = p.recorded_by
+    LEFT JOIN family_event e ON e.event_id = p.event_id
+    WHERE p.family_id = ?
+    ORDER BY p.payment_id DESC
+  `;
+
+  db.query(profileQuery, [memberId], (err, profileRes) => {
+    if (err) console.error(err);
+
+    db.query(paymentsQuery, [familyId], (err2, payments) => {
+      if (err2) {
+        console.error(err2);
+        payments = [];
+      }
+
+      res.render('transactions', {
+        profile: profileRes?.[0] || null,
+        contributors: payments || []
+      });
+    });
+  });
+});
+
+
+app.put('/payment/approve/:id', (req, res) => {
+  db.query(
+    "UPDATE payment SET status='paid' WHERE payment_id=?",
+    [req.params.id],
+    (err) => {
+      if (err) return res.json({ success: false, message: err.message });
+      return res.json({ success: true });
+    }
+  );
+});
+
+app.put('/payment/reject/:id', (req, res) => {
+  db.query(
+    "UPDATE payment SET status='rejected' WHERE payment_id=?",
+    [req.params.id],
+    (err) => {
+      if (err) return res.json({ success: false, message: err.message });
+      return res.json({ success: true });
+    }
+  );
 });
 
 // member
@@ -2606,39 +2844,107 @@ app.post('/confirm_future_head', (req, res) => {
   });
 });
 
-// 1. Route ya Chat List (Iliyorekebishwa)
+// 1. Route ya Chat List (FINAL CORRECTED)
 app.get('/chat_list', (req, res) => {
     const memberId = req.session.member_id;
     const familyId = req.session.family_id;
 
     if (!memberId || !familyId) return res.redirect('/index');
 
-    const profileQuery = `SELECT first_name, last_name, role FROM family_member WHERE member_id = ? LIMIT 1`;
-    const notificationsQuery = `SELECT 'meeting' AS type, title, created_at FROM meeting WHERE family_id = ? ORDER BY created_at DESC LIMIT 5`;
+    // 👤 Profile
+    const profileQuery = `
+        SELECT first_name, last_name, role 
+        FROM family_member 
+        WHERE member_id = ? 
+        LIMIT 1
+    `;
 
-    // Vuta wanafamilia wote wa familia hii (isipokuwa aliyelogin)
+    // 🔔 Notifications
+    const notificationsQuery = `
+        SELECT 'meeting' AS type, title, created_at 
+        FROM meeting 
+        WHERE family_id = ? 
+        ORDER BY created_at DESC 
+        LIMIT 5
+    `;
+
+    // 💬 PRIVATE CHAT LIST (ALL MEMBERS)
     const familyMembersQuery = `
-        SELECT m.member_id, m.first_name, m.last_name, m.role,
-        (SELECT message FROM chat_message WHERE (sender_id = m.member_id OR sender_id = ?) ORDER BY sent_at DESC LIMIT 1) as last_msg,
-        (SELECT sent_at FROM chat_message WHERE (sender_id = m.member_id OR sender_id = ?) ORDER BY sent_at DESC LIMIT 1) as last_time
-        FROM family_member m
-        WHERE m.family_id = ? AND m.member_id != ?
-        ORDER BY last_time DESC`;
+        SELECT 
+            m.member_id, 
+            m.first_name, 
+            m.last_name, 
+            m.role,
 
+            -- Last private message
+            (
+                SELECT cm.message 
+                FROM chat_message cm
+                WHERE 
+                    (
+                        (cm.sender_id = ? AND cm.receiver_id = m.member_id)
+                        OR
+                        (cm.sender_id = m.member_id AND cm.receiver_id = ?)
+                    )
+                    AND cm.receiver_id IS NOT NULL
+                ORDER BY cm.sent_at DESC 
+                LIMIT 1
+            ) AS last_msg,
+
+            -- Last message time
+            (
+                SELECT cm.sent_at 
+                FROM chat_message cm
+                WHERE 
+                    (
+                        (cm.sender_id = ? AND cm.receiver_id = m.member_id)
+                        OR
+                        (cm.sender_id = m.member_id AND cm.receiver_id = ?)
+                    )
+                    AND cm.receiver_id IS NOT NULL
+                ORDER BY cm.sent_at DESC 
+                LIMIT 1
+            ) AS last_time
+
+        FROM family_member m
+        WHERE m.family_id = ? 
+        AND m.member_id != ?
+
+        -- 🔥 IMPORTANT: SHOW ALL MEMBERS
+        ORDER BY 
+            last_time IS NULL,   -- wenye chat juu
+            last_time DESC
+    `;
+
+    // 🚀 EXECUTE
     db.query(profileQuery, [memberId], (err, profileRes) => {
+        if (err) console.error("Profile Error:", err);
+
         db.query(notificationsQuery, [familyId], (err2, notifications) => {
-            db.query(familyMembersQuery, [memberId, memberId, familyId, memberId], (err3, familyMembers) => {
-                res.render('chat_list', {
-                    profile: profileRes[0] || { first_name: 'User' },
-                    notifications: notifications || [],
-                    totalNotifications: notifications.length,
-                    familyMembers: familyMembers || []
-                });
-            });
+            if (err2) console.error("Notification Error:", err2);
+
+            db.query(
+                familyMembersQuery,
+                [
+                    memberId, memberId, // last_msg
+                    memberId, memberId, // last_time
+                    familyId,
+                    memberId
+                ],
+                (err3, familyMembers) => {
+                    if (err3) console.error("Chat List Error:", err3);
+
+                    res.render('chat_list', {
+                        profile: profileRes?.[0] || { first_name: 'User' },
+                        notifications: notifications || [],
+                        totalNotifications: (notifications || []).length,
+                        familyMembers: familyMembers || []
+                    });
+                }
+            );
         });
     });
 });
-
 // GET MESSAGES
 app.get('/chat_messages/:id',(req,res)=>{
   const me=req.session.member_id;

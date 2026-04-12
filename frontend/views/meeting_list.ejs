@@ -84,6 +84,8 @@
   </header><!-- End Header -->
 
 <%- include('partials/header') %>
+<%- include('partials/notifications') %>
+
 
 <main id="main" class="main">
   <%- include('partials/notifications') %>
@@ -109,44 +111,55 @@
                 <th class="text-center">Action</th>
               </tr>
             </thead>
-            <tbody>
-              <% if (meetings && meetings.length > 0) { %>
-                <% meetings.forEach((m, i) => { %>
-                  <tr id="row-<%= m.meeting_id %>">
-                    <td><%= i + 1 %></td>
-                    <td class="fw-bold"><%= m.title %></td>
-                    <td><%= m.meeting_date.toISOString().split('T')[0] %></td>
-                    <td><%= m.meeting_time %></td>
-                    <td>
-                      <span class="text-truncate d-inline-block" style="max-width: 150px;">
-                        <%= m.location || 'N/A' %>
-                      </span>
-                    </td>
-                    <td>
-                      <div class="d-flex gap-1 justify-content-center">
-                        <button type="button" class="btn btn-sm btn-outline-info edit-btn" 
-                                data-id="<%= m.meeting_id %>"
-                                data-title="<%= m.title %>"
-                                data-date="<%= m.meeting_date.toISOString().split('T')[0] %>"
-                                data-time="<%= m.meeting_time %>"
-                                data-loc="<%= m.location %>">
-                          <i class="bi bi-eye"></i>
-                        </button>
+              <tbody>
+                <% if (meetings && meetings.length > 0) { %>
+                  <% meetings.forEach((m, i) => { %>
+                    <tr id="row-<%= m.meeting_id %>">
+                      <td><%= i + 1 %></td>
+                      <td class="fw-bold"><%= m.title %></td>
+                      <td><%= m.meeting_date.toISOString().split('T')[0] %></td>
+                      <td><%= m.meeting_time %></td>
+                      <td>
+                        <span class="text-truncate d-inline-block" style="max-width: 150px;">
+                          <%= m.location || 'N/A' %>
+                        </span>
+                      </td>
+                      <td>
+                        <div class="d-flex gap-1 justify-content-center">
+                          <button type="button" class="btn btn-sm btn-outline-info edit-btn"
+                            data-id="<%= m.meeting_id %>"
+                            data-title="<%= m.title %>"
+                            data-date="<%= m.meeting_date.toISOString().split('T')[0] %>"
+                            data-time="<%= m.meeting_time %>"
+                            data-loc="<%= m.location %>">
+                            <i class="bi bi-eye"></i>
+                          </button>
 
-                        <% if(m.location && m.location.startsWith('http')) { %>
-                          <a href="<%= m.location %>" target="_blank" class="btn btn-sm btn-success">Join</a>
-                        <% } %>
+                          <% if(m.location && m.location.startsWith('http')) { %>
+                            <a href="<%= m.location %>" target="_blank" class="btn btn-sm btn-success">Join</a>
+                          <% } %>
 
-                        <button class="btn btn-sm btn-outline-danger" 
-                                onclick="deleteMeeting('<%= m.meeting_id %>', '<%= m.title %>')">
-                          <i class="bi bi-trash"></i>
-                        </button>
-                      </div>
+                          <button class="btn btn-sm btn-outline-danger"
+                            onclick="deleteMeeting('<%= m.meeting_id %>', '<%= m.title %>')">
+                            <i class="bi bi-trash"></i>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  <% }) %>
+
+                <% } else { %>
+
+                  <!-- 🔥 EMPTY STATE -->
+                  <tr>
+                    <td colspan="6" class="text-center py-4">
+                      <i class="bi bi-calendar-x text-muted" style="font-size: 30px;"></i>
+                      <p class="mt-2 text-muted">No upcoming meetings</p>
                     </td>
                   </tr>
-                <% }); %>
-              <% } %>
-            </tbody>
+
+                <% } %>
+              </tbody>
           </table>
         </div>
       </div>
