@@ -53,7 +53,11 @@
               <i class="bi bi-check-circle-fill fs-4 me-3"></i>
               <div>
                 <h6 class="mb-0 fw-bold">Kifurushi Chako Kiko Active!</h6>
-                <span>Unatumia kifurushi cha: <strong><%= family.current_package_name %></strong>. Itaisha tarehe: <strong><%= new Date(family.expiry_date).toLocaleDateString('en-GB') %></strong></span>
+                <span>Unatumia kifurushi cha: <strong><%= family.current_package_name %></strong>. Itaisha tarehe: <strong><%= new Date(family.expiry_date).toLocaleDateString('en-GB', { 
+                  day: '2-digit', 
+                  month: 'long', 
+                  year: 'numeric' 
+                }) %></strong></span>
               </div>
             </div>
           </div>

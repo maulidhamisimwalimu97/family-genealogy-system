@@ -254,7 +254,6 @@ app.post('/index', (req, res) => {
 
   db.query(adminQuery, [phone], async (err, adminResult) => {
 
-    // ❌ ERROR
     if (err) {
       return res.render('index', { 
         error: "Server error",
@@ -284,7 +283,8 @@ app.post('/index', (req, res) => {
 
     // 🔹 FAMILY MEMBER
     const familyQuery = `
-      SELECT fm.*, f.package_type, f.trial_ends_at, f.is_active, f.payment_status
+      SELECT fm.*, f.package_type, f.trial_ends_at, f.is_active, 
+             f.payment_status, f.expiry_date, f.package_status
       FROM family_member fm
       JOIN family f ON fm.family_id = f.family_id
       WHERE fm.phone = ?
@@ -328,7 +328,6 @@ app.post('/index', (req, res) => {
 
         if (now > trialEnd) {
 
-          // 🔴 kama tayari amelipia (pending)
           if (user.payment_status === 'pending') {
             return res.render('index', { 
               error: "Malipo yako yameshatumwa ⏳ Subiri approval ya admin.",
@@ -337,7 +336,6 @@ app.post('/index', (req, res) => {
             });
           }
 
-          // 🔴 hajalipa bado
           return res.render('index', { 
             error: "Trial imeisha ❌ Tafadhali lipa kuendelea kutumia mfumo.",
             paymentLink: true,
@@ -346,10 +344,39 @@ app.post('/index', (req, res) => {
         }
       }
 
-      // 🔥 ===== PAYMENT CHECK =====
-      if (user.package_type !== 'trial' && user.is_active == 0) {
+      // 🔥 ===== EXPIRY CHECK (30 DAYS) =====
+      if (user.expiry_date) {
+        const now = new Date();
+        const expiry = new Date(user.expiry_date);
 
-        // 🟡 already paid (waiting approval)
+        if (now > expiry) {
+
+          // update automatically
+          db.query(`
+            UPDATE family 
+            SET package_status = 'expired', is_active = 0
+            WHERE family_id = ?
+          `, [user.family_id]);
+
+          if (user.payment_status === 'pending') {
+            return res.render('index', { 
+              error: "Malipo yako yanasubiri approval ⏳",
+              paymentLink: false,
+              family_id: null
+            });
+          }
+
+          return res.render('index', { 
+            error: "Package yako ime-expire ❌ Tafadhali lipa kuendelea.",
+            paymentLink: true,
+            family_id: user.family_id
+          });
+        }
+      }
+
+      // 🔥 ===== PAYMENT / STATUS CHECK =====
+      if (user.package_status === 'expired' || user.is_active == 0) {
+
         if (user.payment_status === 'pending') {
           return res.render('index', { 
             error: "Malipo yako yameshatumwa ⏳ Subiri approval ya admin.",
@@ -358,7 +385,6 @@ app.post('/index', (req, res) => {
           });
         }
 
-        // 🔴 not paid
         return res.render('index', { 
           error: "Account yako imefungwa ❌ Tafadhali lipa ili kuendelea kutumia mfumo.",
           paymentLink: true,
@@ -424,14 +450,15 @@ app.post('/approve-payment/:id', (req, res) => {
 
             // 2. If it's a Package Payment (event_id is NULL), fully activate the family
             if (payment.event_id === null) {
-                const updateFamilySql = `
-                    UPDATE family 
-                    SET 
-                        is_active = 1, 
-                        payment_status = 'paid',
-                        package_status = 'active', 
-                        package_type = 'premium' 
-                    WHERE family_id = ?`;
+              const updateFamilySql = `
+                  UPDATE family 
+                  SET 
+                      is_active = 1, 
+                      payment_status = 'paid',
+                      package_status = 'active', 
+                      package_type = 'premium',
+                      expiry_date = DATE_ADD(NOW(), INTERVAL 30 DAY)
+                  WHERE family_id = ?`;
 
                 // Note: I set package_type to 'premium'. Change this if your paid type has a different name.
                 db.query(updateFamilySql, [payment.family_id], (err) => {
