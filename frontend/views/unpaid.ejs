@@ -279,40 +279,53 @@
                 </tr>
                 </thead>
 
-                <tbody>
-                  <% if (locals.unpaidFamilies && unpaidFamilies.length > 0) { %>
-                    <% unpaidFamilies.forEach((family, index) => { %>
-                      <tr>
-                        <td><%= index + 1 %></td>
-                        <td><%= family.family_name %></td>
-                        <td><%= family.first_name %> <%= family.last_name %></td>
-                        <td><%= family.phone %></td>
-                        <td>30,000</td> <td>
-                            <%= family.last_payment_date ? new Date(family.last_payment_date).toLocaleDateString('en-CA') : '—' %>
-                        </td>
-                        <td>
-                            <span class="badge <%= family.last_payment_date ? 'bg-warning text-dark' : 'bg-danger' %>">
-                                <%= family.last_payment_date ? 'Pending' : 'Unpaid' %>
-                            </span>
-                        </td>
-                        <td>
-                          <button class="btn btn-sm btn-outline-warning" 
-                                  title="Send Reminder"
-                                  onclick="sendReminder('<%= family.phone %>', '<%= family.family_name %>')">
-                              <i class="bi bi-bell"></i>
-                          </button>
-                        </td>
-                      </tr>
-                    <% }); %>
-                  <% } else { %>
+             <tbody>
+                <% if (locals.unpaidFamilies && unpaidFamilies.length > 0) { %>
+                  <% unpaidFamilies.forEach((family, index) => { %>
                     <tr>
-                      <td colspan="8" class="text-center table-success text-success py-4">
-                        <i class="bi bi-check-circle-fill me-2"></i> Excellent! All families have completed their payments.
+                      <td><%= index + 1 %></td>
+                      <td><strong><%= family.family_name %></strong></td>
+                      <td><%= family.first_name %> <%= family.last_name %></td>
+                      <td><%= family.phone %></td>
+                      <td>
+                          <%= family.expected_amount ? Number(family.expected_amount).toLocaleString() : 'N/A' %>
+                      </td>
+                      <td>
+                          <%= family.last_payment_date ? new Date(family.last_payment_date).toLocaleDateString('en-GB') : 'Never' %>
+                      </td>
+                      <td>
+                          <% if (family.package_status === 'pending') { %>
+                              <span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split"></i> Awaiting Approval</span>
+                          <% } else if (family.package_status === 'expired') { %>
+                              <span class="badge bg-danger">Expired</span>
+                          <% } else { %>
+                              <span class="badge bg-secondary">No Payment</span>
+                          <% } %>
+                      </td>
+                      <td>
+                        <div class="btn-group">
+                          <button class="btn btn-sm btn-outline-warning" 
+                                  title="Send SMS Reminder"
+                                  onclick="sendReminder('<%= family.phone %>', '<%= family.family_name %>')">
+                              <i class="bi bi-chat-dots"></i>
+                          </button>
+                          <a href="/family-details/<%= family.family_id %>" class="btn btn-sm btn-outline-primary">
+                              <i class="bi bi-eye"></i>
+                          </a>
+                        </div>
                       </td>
                     </tr>
-                  <% } %>
-                </tbody>
-            </table>
+                  <% }); %>
+                <% } else { %>
+                  <tr>
+                    <td colspan="8" class="text-center py-5 text-success">
+                      <i class="bi bi-check-circle-fill fs-2 d-block mb-2"></i>
+                      Safari njema! Kila familia imelipia kifurushi chake.
+                    </td>
+                  </tr>
+                <% } %>
+              </tbody>
+          </table>
             </div>
         </div>
         </div>

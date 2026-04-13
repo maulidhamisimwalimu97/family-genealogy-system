@@ -276,7 +276,7 @@
                   </div>
                   <div class="ps-3">
                     <h6><%= familyCount %></h6>
-                    <span class="text-muted small">All registered</span>
+                    <span class="text-muted small">All registered Families</span>
                   </div>
                 </div>
               </div>
@@ -286,13 +286,13 @@
           <div class="col-xxl-4 col-md-6">
             <div class="card info-card revenue-card">
               <div class="card-body">
-                <h5 class="card-title">Paid Families</h5>
+                <h5 class="card-title">Paid Families <span>| Package Active</span></h5>
                 <div class="d-flex align-items-center">
-                  <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                  <div class="card-icon rounded-circle d-flex align-items-center justify-content-center text-success bg-light-success">
                     <i class="bi bi-credit-card"></i>
                   </div>
                   <div class="ps-3">
-                    <h6>0</h6>
+                    <h6><%= paidCount %></h6>
                     <span class="text-success small fw-bold">Access granted</span>
                   </div>
                 </div>
@@ -303,13 +303,13 @@
           <div class="col-xxl-4 col-md-6">
             <div class="card info-card sales-card">
               <div class="card-body">
-                <h5 class="card-title">Unpaid Families</h5>
+                <h5 class="card-title">Unpaid Families <span>| Trial/Expired</span></h5>
                 <div class="d-flex align-items-center">
-                  <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                    <i class="bi bi-shield-lock text-danger fs-4"></i>
+                  <div class="card-icon rounded-circle d-flex align-items-center justify-content-center text-danger bg-light-danger">
+                    <i class="bi bi-shield-lock"></i>
                   </div>
                   <div class="ps-3">
-                    <h6><%= familyCount %></h6>
+                    <h6><%= unpaidCount %></h6>
                     <span class="text-danger small fw-bold">Pending</span>
                   </div>
                 </div>

@@ -245,80 +245,85 @@
     </ul>
     </aside>
 
-    <main id="main" class="main">
+<main id="main" class="main">
     <div class="container-fluid">
-
-        <!-- Page Title -->
         <div class="pagetitle mb-4">
-        <h1>Payments</h1>
-        <p class="text-muted">All payments made by families</p>
+            <h1>Package Payments</h1>
+            <p class="text-muted">Manage family subscription and package payments</p>
         </div>
 
-        <!-- Payments Card -->
         <div class="card shadow-sm">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">Payments List</h5>
-            <span class="badge bg-primary">All Transactions</span>
-        </div>
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Package Transactions</h5>
+            </div>
 
-        <div class="card-body">
-            <div class="table-responsive">
-            <table id="paymentsTable" class="table table-striped table-hover nowrap" style="width:100%">
-                <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Family</th>
-                    <th>Payer</th>
-                    <th>Phone</th>
-                    <th>Amount (TZS)</th>
-                    <th>Method</th>
-                    <th>Reference</th>
-                    <th>Date</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                </tr>
-                </thead>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="paymentsTable" class="table table-striped table-hover nowrap" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Family</th>
+                                <th>Amount (TZS)</th>
+                                <th>Method</th>
+                                <th>Reference</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
 
-                <tbody>
-                  <% if (payments && payments.length > 0) { %>
-                    <% payments.forEach((payment, index) => { %>
-                      <tr>
-                        <td><%= index + 1 %></td>
-                        <td><%= payment.family_name %></td>
-                        <td><%= payment.note || 'N/A' %></td> <td><%= payment.payment_type %></td> <td><%= Number(payment.amount).toLocaleString() %></td>
-                        <td>
-                          <% if(payment.payment_method === 'mobile_money') { %>
-                            <span class="badge bg-info text-dark">Mobile Money</span>
-                          <% } else if(payment.payment_method === 'bank') { %>
-                            <span class="badge bg-primary">Bank</span>
-                          <% } else { %>
-                            <span class="badge bg-secondary">Cash</span>
-                          <% } %>
-                        </td>
-                        <td><%= payment.payment_id %></td> <td><%= new Date(payment.payment_date).toLocaleDateString('en-GB') %></td>
-                        <td><span class="badge bg-success">Paid</span></td>
-                        <td>
-                          <button class="btn btn-sm btn-outline-primary" title="View">
-                            <i class="bi bi-eye"></i>
-                          </button>
-                        </td>
-                      </tr>
-                    <% }); %>
-                  <% } else { %>
-                    <tr>
-                      <td colspan="10" class="text-center table-danger text-danger">
-                          <strong><i class="bi bi-exclamation-triangle-fill"></i> No payment records found.</strong>
-                      </td>
-                    </tr>
-                  <% } %>
-                </tbody>            
-              </table>
+                        <tbody>
+                            <% if (payments && payments.length > 0) { %>
+                                <% payments.forEach((payment, index) => { %>
+                                    <tr>
+                                        <td><%= index + 1 %></td>
+                                        <td><%= payment.family_name %></td>
+                                        <td>**<%= Number(payment.amount).toLocaleString() %>**</td>
+                                       <td>
+                                            <span class="badge <%= payment.payment_method === 'bank' ? 'bg-primary' : 'bg-info text-dark' %>">
+                                                <%= payment.payment_method ? payment.payment_method.replace('_', ' ') : 'N/A' %>
+                                            </span>
+                                        </td>                                        <td><%= payment.reference_number || 'N/A' %></td>
+                                        <td><%= new Date(payment.payment_date).toLocaleDateString('en-GB') %></td>
+                                        <td>
+                                            <% if(payment.status === 'paid') { %>
+                                                <span class="badge bg-success"><i class="bi bi-check-circle"></i> Paid</span>
+                                            <% } else if(payment.status === 'rejected') { %>
+                                                <span class="badge bg-danger">Rejected</span>
+                                            <% } else { %>
+                                                <span class="badge bg-warning text-dark">Pending Approval</span>
+                                            <% } %>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex gap-2">
+                                                <% if(payment.status !== 'paid') { %>
+                                                    <form action="/approve-payment/<%= payment.payment_id %>" method="POST" style="display:inline;">
+                                                        <button type="submit" class="btn btn-sm btn-success">
+                                                            <i class="bi bi-check-lg"></i> Approve
+                                                        </button>
+                                                    </form>                                                <% } %>
+                                                <button class="btn btn-sm btn-outline-primary" title="View Details">
+                                                    <i class="bi bi-eye"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <% }); %>
+                            <% } else { %>
+                                <tr>
+                                    <td colspan="8" class="text-center table-light text-muted">
+                                        No package payment records found.
+                                    </td>
+                                </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
-        </div>
-
     </div>
-    </main>
+</main>
 
     <!-- Google Translate Element -->
 <div id="google_translate_element" style="visibility: hidden; position: absolute; z-index: -1;"></div>

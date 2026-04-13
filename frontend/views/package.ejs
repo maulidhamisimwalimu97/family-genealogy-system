@@ -47,14 +47,27 @@
 
     <div class="row">
       <div class="col-12">
-        <% if (family.package_status === 'trial' && !isTrialExpired) { %>
+        <% if (family.package_status === 'active') { %>
+          <div class="alert alert-success border-0 shadow-sm">
+            <div class="d-flex align-items-center">
+              <i class="bi bi-check-circle-fill fs-4 me-3"></i>
+              <div>
+                <h6 class="mb-0 fw-bold">Kifurushi Chako Kiko Active!</h6>
+                <span>Unatumia kifurushi cha: <strong><%= family.current_package_name %></strong>. Itaisha tarehe: <strong><%= new Date(family.expiry_date).toLocaleDateString('en-GB') %></strong></span>
+              </div>
+            </div>
+          </div>
+
+        <% } else if (family.package_status === 'trial' && !isTrialExpired) { %>
           <div class="alert alert-info border-0 shadow-sm">
             <i class="bi bi-clock-history me-2"></i> Unatumia **Trial Package**. Itaisha tarehe: <strong><%= new Date(family.expiry_date).toLocaleString() %></strong>
           </div>
+
         <% } else if (isTrialExpired || family.package_status === 'expired') { %>
           <div class="alert alert-danger border-0 shadow-sm">
-            <i class="bi bi-exclamation-triangle me-2"></i> Muda wako wa majaribio umeisha! Tafadhali lipia kifurushi kuendelea.
+            <i class="bi bi-exclamation-triangle me-2"></i> Muda wako wa majaribio au kifurushi umeisha! Tafadhali lipia kuendelea.
           </div>
+
         <% } else if (family.package_status === 'pending') { %>
           <div class="alert alert-warning border-0 shadow-sm">
             <i class="bi bi-hourglass-split me-2"></i> Malipo yako yanahakikiwa na Admin. Akaunti itakuwa 'Active' hivi punde.
@@ -66,53 +79,40 @@
     <div class="row mt-4">
       <% packages.forEach(pkg => { %>
         <div class="col-lg-4">
-          <div class="card pricing-card shadow-sm border-0 <%= family.package_id == pkg.id ? 'border-primary border-2' : '' %>">
+          <div class="card pricing-card shadow-sm border-0 <%= family.package_id == pkg.id && family.package_status === 'active' ? 'border-success border-3' : '' %>">
             <div class="card-body p-4 text-center">
+              
+              <% if (family.package_id == pkg.id && family.package_status === 'active') { %>
+                 <span class="badge bg-success mb-2">Current Active Plan</span>
+              <% } %>
+
               <h5 class="card-title text-uppercase fw-bold"><%= pkg.name %></h5>
-              <div class="display-5 my-3 text-primary"><%= (pkg.price).toLocaleString() %> <span class="fs-6 text-muted">TZS</span></div>
+              <div class="display-5 my-3 text-primary"><%= (Number(pkg.price)).toLocaleString() %> <span class="fs-6 text-muted">TZS</span></div>
               <p class="text-muted small">Muda: <%= pkg.duration_days %> Siku</p>
               
-              <ul class="list-unstyled my-4 text-start">
-                <% const features = pkg.features.split(','); %>
-                <% features.forEach(f => { %>
-                  <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i> <%= f %></li>
-                <% }) %>
-              </ul>
-
-              <button class="btn btn-primary w-100 rounded-pill" data-bs-toggle="modal" data-bs-target="#payModal<%= pkg.id %>">
-                <%= family.package_id == pkg.id ? 'Renew Package' : 'Select Package' %>
+          <ul class="list-unstyled my-4 text-start">
+            <% if (pkg.features && pkg.features.trim() !== '') { %>
+              <% const features = pkg.features.split(','); %>
+              <% features.forEach(f => { %>
+                <% if (f.trim() !== '') { %> <li class="mb-2">
+                    <i class="bi bi-check-circle-fill text-success me-2"></i> 
+                    <%= f.trim() %>
+                  </li>
+                <% } %>
+              <% }) %>
+            <% } else { %>
+              <li class="mb-2 text-muted small fst-italic">
+                <i class="bi bi-info-circle me-2"></i> Maelezo ya vipengele hayajapatikana
+              </li>
+            <% } %>
+          </ul>
+              <button class="btn <%= family.package_id == pkg.id ? 'btn-outline-success' : 'btn-primary' %> w-100 rounded-pill" data-bs-toggle="modal" data-bs-target="#payModal<%= pkg.id %>">
+                <%= family.package_id == pkg.id ? 'Renew / Extend' : 'Select Package' %>
               </button>
             </div>
           </div>
         </div>
-
-        <div class="modal fade" id="payModal<%= pkg.id %>" tabindex="-1">
-          <div class="modal-dialog">
-            <form action="/subscribe" method="POST" class="modal-content">
-              <div class="modal-header border-0">
-                <h5 class="modal-title">Lipia Kifurushi: <%= pkg.name %></h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-              </div>
-              <div class="modal-body text-center">
-                <p class="mb-4">Tafadhali tuma kiasi cha **<%= pkg.price.toLocaleString() %> TZS** kwenda:</p>
-                <div class="bg-light p-3 rounded mb-4">
-                  <strong>M-PESA: 07XX XXX XXX (JINA)</strong><br>
-                  <strong>TIGO-PESA: 06XX XXX XXX (JINA)</strong>
-                </div>
-                
-                <input type="hidden" name="package_id" value="<%= pkg.id %>">
-                <div class="text-start">
-                  <label class="form-label fw-bold">Namba ya Muamala (Ref Number)</label>
-                  <input type="text" name="ref_number" class="form-control" placeholder="Mfano: RYH67GTR" required>
-                </div>
-              </div>
-              <div class="modal-footer border-0">
-                <button type="submit" class="btn btn-success w-100">Tuma Maombi ya Activation</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      <% }) %>
+        <% }) %>
     </div>
   </section>
 </main>

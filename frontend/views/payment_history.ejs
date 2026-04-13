@@ -70,33 +70,37 @@
                   <th>Status</th>
                 </tr>
               </thead>
-              <tbody>
-                <% if (history && history.length > 0) { %>
-                  <% history.forEach((pay, index) => { %>
+                <tbody>
+                  <% if (history && history.length > 0) { %>
+                    <% history.forEach((pay, index) => { %>
+                      <tr>
+                        <td><%= index + 1 %></td>
+                        <td><%= pay.first_name ? (pay.first_name + ' ' + pay.last_name) : 'System/Admin' %></td>
+                        <td><span class="fw-bold text-primary"><%= pay.package_name || 'Package Payment' %></span></td>
+                        <td>
+                          <%= pay.amount ? Number(pay.amount).toLocaleString() : '0' %>
+                        </td>
+                        <td><code><%= pay.reference_number || 'N/A' %></code></td>
+                        <td>
+                          <%= pay.payment_date ? new Date(pay.payment_date).toLocaleDateString('en-GB') : 'N/A' %>
+                        </td>
+                        <td>
+                          <% if (pay.status === 'paid') { %>
+                            <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i> Verified</span>
+                          <% } else if (pay.status === 'pledge' || pay.status === 'pending') { %>
+                            <span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split me-1"></i> Pending</span>
+                          <% } else { %>
+                            <span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i> Rejected</span>
+                          <% } %>
+                        </td>
+                      </tr>
+                    <% }) %>
+                  <% } else { %>
                     <tr>
-                      <td><%= index + 1 %></td>
-                      <td><%= pay.first_name %> <%= pay.last_name %></td>
-                      <td><span class="fw-bold text-primary"><%= pay.package_name || 'N/A' %></span></td>
-                      <td><%= (pay.amount).toLocaleString() %></td>
-                      <td><code><%= pay.reference_number %></code></td>
-                      <td><%= new Date(pay.payment_date).toLocaleDateString('en-GB') %></td>
-                      <td>
-                        <% if (pay.status === 'paid' || pay.status === 'active') { %>
-                          <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i> Verified</span>
-                        <% } else if (pay.status === 'pending') { %>
-                          <span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split me-1"></i> Pending</span>
-                        <% } else { %>
-                          <span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i> Rejected</span>
-                        <% } %>
-                      </td>
+                      <td colspan="7" class="text-center py-4 text-muted">Bado haujafanya malipo yoyote ya kifurushi.</td>
                     </tr>
-                  <% }) %>
-                <% } else { %>
-                  <tr>
-                    <td colspan="7" class="text-center py-4 text-muted">Bado haujafanya malipo yoyote ya kifurushi.</td>
-                  </tr>
-                <% } %>
-              </tbody>
+                  <% } %>
+                </tbody>
             </table>
 
           </div>

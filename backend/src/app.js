@@ -258,7 +258,8 @@ app.post('/index', (req, res) => {
     if (err) {
       return res.render('index', { 
         error: "Server error",
-        paymentLink: false
+        paymentLink: false,
+        family_id: null
       });
     }
 
@@ -270,7 +271,8 @@ app.post('/index', (req, res) => {
       if (!match) {
         return res.render('index', { 
           error: "Incorrect password",
-          paymentLink: false
+          paymentLink: false,
+          family_id: null
         });
       }
 
@@ -291,19 +293,19 @@ app.post('/index', (req, res) => {
 
     db.query(familyQuery, [phone], async (err, familyResult) => {
 
-      // ❌ ERROR
       if (err) {
         return res.render('index', { 
           error: "Server error",
-          paymentLink: false
+          paymentLink: false,
+          family_id: null
         });
       }
 
-      // ❌ NOT FOUND
       if (familyResult.length === 0) {
         return res.render('index', { 
           error: "Phone number not found",
-          paymentLink: false
+          paymentLink: false,
+          family_id: null
         });
       }
 
@@ -314,7 +316,8 @@ app.post('/index', (req, res) => {
       if (!match) {
         return res.render('index', { 
           error: "Incorrect password",
-          paymentLink: false
+          paymentLink: false,
+          family_id: null
         });
       }
 
@@ -324,22 +327,46 @@ app.post('/index', (req, res) => {
         const trialEnd = new Date(user.trial_ends_at);
 
         if (now > trialEnd) {
+
+          // 🔴 kama tayari amelipia (pending)
+          if (user.payment_status === 'pending') {
+            return res.render('index', { 
+              error: "Malipo yako yameshatumwa ⏳ Subiri approval ya admin.",
+              paymentLink: false,
+              family_id: null
+            });
+          }
+
+          // 🔴 hajalipa bado
           return res.render('index', { 
             error: "Trial imeisha ❌ Tafadhali lipa kuendelea kutumia mfumo.",
-            paymentLink: true
+            paymentLink: true,
+            family_id: user.family_id
           });
         }
       }
 
       // 🔥 ===== PAYMENT CHECK =====
       if (user.package_type !== 'trial' && user.is_active == 0) {
+
+        // 🟡 already paid (waiting approval)
+        if (user.payment_status === 'pending') {
+          return res.render('index', { 
+            error: "Malipo yako yameshatumwa ⏳ Subiri approval ya admin.",
+            paymentLink: false,
+            family_id: null
+          });
+        }
+
+        // 🔴 not paid
         return res.render('index', { 
-          error: "Account haija-activate ❌ Subiri uthibitisho wa malipo.",
-          paymentLink: true
+          error: "Account yako imefungwa ❌ Tafadhali lipa ili kuendelea kutumia mfumo.",
+          paymentLink: true,
+          family_id: user.family_id
         });
       }
 
-      // ✅ SESSION
+      // ✅ SESSION (allowed users only)
       req.session.family_id = user.family_id;
       req.session.member_id = user.member_id;
       req.session.member_name = user.first_name + " " + user.last_name;
@@ -352,6 +379,7 @@ app.post('/index', (req, res) => {
       }
 
       return res.redirect('/member');
+
     });
   });
 });
@@ -359,73 +387,104 @@ app.post('/index', (req, res) => {
 // GET: Payment Page
 app.get('/make_payment', (req, res) => {
 
+  const familyId = req.query.family_id;
+
+  if (!familyId) {
+    return res.redirect('/index');
+  }
+
   res.render('make_payment', {
     error: null,
-    success: null
+    success: null,
+    family_id: familyId   // ✅ send to form
   });
-
 });
 
-app.get('/approve_payment/:id', (req, res) => {
+// Changed from .get to .post and from _ to -
+app.post('/approve-payment/:id', (req, res) => {
+    const paymentId = req.params.id;
+    const adminId = req.session.adminId;
 
-  const paymentId = req.params.id;
+    if (!adminId) return res.redirect('/index');
 
-  // get payment
-  db.query("SELECT * FROM payments WHERE payment_id=?", [paymentId], (err, result) => {
+    db.query("SELECT * FROM payment WHERE payment_id = ?", [paymentId], (err, result) => {
+        if (err || result.length === 0) {
+            console.error("Payment not found");
+            return res.redirect('/payments?error=not_found');
+        }
 
-    if (result.length === 0) return res.redirect('/Admin');
+        const payment = result[0];
 
-    const payment = result[0];
+        // 1. Mark payment as paid
+        db.query("UPDATE payment SET status = 'paid' WHERE payment_id = ?", [paymentId], (err) => {
+            if (err) {
+                console.error("Update payment error:", err);
+                return res.redirect('/payments?error=update_failed');
+            }
 
-    // approve payment
-    db.query("UPDATE payments SET status='approved' WHERE payment_id=?", [paymentId]);
+            // 2. If it's a Package Payment (event_id is NULL), fully activate the family
+            if (payment.event_id === null) {
+                const updateFamilySql = `
+                    UPDATE family 
+                    SET 
+                        is_active = 1, 
+                        payment_status = 'paid',
+                        package_status = 'active', 
+                        package_type = 'premium' 
+                    WHERE family_id = ?`;
 
-    // activate family
-    db.query(`
-      UPDATE family 
-      SET 
-        is_active=1,
-        package_type=?,
-        payment_status='paid'
-      WHERE family_id=?
-    `, [payment.package_type, payment.family_id]);
-
-    res.redirect('/Admin');
-  });
-
+                // Note: I set package_type to 'premium'. Change this if your paid type has a different name.
+                db.query(updateFamilySql, [payment.family_id], (err) => {
+                    if (err) {
+                        console.error("Family activation error:", err);
+                        return res.redirect('/payments?error=activation_failed');
+                    }
+                    res.redirect('/payments?success=Package Approved and Account Activated');
+                });
+            } else {
+                // If it's just an event payment, we don't necessarily change their package status
+                res.redirect('/payments?success=Event Payment Approved');
+            }
+        });
+    });
 });
 
 app.post('/submit_payment', (req, res) => {
 
   let familyId = req.session.family_id;
 
-  if (!familyId && req.body.family_id) {
+  // ✅ fallback kutoka form
+  if (!familyId) {
     familyId = req.body.family_id;
   }
 
   const { package_type, reference_number } = req.body;
 
+  console.log("DATA:", familyId, package_type, reference_number); // DEBUG
+
   if (!familyId) {
+    console.log("❌ NO FAMILY ID");
     return res.redirect('/index');
   }
 
-  // STEP 1: get package price from DB (optional but good)
   const getPackage = "SELECT * FROM packages WHERE name=? LIMIT 1";
 
   db.query(getPackage, [package_type], (err, pkgResult) => {
 
     if (err || pkgResult.length === 0) {
+      console.log("❌ PACKAGE ERROR:", err);
+
       return res.render('make_payment', {
         error: "Invalid package selected",
-        success: null
+        success: null,
+        family_id: familyId
       });
     }
 
     const packageData = pkgResult[0];
 
-    // STEP 2: INSERT PAYMENT (FIXED)
     const sql = `
-      INSERT INTO payments 
+      INSERT INTO payment 
       (family_id, amount, reference_number, payment_type, status, payment_date)
       VALUES (?, ?, ?, ?, 'pledge', NOW())
     `;
@@ -438,23 +497,26 @@ app.post('/submit_payment', (req, res) => {
     ], (err2) => {
 
       if (err2) {
-        console.log("PAYMENT ERROR:", err2);
+        console.log("❌ PAYMENT ERROR:", err2);
 
         return res.render('make_payment', {
           error: "Error submitting payment",
-          success: null
+          success: null,
+          family_id: familyId
         });
       }
 
-      // STEP 3: update family status
       db.query(
         "UPDATE family SET payment_status='pending' WHERE family_id=?",
         [familyId]
       );
 
+      console.log("✅ PAYMENT SAVED");
+
       return res.render('make_payment', {
         error: null,
-        success: "Payment submitted successfully. Subiri approval ya admin."
+        success: "Payment submitted successfully. Subiri approval ya admin.",
+        family_id: familyId
       });
     });
   });
@@ -488,24 +550,33 @@ app.get('/Admin', (req, res) => {
     const adminId = req.session.adminId;
     const adminName = req.session.adminName;
 
-    // 1. Query to count total families for this admin
-    // 2. Query to get the latest 5 families for the table
-    const countSql = "SELECT COUNT(*) AS totalFamilies FROM family WHERE registered_by = ?";
+    // 1. Hesabu familia zilizolipa na ambazo hazijalipa (Package Only)
+    // Paid: package_status ni 'active' na payment_status ni 'paid'
+    // Unpaid: status nyingine yoyote (trial, expired, pending)
+    const statsSql = `
+        SELECT 
+            COUNT(*) AS totalFamilies,
+            SUM(CASE WHEN package_status = 'active' AND payment_status = 'paid' THEN 1 ELSE 0 END) AS paidFamilies,
+            SUM(CASE WHEN package_status != 'active' OR payment_status != 'paid' THEN 1 ELSE 0 END) AS unpaidFamilies
+        FROM family 
+        WHERE registered_by = ?`;
+
     const listSql = "SELECT * FROM family WHERE registered_by = ? ORDER BY created_at DESC LIMIT 5";
 
-    db.query(countSql, [adminId], (err, countResult) => {
+    db.query(statsSql, [adminId], (err, statsResult) => {
         if (err) {
             console.error(err);
-            return res.render('Admin', { adminName, familyCount: 0, families: [] });
+            return res.render('Admin', { adminName, paidCount: 0, unpaidCount: 0, families: [] });
         }
 
         db.query(listSql, [adminId], (err, familyList) => {
-            const familyCount = countResult[0].totalFamilies || 0;
+            const stats = statsResult[0];
 
             res.render('Admin', { 
                 adminName: adminName, 
-                familyCount: familyCount,
-                families: familyList // This is the array of family data
+                paidCount: stats.paidFamilies || 0,
+                unpaidCount: stats.unpaidFamilies || 0,
+                families: familyList 
             });
         });
     });
@@ -532,7 +603,7 @@ app.post('/register-family', async (req, res) => {
 
     const { 
         family_name, tribe, region, religion, address, 
-        first_name, middle_name, last_name, phone, email, gender 
+        first_name, middle_name, last_name, phone, email,date_of_birth, gender 
     } = req.body;
 
     // 🔁 Helper render
@@ -612,7 +683,7 @@ app.post('/register-family', async (req, res) => {
                 // 👤 Insert family admin
                 const memberSql = `
                     INSERT INTO family_member 
-                    (family_id, first_name, middle_name, last_name, gender, phone, email, role, password) 
+                    (family_id, first_name, middle_name, last_name, gender, phone, email, date_of_birth,role, password) 
                     VALUES (?, ?, ?, ?, ?, ?, ?, 'family_admin', ?)
                 `;
                 
@@ -622,6 +693,7 @@ app.post('/register-family', async (req, res) => {
                     middle_name || '', 
                     last_name, 
                     gender || 'Other', 
+                    date_of_birth,
                     formattedPhone, 
                     email || '', 
                     hashedPassword
@@ -766,14 +838,14 @@ app.get('/payments', (req, res) => {
     const adminId = req.session.adminId;
     if (!adminId) return res.redirect('/index');
 
-    // SQL to get payment details + family name
-    // Adjust 'family_name' or 'payer_name' columns based on your specific table schema
-    const sql = `
-        SELECT p.*, f.family_name 
-        FROM payment p
-        JOIN family f ON p.family_id = f.family_id
-        ORDER BY p.payment_date DESC`;
-
+      const sql = `
+          SELECT p.*, f.family_name, 
+          IFNULL(p.payment_method, 'Unknown') AS payment_method 
+          FROM payment p
+          JOIN family f ON p.family_id = f.family_id
+          WHERE p.event_id IS NULL
+          ORDER BY p.payment_id DESC
+      `;
     db.query(sql, (err, payments) => {
         if (err) {
             console.error("Payment Fetch Error:", err);
@@ -781,19 +853,22 @@ app.get('/payments', (req, res) => {
         }
 
         res.render('payments', { 
-            payments: payments,
+            payments,
             error: null,
             success: req.query.success || null 
         });
     });
 });
 
-// lists of Family Paid
+
 app.get('/paid', (req, res) => {
     const adminId = req.session.adminId;
     if (!adminId) return res.redirect('/index');
 
-    // Query to get family details, the admin of that family, and their payment info
+    // Query iliyoboreshwa:
+    // 1. p.event_id IS NULL: Inachuja malipo ya package tu.
+    // 2. p.status = 'paid': Inahakikisha ni waliofanikiwa kulipa tu.
+    // 3. IFNULL kwa payment_method ili kuzuia error ya 'replace' au null values.
     const sql = `
         SELECT 
             f.family_name, 
@@ -801,13 +876,15 @@ app.get('/paid', (req, res) => {
             fm.last_name, 
             fm.phone, 
             p.amount, 
-            p.payment_method, 
+            IFNULL(p.payment_method, 'cash') as payment_method, 
             p.payment_date,
             p.payment_id
         FROM payment p
         JOIN family f ON p.family_id = f.family_id
         JOIN family_member fm ON f.family_id = fm.family_id 
         WHERE fm.role = 'family_admin' 
+        AND p.event_id IS NULL 
+        AND p.status = 'paid'
         ORDER BY p.payment_date DESC`;
 
     db.query(sql, (err, paidFamilies) => {
@@ -822,32 +899,36 @@ app.get('/paid', (req, res) => {
         });
     });
 });
-
-// lists of Family Unpaid
 app.get('/unpaid', (req, res) => {
     const adminId = req.session.adminId;
     if (!adminId) return res.redirect('/index');
 
-    // SQL to find families that have NO records in the payment table
+    // Query Logic:
+    // 1. Tunatafuta familia ambazo payment_status siyo 'paid' AU package siyo 'active'
+    // 2. Tunajiunga na family_member ili kupata Admin wa familia hiyo (role = 'family_admin')
+    // 3. Tunajiunga na packages ili kupata bei (Expected Amount)
     const sql = `
         SELECT 
             f.family_id,
             f.family_name, 
             fm.first_name, 
             fm.last_name, 
-            fm.phone,
-            (SELECT MAX(payment_date) FROM payment WHERE family_id = f.family_id) as last_payment_date
+            fm.phone, 
+            f.package_status,
+            f.payment_status,
+            pk.price AS expected_amount,
+            (SELECT MAX(payment_date) FROM payment WHERE family_id = f.family_id AND event_id IS NULL) as last_payment_date
         FROM family f
         JOIN family_member fm ON f.family_id = fm.family_id
-        LEFT JOIN payment p ON f.family_id = p.family_id
+        LEFT JOIN packages pk ON f.package_id = pk.id
         WHERE fm.role = 'family_admin' 
-        AND p.payment_id IS NULL
+        AND (f.payment_status != 'paid' OR f.package_status != 'active')
         ORDER BY f.created_at DESC`;
 
     db.query(sql, (err, unpaidFamilies) => {
         if (err) {
             console.error("Fetch Unpaid Error:", err);
-            return res.render('unpaid', { unpaidFamilies: [], error: "Error fetching unpaid families." });
+            return res.render('unpaid', { unpaidFamilies: [], error: "Error fetching records." });
         }
 
         res.render('unpaid', { 
@@ -2778,21 +2859,25 @@ app.get('/payment_history', (req, res) => {
 
     if (!memberId || !familyId) return res.redirect('/index');
 
-    // 1. Profile & Notifications
     const profileQuery = `SELECT first_name, last_name, role FROM family_member WHERE member_id = ? LIMIT 1`;
     const notificationsQuery = `SELECT 'meeting' AS type, title, created_at FROM meeting WHERE family_id = ? ORDER BY created_at DESC LIMIT 5`;
 
-    // 2. Historia ya Malipo ya Package
-    // Tunajiunga (JOIN) na table ya packages ili kupata jina la plan
+    // SQL ILIYOBORESHWA:
+    // 1. Tunatumia p.event_id IS NULL kuhakikisha ni malipo ya Package tu.
+    // 2. Tunatumia LEFT JOIN na packages ili kupata jina la kifurushi.
     const historyQuery = `
-        SELECT p.*, pk.name as package_name, m.first_name, m.last_name 
+        SELECT 
+            p.*, 
+            pk.name as package_name, 
+            m.first_name, 
+            m.last_name 
         FROM payment p
-        LEFT JOIN packages pk ON p.package_id = pk.id
+        LEFT JOIN packages pk ON p.payment_id = pk.id -- Hakikisha hapa unajiunga na p.package_id kama ipo
         LEFT JOIN family_member m ON p.recorded_by = m.member_id
-        WHERE p.family_id = ? AND p.payment_type = 'package'
+        WHERE p.family_id = ? 
+        AND p.event_id IS NULL  -- ✅ Hii inazuia malipo ya events
         ORDER BY p.payment_date DESC`;
 
-    // 3. Sidebar Badge (Smart Logic)
     const badgeQuery = `SELECT COUNT(*) as activeEventsCount FROM family_event WHERE family_id = ? AND event_date >= CURDATE()`;
 
     db.query(profileQuery, [memberId], (err, profile) => {
@@ -2800,13 +2885,15 @@ app.get('/payment_history', (req, res) => {
             db.query(historyQuery, [familyId], (err3, history) => {
                 db.query(badgeQuery, [familyId], (err4, badgeData) => {
                     
+                    if (err3) console.error("History Fetch Error:", err3);
+
                     const badges = badgeData ? badgeData[0] : { activeEventsCount: 0 };
 
                     res.render('payment_history', {
                         profile: profile[0] || { first_name: 'User' },
                         notifications: notifications || [],
                         totalNotifications: notifications ? notifications.length : 0,
-                        history: history || [], // Hii ndio itajaza table yako
+                        history: history || [],
                         activeEventsCount: badges.activeEventsCount,
                         pendingPayments: 0,
                         memberId

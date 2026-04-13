@@ -51,6 +51,7 @@ body{
 <% } %>
 
 <form action="/submit_payment" method="POST">
+    <input type="hidden" name="family_id" value="<%= family_id %>">
 
 <!-- PACKAGE -->
 <div class="mb-3">

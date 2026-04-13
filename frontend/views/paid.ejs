@@ -278,44 +278,48 @@
                 </tr>
                 </thead>
 
-                <tbody>
-                  <% if (locals.paidFamilies && paidFamilies.length > 0) { %>
-                    <% paidFamilies.forEach((record, index) => { %>
-                      <tr>
-                        <td><%= index + 1 %></td>
-                        <td><%= record.family_name %></td>
-                        <td><%= record.first_name %> <%= record.last_name %></td>
-                        <td><%= record.phone %></td>
-                        <td><%= Number(record.amount).toLocaleString() %></td>
-                        <td>
-                          <% if(record.payment_method === 'mobile_money') { %>
-                            <span class="badge bg-info text-dark">Mobile Money</span>
-                          <% } else if(record.payment_method === 'bank') { %>
-                            <span class="badge bg-primary">Bank</span>
-                          <% } else { %>
-                            <span class="badge bg-secondary">Cash</span>
-                          <% } %>
-                        </td>
-                        <td><%= new Date(record.payment_date).toLocaleDateString('en-CA') %></td> <td><span class="badge bg-success">Paid</span></td>
-                        <td>
+              <tbody>
+                <% if (locals.paidFamilies && paidFamilies.length > 0) { %>
+                  <% paidFamilies.forEach((record, index) => { %>
+                    <tr>
+                      <td><%= index + 1 %></td>
+                      <td><strong><%= record.family_name %></strong></td>
+                      <td><%= record.first_name %> <%= record.last_name %></td>
+                      <td><%= record.phone %></td>
+                      <td><%= Number(record.amount).toLocaleString() %></td>
+                      <td>
+                        <% if(record.payment_method === 'mobile_money') { %>
+                          <span class="badge bg-info text-dark"><i class="bi bi-phone me-1"></i> Mobile Money</span>
+                        <% } else if(record.payment_method === 'bank') { %>
+                          <span class="badge bg-primary"><i class="bi bi-bank me-1"></i> Bank</span>
+                        <% } else { %>
+                          <span class="badge bg-secondary"><i class="bi bi-cash me-1"></i> <%= record.payment_method %></span>
+                        <% } %>
+                      </td>
+                      <td><%= new Date(record.payment_date).toLocaleDateString('en-GB') %></td> 
+                      <td><span class="badge bg-success">Verified</span></td>
+                      <td>
+                        <div class="btn-group">
                           <button class="btn btn-sm btn-outline-primary" title="View Family">
                             <i class="bi bi-eye"></i>
                           </button>
-                          <button class="btn btn-sm btn-outline-secondary" title="Receipt">
+                          <button class="btn btn-sm btn-outline-secondary" title="View Receipt">
                             <i class="bi bi-receipt"></i>
                           </button>
-                        </td>
-                      </tr>
-                    <% }); %>
-                  <% } else { %>
-                    <tr>
-                      <td colspan="9" class="text-center table-danger text-danger py-4">
-                        <i class="bi bi-exclamation-circle me-2"></i> No paid family records found.
+                        </div>
                       </td>
                     </tr>
-                  <% } %>
-                </tbody>            
-              </table>
+                  <% }); %>
+                <% } else { %>
+                  <tr>
+                    <td colspan="9" class="text-center py-5 text-muted">
+                      <i class="bi bi-info-circle fs-2 d-block mb-2"></i>
+                      Hakuna familia iliyolipia kifurushi iliyopatikana.
+                    </td>
+                  </tr>
+                <% } %>
+              </tbody>
+          </table>
             </div>
         </div>
         </div>
