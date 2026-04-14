@@ -1802,87 +1802,62 @@ app.delete('/delete-member/:id', (req, res) => {
 
 function buildFamilyTree(members) {
   const map = {};
-  const roots = [];
+  let roots = [];
 
-  // STEP 1: index all members
+  // STEP 1: Create map (initialize structure)
   members.forEach(m => {
-    map[m.member_id] = { ...m, children: [] };
+    map[m.member_id] = {
+      ...m,
+      children: [],
+      wives: []
+    };
   });
 
-  // STEP 2: link parents → children
+  // STEP 2: Get family admin (father/root)
+  const father = members.find(m => m.role === 'family_admin');
+
+  if (!father) return [];
+
+  const root = map[father.member_id];
+
+  // STEP 3: Get wives (spouses of father)
   members.forEach(m => {
-    const node = map[m.member_id];
-
-    // father link
-    if (m.father_id && map[m.father_id]) {
-      map[m.father_id].children.push(node);
-    }
-
-    // mother link
-    if (m.mother_id && map[m.mother_id]) {
-      map[m.mother_id].children.push(node);
-    }
-  });
-
-  // STEP 3: find roots (admin + orphan fallback)
-  members.forEach(m => {
-    const isRoot =
-      m.role === 'family_admin' ||
-      (!m.father_id && !m.mother_id);
-
-    if (isRoot) {
-      roots.push(map[m.member_id]);
+    if (
+      (m.spouse_id == father.member_id || father.spouse_id == m.member_id) &&
+      m.member_id !== father.member_id
+    ) {
+      map[m.member_id].children = [];
+      root.wives.push(map[m.member_id]);
     }
   });
 
-  return roots;
-}
-
-function buildFamilyTree(members) {
-  const map = {};
-  const roots = [];
-
-  // STEP 1: MAP ALL MEMBERS
+  // STEP 4: Assign children properly
   members.forEach(m => {
-    map[m.member_id] = { ...m, children: [] };
-  });
+    const child = map[m.member_id];
 
-  // STEP 2: IDENTIFY FAMILY ADMIN (ROOT)
-  const admin = members.find(m => m.role === 'family_admin');
+    // skip father
+    if (m.member_id === father.member_id) return;
 
-  if (admin) {
-    roots.push(map[admin.member_id]);
-  }
-
-  // STEP 3: LINK SPOUSES FIRST (LEVEL 1 RELATIONSHIP)
-  members.forEach(m => {
-    if (m.spouse_id && map[m.spouse_id]) {
-      map[m.member_id].spouse = map[m.spouse_id];
-    }
-  });
-
-  // STEP 4: BUILD PARENT-CHILD RELATIONSHIP
-  members.forEach(m => {
-    const node = map[m.member_id];
-
-    const father = m.father_id ? map[m.father_id] : null;
     const mother = m.mother_id ? map[m.mother_id] : null;
+    const fatherNode = m.father_id ? map[m.father_id] : null;
 
-    if (father) {
-      father.children.push(node);
+    // CASE 1: mtoto ana mama → aende kwa huyo mama
+    if (mother && root.wives.find(w => w.member_id === mother.member_id)) {
+      mother.children.push(child);
     }
 
-    if (mother && mother.member_id !== father?.member_id) {
-      mother.children.push(node);
+    // CASE 2: mtoto hana mama lakini ana baba → kwa baba
+    else if (!mother && fatherNode && fatherNode.member_id === root.member_id) {
+      root.children.push(child);
     }
 
-    // if no parents → attach under root (fallback)
-    if (!father && !mother && m.role !== 'family_admin') {
-      const adminNode = admin ? map[admin.member_id] : null;
-      if (adminNode) adminNode.children.push(node);
+    // CASE 3: fallback (no parents)
+    else if (!mother && !fatherNode && m.role !== 'family_admin') {
+      root.children.push(child);
     }
   });
 
+  roots.push(root);
   return roots;
 }
 
@@ -3352,11 +3327,12 @@ app.get('/chat_list', (req, res) => {
                     if (err3) console.error("Chat List Error:", err3);
 
                     res.render('chat_list', {
-                        profile: profileRes?.[0] || { first_name: 'User' },
-                        notifications: notifications || [],
-                        totalNotifications: (notifications || []).length,
-                        familyMembers: familyMembers || []
-                    });
+                      profile: profileRes?.[0] || { first_name: 'User' },
+                      member_id: memberId, // 🔥 muhimu
+                      notifications: notifications || [],
+                      totalNotifications: (notifications || []).length,
+                      familyMembers: familyMembers || []
+                  });
                 }
             );
         });
@@ -3467,19 +3443,20 @@ app.get('/family_chat', (req, res) => {
             if (err5) return res.status(500).send("Notifications error");
 
             // Render with everything
-            res.render('family_chat', {
-              profile: profileRes[0] || { first_name: 'User', last_name: '', role: 'Member' },
-              family: {
-                family_name: familyRes[0]?.family_name || 'Family Group',
-                total_members: allMembers.length
-              },
-              allMembers: allMembers || [],
-              messages: messages || [],
-              notifications: notifications || [],
-              totalNotifications: notifications.length,
-              memberId
-            });
-          });
+           res.render('family_chat', {
+                profile: profileRes[0] || { first_name: 'User', last_name: '', role: 'Member' },
+                family: {
+                  family_name: familyRes[0]?.family_name || 'Family Group',
+                  total_members: allMembers.length
+                },
+                allMembers: allMembers || [],
+                messages: messages || [],
+                notifications: notifications || [],
+                totalNotifications: notifications.length,
+                memberId,
+                familyId   // ✅ ADD THIS
+              }); 
+             });
         });
       });
     });
@@ -3500,6 +3477,8 @@ app.post('/send_group_message', upload.single('image'), (req, res) => {
     res.redirect('/family_chat');
   });
 });
+
+
 // direct chat
 app.get('/direct_messages', (req, res) => {
   res.render('direct_messages'); // HOF
@@ -3628,17 +3607,27 @@ app.delete('/delete_file/:id', (req, res) => {
     });
 });
 
-// 5. DELETE FOLDER (OPTIONAL)
+// DELETE FOLDER
 app.delete('/delete_folder/:id', (req, res) => {
-    const folderId = req.params.id;
-    db.query('DELETE FROM family_drive WHERE drive_id = ?', [folderId], (err) => {
-        if (err) {
-            req.session.error = "Folder haikuweza kufutwa.";
-            return res.sendStatus(500);
-        }
-        req.session.success = "Folder deleted successfully!";
-        res.sendStatus(200);
-    });
+  const folderId = req.params.id;
+  const familyId = req.session.family_id;
+
+  if (!folderId || !familyId) return res.sendStatus(400);
+
+  // delete files inside folder first
+  db.query(`DELETE FROM drive_file WHERE folder_id = ?`, [folderId], (err) => {
+    if (err) return res.sendStatus(500);
+
+    // delete folder
+    db.query(`DELETE FROM family_drive WHERE drive_id = ? AND family_id = ?`,
+      [folderId, familyId],
+      (err2) => {
+        if (err2) return res.sendStatus(500);
+
+        return res.sendStatus(200);
+      }
+    );
+  });
 });
 
 app.get('/drive_files/folder/:id', (req, res) => {

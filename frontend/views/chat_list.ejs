@@ -101,6 +101,113 @@
   </div>
 </div>
 
+<script src="/socket.io/socket.io.js"></script>
+
+<script>
+const socket = io();
+
+// 🔥 USER ID (kutoka server)
+const myId = "<%= member_id %>";
+
+let currentChatUser = null;
+
+// JOIN ROOM
+socket.emit('joinRoom', { userId: myId });
+
+// CLICK USER
+document.querySelectorAll('.chat-user').forEach(item => {
+  item.addEventListener('click', () => {
+
+    currentChatUser = item.dataset.id;
+
+    document.getElementById('chatUserName').innerText = item.dataset.name;
+
+    const chatBox = document.getElementById('chatBox');
+    chatBox.innerHTML = '';
+
+    // LOAD OLD MESSAGES
+    fetch('/chat_messages/' + currentChatUser)
+      .then(res => res.json())
+      .then(data => {
+
+        data.forEach(msg => {
+          addMessage(msg.message, msg.isMe);
+        });
+
+        chatBox.scrollTop = chatBox.scrollHeight;
+      });
+
+    // OPEN MODAL
+    new bootstrap.Modal(document.getElementById('chatModal')).show();
+  });
+});
+
+
+// SEND MESSAGE (SOCKET)
+document.getElementById('chatForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+
+  const input = document.getElementById('messageInput');
+  const message = input.value.trim();
+
+  if (!message || !currentChatUser) return;
+
+  socket.emit('sendMessage', {
+    sender_id: myId,
+    receiver_id: currentChatUser,
+    message
+  });
+
+  input.value = '';
+});
+
+
+// RECEIVE MESSAGE REAL-TIME
+socket.on('receiveMessage', (data) => {
+
+  // only show if current chat open
+  if (
+    data.sender_id == currentChatUser ||
+    data.sender_id == myId
+  ) {
+    addMessage(data.message, data.sender_id == myId);
+  }
+});
+
+
+// ADD MESSAGE TO UI
+function addMessage(msg, isMe) {
+  const div = document.createElement('div');
+
+  div.className = isMe 
+    ? 'text-end mb-2' 
+    : 'text-start mb-2';
+
+  div.innerHTML = `
+    <span class="badge ${isMe ? 'bg-primary' : 'bg-secondary'} p-2">
+      ${msg}
+    </span>
+  `;
+
+  const chatBox = document.getElementById('chatBox');
+  chatBox.appendChild(div);
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+
+// EMOJI TOGGLE
+function toggleEmoji() {
+  const box = document.getElementById('emojiBox');
+  box.style.display = box.style.display === 'none' ? 'block' : 'none';
+}
+
+// CLICK EMOJI
+document.getElementById('emojiBox').addEventListener('click', (e) => {
+  const input = document.getElementById('messageInput');
+  input.value += e.target.textContent;
+});
+</script>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <style>

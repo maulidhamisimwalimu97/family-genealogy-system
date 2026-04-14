@@ -54,65 +54,72 @@
           <ul>
 
             <% function renderNode(node) { %>
-
               <li>
 
                 <!-- MEMBER CARD -->
                 <div class="member text-center">
-
                   <a href="#" class="member-link" data-member-id="<%= node.member_id %>">
                     <strong><%= node.first_name %> <%= node.last_name %></strong>
                   </a>
-
                   <br>
-
                   <small>
                     <%= node.role || node.relationship || '' %>
                   </small>
-
-                  <!-- SPOUSE DISPLAY (SIDE INFO) -->
-                  <% if (node.spouse) { %>
-                    <div class="text-primary small mt-1">
-                      ❤️ Spouse:
-                      <a href="#" class="member-link" data-member-id="<%= node.spouse.member_id %>">
-                        <%= node.spouse.first_name %> <%= node.spouse.last_name %>
-                      </a>
-                    </div>
-                  <% } %>
-
                 </div>
 
-                <!-- CHILDREN -->
+                <!-- WIVES LEVEL (ONLY FOR FATHER) -->
+                <% if (node.wives && node.wives.length > 0) { %>
+                  <ul>
+                    <% node.wives.forEach(wife => { %>
+                      <li>
+
+                        <!-- WIFE CARD -->
+                        <div class="member text-center text-primary">
+                          ❤️ <strong>
+                            <%= wife.first_name %> <%= wife.last_name %>
+                          </strong>
+                          <br>
+                          <small>Wife</small>
+                        </div>
+
+                        <!-- CHILDREN OF THIS WIFE -->
+                        <% if (wife.children && wife.children.length > 0) { %>
+                          <ul>
+                            <% wife.children.forEach(child => { %>
+                              <%= renderNode(child) %>
+                            <% }) %>
+                          </ul>
+                        <% } %>
+
+                      </li>
+                    <% }) %>
+                  </ul>
+                <% } %>
+
+                <!-- CHILDREN WITHOUT MOTHER (DIRECT UNDER FATHER) -->
                 <% if (node.children && node.children.length > 0) { %>
                   <ul>
-
                     <% node.children.forEach(child => { %>
                       <%= renderNode(child) %>
                     <% }) %>
-
                   </ul>
                 <% } %>
 
               </li>
-
             <% } %>
 
-            <!-- ROOT NODES (Family Admin starts here) -->
+            <!-- ROOT NODE -->
             <% if (tree && tree.length > 0) { %>
-
               <% tree.forEach(root => { %>
                 <%= renderNode(root) %>
               <% }) %>
-
             <% } else { %>
-
               <li>
                 <div class="member text-center">
                   <strong>No hierarchy yet</strong><br>
-                  <small>System will build tree once relationships are added</small>
+                  <small>Add members and relationships to build the tree</small>
                 </div>
               </li>
-
             <% } %>
 
           </ul>
