@@ -330,89 +330,87 @@
 <!-- Package End -->
 
 <!-- Get Quote Start -->
-<div id="quote" class="container-xxl py-5 wow fadeInUp" data-wow-delay="0.1s">
+<div id="quote" class="container-xxl py-5">
     <div class="container">
         <div class="booking p-5">
             <div class="row g-5 align-items-center">
 
-                <!-- Left Content -->
+                <!-- LEFT -->
                 <div class="col-md-6 text-white">
                     <h6 class="text-white text-uppercase">Get Quote</h6>
                     <h1 class="text-white mb-4">Request a Quote</h1>
                     <p class="mb-4">
-                        Get started with our Family Genealogy system today. Manage your family members, track events, and organize contributions بسهولة.
+                        Manage your family records easily with our system.
                     </p>
-                    <p class="mb-4">
-                        Choose the right package for your family and let us help you build and manage your family records efficiently.
-                    </p>
-                    <a class="btn btn-outline-light py-3 px-5 mt-2" href="">View Packages</a>
                 </div>
 
-                <!-- Form -->
+                <!-- FORM -->
                 <div class="col-md-6">
                     <h1 class="text-white mb-4">Get Quote</h1>
-                    <form>
+
+                    <!-- IMPORTANT: backend full URL -->
+<form action="http://localhost:3000/submit-quote" method="POST"
+onsubmit="alert('FORM IS SUBMITTING')">
+
                         <div class="row g-3">
 
-                            <!-- Name -->
                             <div class="col-md-6">
                                 <div class="form-floating">
-                                    <input type="text" class="form-control bg-transparent" id="name" placeholder="Your Name">
-                                    <label for="name">Your Name</label>
+                                    <input type="text" name="name" class="form-control" placeholder="Your Name" required>
+                                    <label>Your Name</label>
                                 </div>
                             </div>
 
-                            <!-- Email -->
                             <div class="col-md-6">
                                 <div class="form-floating">
-                                    <input type="email" class="form-control bg-transparent" id="email" placeholder="Your Email">
-                                    <label for="email">Your Email</label>
+                                    <input type="email" name="email" class="form-control" placeholder="Your Email" required>
+                                    <label>Your Email</label>
                                 </div>
                             </div>
 
-                            <!-- Family Name -->
                             <div class="col-md-6">
                                 <div class="form-floating">
-                                    <input type="text" class="form-control bg-transparent" id="family" placeholder="Family Name">
-                                    <label for="family">Family Name</label>
+                                    <input type="text" name="family" class="form-control" placeholder="Family Name">
+                                    <label>Family Name</label>
                                 </div>
                             </div>
 
-                            <!-- Package -->
                             <div class="col-md-6">
                                 <div class="form-floating">
-                                    <select class="form-select bg-transparent" id="package">
+                                    <select name="package" class="form-select">
                                         <option value="unlimited">Unlimited Plan</option>
                                         <option value="200">Up to 200 Members</option>
                                         <option value="150">Up to 150 Members</option>
                                     </select>
-                                    <label for="package">Select Package</label>
+                                    <label>Select Package</label>
                                 </div>
                             </div>
 
-                            <!-- Members -->
                             <div class="col-md-6">
                                 <div class="form-floating">
-                                    <input type="number" class="form-control bg-transparent" id="members" placeholder="Number of Members">
-                                    <label for="members">Number of Members</label>
+                                    <input type="number" name="members" class="form-control" placeholder="Members">
+                                    <label>Members</label>
                                 </div>
                             </div>
 
-                            <!-- Message -->
                             <div class="col-12">
                                 <div class="form-floating">
-                                    <textarea class="form-control bg-transparent" placeholder="Message" id="message" style="height: 100px"></textarea>
-                                    <label for="message">Additional Message</label>
+                                    <textarea name="message" class="form-control" style="height: 100px"></textarea>
+                                    <label>Message</label>
                                 </div>
                             </div>
 
-                            <!-- Button -->
                             <div class="col-12">
-                                <button class="btn btn-outline-light w-100 py-3" type="submit">Submit Request</button>
+                                <button type="submit"
+                                onclick="alert('BUTTON CLICK WORKS')"
+                                style="position:relative; z-index:999999;">
+                                Submit Request
+                                </button>
                             </div>
 
                         </div>
                     </form>
+
                 </div>
 
             </div>
@@ -420,7 +418,22 @@
     </div>
 </div>
 <!-- Get Quote End -->
+ <style>
+.booking {
+  z-index: 999999 !important;
+  position: relative !important;
+}
 
+.booking * {
+  pointer-events: auto !important;
+  z-index: 999999 !important;
+}
+
+.booking::before,
+.booking::after {
+  display: none !important;
+}
+</style>
 <!-- Add this CSS somewhere in your <head> or CSS file -->
 <style>
 .text-blue {
@@ -459,7 +472,7 @@
             <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
                 <div class="team-item text-center">
                     <div class="overflow-hidden">
-                        <img class="img-fluid" src="img/team-1.jpg" alt="">
+                        <img class="img-fluid" src="img/3.png" alt="">
                     </div>
                     <div class="p-4">
                         <h5 class="mb-0">Omary Salum</h5>
@@ -472,7 +485,7 @@
             <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.3s">
                 <div class="team-item text-center">
                     <div class="overflow-hidden">
-                        <img class="img-fluid" src="img/team-3.jpg" alt="">
+                        <img class="img-fluid" src="img/3.png" alt="">
                     </div>
                     <div class="p-4">
                         <h5 class="mb-0">Maulid Mwalimu</h5>
@@ -485,7 +498,7 @@
             <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.5s">
                 <div class="team-item text-center">
                     <div class="overflow-hidden">
-                        <img class="img-fluid" src="img/team-3.jpg" alt="">
+                        <img class="img-fluid" src="img/3.png" alt="">
                     </div>
                     <div class="p-4">
                         <h5 class="mb-0">Abdukarim</h5>
@@ -536,6 +549,31 @@
     </div>
 </div>
 <!-- Testimonial End -->
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+  const urlParams = new URLSearchParams(window.location.search);
+  const status = urlParams.get('status');
+
+  if (status === 'success') {
+    Swal.fire({
+      icon: 'success',
+      title: 'Success!',
+      text: 'Your request has been submitted successfully!',
+      confirmButtonColor: '#4154f1'
+    });
+  }
+
+  if (status === 'error') {
+    Swal.fire({
+      icon: 'error',
+      title: 'Error!',
+      text: 'Something went wrong. Try again!',
+      confirmButtonColor: '#4154f1'
+    });
+  }
+</script>
 
 <!-- Footer Start -->
 <div class="container-fluid bg-dark text-light footer pt-5 mt-5 wow fadeIn" data-wow-delay="0.1s">

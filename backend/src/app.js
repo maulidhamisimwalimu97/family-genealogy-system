@@ -1329,7 +1329,33 @@ app.get('/home', (req, res) => {
   res.render('home');
 });
 
-// Head of family Dashboard
+app.post('/submit-quote', (req, res) => {
+  console.log("FORM DATA:", req.body);
+
+  const name = req.body.name;
+  const email = req.body.email;
+  const family = req.body.family;
+  const packageType = req.body.package;
+  const members = req.body.members;
+  const message = req.body.message;
+
+  const sql = `
+    INSERT INTO quote_requests 
+    (name, email, family_name, package, members, message)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `;
+
+  db.query(sql, [name, email, family, packageType, members, message], (err) => {
+    if (err) {
+      console.log("DB ERROR:", err);
+      return res.redirect('/home?status=error');
+    }
+
+    console.log("INSERTED SUCCESS");
+    res.redirect('/home?status=success');
+  });
+});
+
 // --- GET: Head of Family Dashboard ---
 app.get('/family_admin', (req, res) => {
   const family_id = req.session.family_id;
